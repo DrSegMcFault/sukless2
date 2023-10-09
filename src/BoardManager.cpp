@@ -27,14 +27,19 @@ BoardManager::BoardManager() {
   init_king_attacks();
 }
 
+/*******************************************************
+* returns if the attack bitboard for the piece is set 
+* or not
+********************************************************/
 bool BoardManager::is_attack_valid(const Move& m) const
 {
-  return false;
+  return _board[c(m.piece)].is_set(m.to);
 }
 
-/*
- * Ensure the board is copied over
-*/
+/*******************************************************
+* Copy constructor 
+* 
+********************************************************/
 BoardManager::BoardManager(const BoardManager& b) {
   // may need to copy attack and constant bbs over
   _state = b._state;
@@ -43,6 +48,10 @@ BoardManager::BoardManager(const BoardManager& b) {
   };
 }
 
+/*******************************************************
+* Populate the pawn attack bitboards 
+* 
+********************************************************/
 constexpr void BoardManager::init_pawn_attacks()
 {
   const auto get_mask = [this](int side, int square) {
@@ -70,11 +79,15 @@ constexpr void BoardManager::init_pawn_attacks()
   };
 
   for (int i = 0; i < 64; i++) {
-    pawn_attacks[0][i] = get_mask(0,i);
-    pawn_attacks[1][i] = get_mask(1,i);
+    pawn_attacks[c(chess::Color::white)][i] = get_mask(0,i);
+    pawn_attacks[c(chess::Color::black)][i] = get_mask(1,i);
   }
 }
 
+/*******************************************************
+* Populate the knight attack bitboards 
+* 
+********************************************************/
 constexpr void BoardManager::init_knight_attacks()
 {
   const auto get_mask = [this](int square) {
@@ -108,6 +121,10 @@ constexpr void BoardManager::init_knight_attacks()
   }
 }
 
+/*******************************************************
+* Populate the king attack bitboards 
+* 
+********************************************************/
 constexpr void BoardManager::init_king_attacks()
 {
   const auto get_mask = [this](int square) {
@@ -141,4 +158,18 @@ constexpr void BoardManager::init_king_attacks()
   for (int i = 0; i < 64; i++) {
     king_attacks[i] = get_mask(i);
   }
+}
+
+/*******************************************************
+* Check if the given square is attacked by the given
+* side 
+********************************************************/
+bool chess::BoardManager::is_square_attacked(int square, Color side) const
+{
+  // 'and' the relavant boards together and 'and' it with the sqaure
+  if (side == Color::white) {
+    return false;
+  } else {
+    return false; 
+  } 
 }

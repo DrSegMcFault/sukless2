@@ -7,13 +7,14 @@ Game::Game()
 {
 }
 
+/*******************************************************
+* Attempts to make the given move. Returns a MoveResult
+*
+********************************************************/
 const MoveResult Game::try_move(const Move& m)
 {
-  // given a potential move,
   // check if it is within the pieces psuedo-legal moves
-  // to do this, we need to get the biboard of the piece type in question
-  
-  // check_attacks will check the bitboard of the piece type
+
   return MoveResult::Success;
 }
 
@@ -23,9 +24,7 @@ const MoveResult Game::try_move(const Move& m)
 ********************************************************/
 const bool Game::is_move_pseudo_legal(const Move& m)
 {
-  // idea for this is:
-  // return mgr.is_attack_valid(m.piece, int(m.color), m.to);
-  return false;
+  return _mgr.is_attack_valid(m);
 }
 
 /*******************************************************

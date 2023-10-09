@@ -14,6 +14,7 @@ namespace chess {
     Stalemate,
     Draw
   };
+
   enum class Piece {
     w_pawn, w_knight, w_bishop,
     w_rook, w_queen,  w_king,
