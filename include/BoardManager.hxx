@@ -22,8 +22,14 @@ class BoardManager
    // noted that the queen pre-calculated attack bitboard
    // is the union of the bishop and rook attack bitboards
    BitBoard queen_attacks;
-   BitBoard bishop_attacks;
-   BitBoard rook_attacks;
+
+   // the below relavent occupancy bbs are the possible
+   // moves for each piece at each of the 64 squares
+   // exluding the edges of the board
+   // https://www.chessprogramming.org/Magic_Bitboards
+   // under the 'How it Works' section
+   BitBoard relavent_bishop_occ[64];
+   BitBoard relavent_rook_occ[64];
 
    // useful constants
    static constexpr uint64_t not_a_file = 18374403900871474942ULL;
@@ -51,6 +57,9 @@ class BoardManager
   constexpr void init_pawn_attacks();
   constexpr void init_knight_attacks();
   constexpr void init_king_attacks();
+  constexpr void init_bishop_rel_occ();
+  constexpr void init_rook_rel_occ();
+
 
   bool is_square_attacked(int square, Color side) const;
  
@@ -63,7 +72,12 @@ class BoardManager
   }
 
   void print(Piece p = Piece::All) {
-    _board[c(Piece::All)].print();
+    _board[c(p)].print();
+  }
+  // the All bit board will be updated after
+  // each valid move, so no need to calculate it here
+  const BitBoard& all() {
+    return _board[c(Piece::All)];
   }
 };
 }

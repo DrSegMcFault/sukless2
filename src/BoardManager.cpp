@@ -25,6 +25,8 @@ BoardManager::BoardManager() {
   init_pawn_attacks();
   init_knight_attacks();
   init_king_attacks();
+  init_bishop_rel_occ();
+  init_rook_rel_occ();
 }
 
 /*******************************************************
@@ -161,10 +163,80 @@ constexpr void BoardManager::init_king_attacks()
 }
 
 /*******************************************************
+* Populate the bishops relavent occupancy for each square 
+* 
+********************************************************/
+constexpr void BoardManager::init_bishop_rel_occ()
+{
+  const auto get_mask = [this] (int square) {
+    uint64_t attacks {0ULL};
+
+    int r = 0;
+    int f = 0;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    for (r = tr + 1, f = tf + 1; r <=6 && f<=6; r++, f++) {
+      attacks |= (1ULL << (r * 8 + f));
+    }
+    for (r = tr - 1, f = tf + 1; r >= 1 && f<=6; r--, f++) {
+      attacks |= (1ULL << (r * 8 + f));
+    }
+    for (r = tr + 1, f = tf - 1; r <=6 && f>=1; r++, f--) {
+      attacks |= (1ULL << (r * 8 + f));
+    }
+    for (r = tr - 1, f = tf - 1; r >= 1 && f>=1; r--, f--) {
+      attacks |= (1ULL << (r * 8 + f));
+    }
+
+    return BitBoard(attacks);
+  };
+
+  for (int i = 0; i < 64; i++) {
+    relavent_bishop_occ[i] = get_mask(i);
+  }
+}
+
+/*******************************************************
+* Populate the rooks relavant occupancy for each square 
+* 
+********************************************************/
+constexpr void BoardManager::init_rook_rel_occ()
+{  
+  const auto get_mask = [this] (int square) {
+    uint64_t attacks {0ULL};
+
+    int r = 0;
+    int f = 0;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    for (r = tr + 1; r <= 6; r++) {
+      attacks |= (1ULL << (r * 8 + tf));
+    }
+    for (r = tr - 1; r >= 1; r--) {
+      attacks |= (1ULL << (r * 8 + tf));
+    }
+    for (f = tf + 1; f <= 6; f++) {
+      attacks |= (1ULL << (tr * 8 + f));
+    }
+    for (f = tf - 1; f >= 1; f--) {
+      attacks |= (1ULL << (tr * 8 + f));
+    }
+
+    return BitBoard(attacks);
+  };
+
+  for (int i = 0; i < 64; i++) {
+    relavent_rook_occ[i] = get_mask(i);
+  }
+}
+
+/*******************************************************
 * Check if the given square is attacked by the given
 * side 
 ********************************************************/
-bool chess::BoardManager::is_square_attacked(int square, Color side) const
+bool BoardManager::is_square_attacked(int square, Color side) const
 {
   // 'and' the relavant boards together and 'and' it with the sqaure
   if (side == Color::white) {
