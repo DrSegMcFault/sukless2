@@ -36,10 +36,8 @@ class BitBoard {
       uint64_t b = _b;
 
       while (b) {
-        if (b & 1) {
-          count++;
-        }
-        b = b >> 1;
+        count++;
+        b &= b - 1;
       }
       return count;
     }

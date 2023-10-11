@@ -60,6 +60,9 @@ class BoardManager
   constexpr void init_bishop_rel_occ();
   constexpr void init_rook_rel_occ();
 
+  // used to find magic numbers
+  BitBoard get_bishop_otf(int square);
+  BitBoard get_rook_otf(int sqaure); 
 
   bool is_square_attacked(int square, Color side) const;
  
@@ -80,4 +83,5 @@ class BoardManager
     return _board[c(Piece::All)];
   }
 };
-}
+
+} // namespace chess
