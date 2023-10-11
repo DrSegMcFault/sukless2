@@ -243,5 +243,62 @@ bool BoardManager::is_square_attacked(int square, Color side) const
     return false;
   } else {
     return false; 
-  } 
+  }
+}
+
+/*******************************************************
+* get the regular bishop attacks for the given square
+* 
+********************************************************/
+BitBoard BoardManager::get_bishop_otf(int square)
+{
+  uint64_t attacks {0ULL};
+
+  int r = 0;
+  int f = 0;
+  int tr = square / 8;
+  int tf = square % 8;
+
+  for (r = tr + 1, f = tf + 1; r <=7 && f<=7; r++, f++) {
+    attacks |= (1ULL << (r * 8 + f));
+  }
+  for (r = tr - 1, f = tf + 1; r >= 0 && f<=7; r--, f++) {
+    attacks |= (1ULL << (r * 8 + f));
+  }
+  for (r = tr + 1, f = tf - 1; r <=7 && f>=0; r++, f--) {
+    attacks |= (1ULL << (r * 8 + f));
+  }
+  for (r = tr - 1, f = tf - 1; r >= 0 && f>=0; r--, f--) {
+    attacks |= (1ULL << (r * 8 + f));
+  }
+
+  return BitBoard(attacks);
+}
+
+/*******************************************************
+* get the regular rook attacks for the given square
+* 
+********************************************************/
+BitBoard BoardManager::get_rook_otf(int square)
+{
+  uint64_t attacks {0ULL};
+
+  int r = 0;
+  int f = 0;
+  int tr = square / 8;
+  int tf = square % 8;
+
+  for (r = tr + 1; r <= 7; r++) {
+    attacks |= (1ULL << (r * 8 + tf));
+  }
+  for (r = tr - 1; r >= 0; r--) {
+    attacks |= (1ULL << (r * 8 + tf));
+  }
+  for (f = tf + 1; f <= 7; f++) {
+    attacks |= (1ULL << (tr * 8 + f));
+  }
+  for (f = tf - 1; f >= 0; f--) {
+    attacks |= (1ULL << (tr * 8 + f));
+  }
+  return BitBoard(attacks);
 }

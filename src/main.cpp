@@ -4,5 +4,6 @@
 #include "Game.hxx"
 
 int main() {
+  chess::Game g;
   return 0;
 }
