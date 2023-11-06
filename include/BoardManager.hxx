@@ -1,9 +1,8 @@
 #pragma once
 
-#include <optional>
-
-#include "Bitboard.hxx"
-#include "enums.hxx"
+#include <array>
+#include <iostream>
+#include "util.hxx"
 
 namespace chess {
 
@@ -11,18 +10,18 @@ class BoardManager
 {
   private:
     // collection of all Bitboards
-    Bitboard _board[13];
+    std::array<Bitboard, 13> _board;
 
     // pre-calculated attack Bitboards
-    Bitboard pawn_attacks[2][64];
-    Bitboard knight_attacks[64];
-    Bitboard king_attacks[64];
-    Bitboard bishop_attacks[64][512] = {{Bitboard{0ULL}}};
-    Bitboard rook_attacks[64][4096] = {{Bitboard{0ULL}}};
+    std::array<std::array<Bitboard, 64>, 2> pawn_attacks;
+    std::array<Bitboard, 64> knight_attacks;
+    std::array<Bitboard, 64> king_attacks;
+    std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
+    std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
     // https://www.chessprogramming.org/Magic_Bitboards
     // under the 'How it Works' section
-    uint64_t bishop_magics[64] = {
+    const std::array<Bitboard, 64> bishop_magics = {
       0x40040844404084ULL,
       0x2004208a004208ULL,
       0x10190041080202ULL,
@@ -90,9 +89,9 @@ class BoardManager
     }; 
 
     // attack masks per square
-    Bitboard bishop_masks[64];
+    std::array<Bitboard, 64> bishop_masks;
 
-    uint64_t rook_magics[64] {
+    const std::array<Bitboard, 64> rook_magics {
       0x8a80104000800020ULL,
       0x140002000100040ULL,
       0x2801880a0017001ULL,
@@ -160,10 +159,10 @@ class BoardManager
     };
     
     // attack masks for each square
-    Bitboard rook_masks[64];
+    std::array<Bitboard, 64> rook_masks;
 
     // bitcounts for each mask
-    uint64_t bishop_bits[64] =
+    const std::array<Bitboard, 64> bishop_bits =
     { 6,5,5,5,5,5,5,6,
       5,5,5,5,5,5,5,5,
       5,5,7,7,7,7,5,5,
@@ -174,7 +173,7 @@ class BoardManager
       6,5,5,5,5,5,5,6 };
 
     // bitcounts for each mask
-    uint64_t rook_bits[64] = 
+    const std::array<Bitboard, 64> rook_bits = 
     { 12,11,11,11,11,11,11,12,
       11,10,10,10,10,10,10,11,
       11,10,10,10,10,10,10,11,
@@ -185,10 +184,10 @@ class BoardManager
       12,11,11,11,11,11,11,12 };
 
     // useful constants
-    static constexpr uint64_t not_a_file = 18374403900871474942ULL;
-    static constexpr uint64_t not_h_file = 9187201950435737471ULL;
-    static constexpr uint64_t not_hg_file = 4557430888798830399ULL;
-    static constexpr uint64_t not_ab_file = 18229723555195321596ULL;
+    static constexpr Bitboard not_a_file = 18374403900871474942ULL;
+    static constexpr Bitboard not_h_file = 9187201950435737471ULL;
+    static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
+    static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
 
     // initialization functions
     constexpr void init_attack_tables();
@@ -197,12 +196,10 @@ class BoardManager
     constexpr void init_king_attacks();
     constexpr void init_bishop_masks();
     constexpr void init_rook_masks();
-    constexpr void init_slider_attacks();
-    constexpr Bitboard calc_bishop_attacks(int square, uint64_t occ);
-    constexpr Bitboard calc_rook_attacks(int sqaure, uint64_t occ);
-
-    // least significant bit index
-    std::optional<int> get_lsb_index(Bitboard b);
+    constexpr void init_sliderook_actualttacks();
+    void init_from_fen(const std::string& fen);
+    constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ);
+    constexpr Bitboard calc_rook_attacks(int sqaure, Bitboard occ);
 
     // flags for the game state
     struct State {
@@ -215,10 +212,10 @@ class BoardManager
   public:
 
     BoardManager();
+    BoardManager(const std::string& fen);
     BoardManager(const BoardManager&) noexcept = default;
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
-    BoardManager& operator=(const BoardManager&) = default;
 
     // attack retrieval functions
     Bitboard get_bishop_attacks(Pos square, Bitboard occ);
@@ -230,8 +227,8 @@ class BoardManager
 
     // convienence functions
     const auto& operator[](Piece piece) { return _board[piece]; }
-    auto piece_count(Piece piece) const { return _board[piece].count(); }
-    void print(Piece p = Piece::All) { _board[p].print(); }
+    auto piece_count(Piece piece) const { return count(_board[piece]); }
+    void print(Piece p = Piece::All) { chess::print_board(_board[p]); }
     const Bitboard& all() { return _board[Piece::All]; }
 };
 } // namespace chess
