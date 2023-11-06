@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
 #include <iostream>
 
 class BitBoard {
@@ -10,28 +8,30 @@ class BitBoard {
     uint64_t _b;
 
   public:
-    BitBoard() :_b(0ULL) {}
+    BitBoard() = default;
 
-    BitBoard(uint64_t i) : _b(i) {}
+    constexpr BitBoard(uint64_t i) : _b(i) {}
 
-    void set(int i) { 
+    constexpr void set(int i) {
       _b |= (1ULL << i);
     }
 
-    const bool is_set(int i) const { 
-      return (_b & (1ULL << i)); 
+    constexpr bool is_set(int i) const {
+      return (_b & (1ULL << i));
     }
 
-    void clear(int i) {
+    constexpr void clear(int i) {
       _b &= ~(1ULL << i);
     }
 
-    void move(int from, int to) {
+    constexpr void move(int from, int to) {
       clear(from);
       set(to);
     }
 
-    uint32_t count() const {
+    uint64_t get() const { return _b; }
+
+    constexpr uint32_t count() const {
       uint32_t count = 0;
       uint64_t b = _b;
 
@@ -56,4 +56,48 @@ class BitBoard {
       }
       std::cout << "\n    a b c d e f g h\n\n" << std::endl;
     }
+
+    operator bool() const {
+        return _b != 0;
+    }
+    
+    bool operator==(const BitBoard& other) const {
+      return _b == other._b;
+    }
+
+    BitBoard operator&(const BitBoard& other) const {
+      BitBoard result(_b & other._b);
+      return result;
+    }
+
+    BitBoard operator|(const BitBoard& other) const {
+      BitBoard result(_b | other._b);
+      return result;
+    }
+
+    BitBoard operator^(const BitBoard& other) const {
+      BitBoard result(_b ^ other._b);
+      return result;
+    }
+
+    BitBoard operator~() const {
+      BitBoard result(~_b);
+      return result;
+    }
+
+    BitBoard& operator&=(const BitBoard& other) {
+      _b &= other._b;
+      return *this;
+    }
+
+    BitBoard& operator|=(const BitBoard& other) {
+      _b |= other._b;
+      return *this;
+    }
+
+    BitBoard& operator^=(const BitBoard& other) {
+      _b ^= other._b;
+      return *this;
+    }
+
 };
