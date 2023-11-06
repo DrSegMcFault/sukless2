@@ -1,62 +1,101 @@
 #include "BoardManager.hxx"
-/*
- * Set the board to the initial position
-*/
+#include <cassert>
+#include <random>
+
 using namespace chess;
+
+/*******************************************************************************
+ *
+ * Method: BoardManager()
+ *
+ *******************************************************************************/
 BoardManager::BoardManager() {
   using enum Piece;
 
-  _board[c(w_pawn)]   = 65280ULL;
-  _board[c(w_knight)] = 66ULL;
-  _board[c(w_bishop)] = 65280ULL;
-  _board[c(w_rook)]   = 129ULL;
-  _board[c(w_queen)]  = 8ULL;
-  _board[c(w_king)]   = 16ULL;
+  _board[w_pawn]   = 65280ULL;
+  _board[w_knight] = 66ULL;
+  _board[w_bishop] = 65280ULL;
+  _board[w_rook]   = 129ULL;
+  _board[w_queen]  = 8ULL;
+  _board[w_king]   = 16ULL;
 
-  _board[c(b_pawn)]   = 71776119061217280ULL;
-  _board[c(b_knight)] = 4755801206503243776ULL;
-  _board[c(b_bishop)] = 71776119061217280ULL;
-  _board[c(b_rook)]   = 9295429630892703744ULL;
-  _board[c(b_queen)]  = 576460752303423488ULL;
-  _board[c(b_king)]   = 1152921504606846976ULL;
+  _board[b_pawn]   = 71776119061217280ULL;
+  _board[b_knight] = 4755801206503243776ULL;
+  _board[b_bishop] = 71776119061217280ULL;
+  _board[b_rook]   = 9295429630892703744ULL;
+  _board[b_queen]  = 576460752303423488ULL;
+  _board[b_king]   = 1152921504606846976ULL;
 
-  _board[c(All)]      = 18446462598732906495ULL;
+  _board[All]      = 18446462598732906495ULL;
 
-  init_pawn_attacks();
-  init_knight_attacks();
-  init_king_attacks();
-  init_bishop_rel_occ();
-  init_rook_rel_occ();
+  init_attack_tables();
+  
+  // test as best as possible that the
+  // lookup tables are working correctly
+  
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  for (auto i = 0; i < 100000000; i ++) {
+
+    std::uniform_int_distribution<unsigned long long> dis(
+      std::numeric_limits<std::uint64_t>::min(),
+      std::numeric_limits<std::uint64_t>::max());
+
+    BitBoard occ = {dis(gen)}; 
+    Pos r_square = (Pos)(rand() % 64);
+
+    BitBoard b_a = get_bishop_attacks(r_square, occ);
+    BitBoard b_c = get_bishop_otf(r_square, occ.get());
+
+    BitBoard r_a = get_rook_attacks(r_square, occ);
+    BitBoard r_c = get_rook_otf(r_square, occ.get());
+
+    // bishop
+    if (b_a != b_c) {
+      std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
+      occ.print();
+      std::cout << "expected:\n";
+      b_c.print();
+      std::cout << "actual:\n";
+      b_a.print();
+      std::cout << "mask: \n";
+      bishop_masks[r_square].print();
+      assert(false);
+    }
+    // rook
+    if (r_a != r_c) {
+      std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
+      occ.print();
+      std::cout << "expected:\n";
+      r_c.print();
+      std::cout << "actual:\n";
+      r_a.print();
+      std::cout << "mask: \n";
+      rook_masks[r_square].print();
+      assert(false);
+    }
+  }
 }
 
-/*******************************************************
-* returns if the attack bitboard for the piece is set 
-* or not
-********************************************************/
-bool BoardManager::is_attack_valid(const Move& m) const
+/*******************************************************************************
+ *
+ * Method: is_attack_valid(const Move& m)
+ *
+ *******************************************************************************/
+bool BoardManager::is_attack_valid(const Move& /*m*/) const
 {
-  return _board[c(m.piece)].is_set(m.to);
+  return false;
 }
 
-/*******************************************************
-* Copy constructor 
-* 
-********************************************************/
-BoardManager::BoardManager(const BoardManager& b) {
-  // may need to copy attack and constant bbs over
-  _state = b._state;
-  for (int i = 0; i < 13; i++) {
-    _board[i] = b._board[i];
-  };
-}
-
-/*******************************************************
-* Populate the pawn attack bitboards 
-* 
-********************************************************/
+/*******************************************************************************
+ *
+ * Method: init_pawn_attacks()
+ *
+ *******************************************************************************/
 constexpr void BoardManager::init_pawn_attacks()
 {
-  const auto get_mask = [this](int side, int square) {
+  const auto get_mask = [](int side, int square) {
     uint64_t attacks {0ULL};
     uint64_t b {0ULL};
 
@@ -81,18 +120,19 @@ constexpr void BoardManager::init_pawn_attacks()
   };
 
   for (int i = 0; i < 64; i++) {
-    pawn_attacks[c(chess::Color::white)][i] = get_mask(0,i);
-    pawn_attacks[c(chess::Color::black)][i] = get_mask(1,i);
+    pawn_attacks[Color::white][i] = get_mask(0,i);
+    pawn_attacks[Color::black][i] = get_mask(1,i);
   }
 }
 
-/*******************************************************
-* Populate the knight attack bitboards 
-* 
-********************************************************/
+/*******************************************************************************
+ *
+ * Method: init_knight_attacks()
+ *
+ *******************************************************************************/
 constexpr void BoardManager::init_knight_attacks()
 {
-  const auto get_mask = [this](int square) {
+  const auto get_mask = [](int square) {
     uint64_t attacks {0ULL};
     uint64_t b {0ULL};
 
@@ -123,13 +163,14 @@ constexpr void BoardManager::init_knight_attacks()
   }
 }
 
-/*******************************************************
-* Populate the king attack bitboards 
-* 
-********************************************************/
+/*******************************************************************************
+ *
+ * Method: init_king_attacks()
+ * 
+ *******************************************************************************/
 constexpr void BoardManager::init_king_attacks()
 {
-  const auto get_mask = [this](int square) {
+  const auto get_mask = [](int square) {
     uint64_t attacks {0ULL};
     uint64_t b {0ULL};
 
@@ -162,13 +203,14 @@ constexpr void BoardManager::init_king_attacks()
   }
 }
 
-/*******************************************************
-* Populate the bishops relavent occupancy for each square 
-* 
-********************************************************/
+/*******************************************************************************
+ *
+ * Method: init_bishop_rel_occ()
+ *
+ *******************************************************************************/
 constexpr void BoardManager::init_bishop_rel_occ()
 {
-  const auto get_mask = [this] (int square) {
+  const auto get_mask = [] (int square) {
     uint64_t attacks {0ULL};
 
     int r = 0;
@@ -176,16 +218,16 @@ constexpr void BoardManager::init_bishop_rel_occ()
     int tr = square / 8;
     int tf = square % 8;
 
-    for (r = tr + 1, f = tf + 1; r <=6 && f<=6; r++, f++) {
+    for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
       attacks |= (1ULL << (r * 8 + f));
     }
-    for (r = tr - 1, f = tf + 1; r >= 1 && f<=6; r--, f++) {
+    for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
       attacks |= (1ULL << (r * 8 + f));
     }
-    for (r = tr + 1, f = tf - 1; r <=6 && f>=1; r++, f--) {
+    for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
       attacks |= (1ULL << (r * 8 + f));
     }
-    for (r = tr - 1, f = tf - 1; r >= 1 && f>=1; r--, f--) {
+    for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
       attacks |= (1ULL << (r * 8 + f));
     }
 
@@ -193,17 +235,18 @@ constexpr void BoardManager::init_bishop_rel_occ()
   };
 
   for (int i = 0; i < 64; i++) {
-    relavent_bishop_occ[i] = get_mask(i);
+    bishop_masks[i] = get_mask(i);
   }
 }
 
-/*******************************************************
-* Populate the rooks relavant occupancy for each square 
-* 
-********************************************************/
+/*******************************************************************************
+ *
+ * Method: init_rook_rel_occ()
+ *
+ *******************************************************************************/
 constexpr void BoardManager::init_rook_rel_occ()
-{  
-  const auto get_mask = [this] (int square) {
+{
+  const auto get_mask = [] (int square) {
     uint64_t attacks {0ULL};
 
     int r = 0;
@@ -228,15 +271,31 @@ constexpr void BoardManager::init_rook_rel_occ()
   };
 
   for (int i = 0; i < 64; i++) {
-    relavent_rook_occ[i] = get_mask(i);
+    rook_masks[i] = get_mask(i);
   }
 }
 
-/*******************************************************
-* Check if the given square is attacked by the given
-* side 
-********************************************************/
-bool BoardManager::is_square_attacked(int square, Color side) const
+/*******************************************************************************
+ *
+ * Method: init_attack_tables()
+ *
+ *******************************************************************************/
+constexpr void BoardManager::init_attack_tables()
+{
+  init_pawn_attacks();
+  init_knight_attacks();
+  init_king_attacks();
+  init_bishop_rel_occ();
+  init_rook_rel_occ();
+  init_slider_attacks();
+}
+
+/*******************************************************************************
+ *
+ * Method: is_square_attacked(int square, Color side)
+ *
+ *******************************************************************************/
+bool BoardManager::is_square_attacked(int /*square*/, Color side) const
 {
   // 'and' the relavant boards together and 'and' it with the sqaure
   if (side == Color::white) {
@@ -246,40 +305,137 @@ bool BoardManager::is_square_attacked(int square, Color side) const
   }
 }
 
-/*******************************************************
-* get the regular bishop attacks for the given square
-* 
-********************************************************/
-BitBoard BoardManager::get_bishop_otf(int square)
+/*******************************************************************************
+ *
+ * Method: get_bishop_attacks(int square, BitBoard occ)
+ *
+ *******************************************************************************/
+BitBoard BoardManager::get_bishop_attacks(Pos square, const BitBoard occ)
+{
+  auto occupancy = occ.get();
+
+  occupancy &= bishop_masks[square].get();
+  int index = (occupancy * bishop_magics[square]) >> (64ULL - bishop_relevant_bits[square]);
+    
+  return bishop_attacks[square][index];
+}
+
+/*******************************************************************************
+ *
+ * Method: get_rook_attacks(int square, BitBoard occ)
+ *
+ *******************************************************************************/
+BitBoard BoardManager::get_rook_attacks(Pos square, const BitBoard occ)
+{
+  auto occupancy = occ.get();
+
+  occupancy &= rook_masks[square].get();
+  int index = (occupancy * rook_magics[square]) >> (64ULL - rook_relevant_bits[square]);
+  return rook_attacks[square][index];;
+}
+
+/*******************************************************************************
+ *
+ * Method: get_rook_attacks(int square, BitBoard occ)
+ *
+ *******************************************************************************/
+BitBoard BoardManager::get_queen_attacks(Pos square, const BitBoard occ)
+{
+  return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
+}
+
+/*******************************************************************************
+ *
+ * Method: get_bishop_otf(int square, uint64_t occ)
+ *
+ *******************************************************************************/
+constexpr BitBoard BoardManager::get_bishop_otf(int square, uint64_t occ)
 {
   uint64_t attacks {0ULL};
 
-  int r = 0;
-  int f = 0;
+  int r, f;
   int tr = square / 8;
   int tf = square % 8;
 
-  for (r = tr + 1, f = tf + 1; r <=7 && f<=7; r++, f++) {
+  for (r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++) {
     attacks |= (1ULL << (r * 8 + f));
+    if ((1ULL << (r * 8 + f)) & occ) break;
   }
-  for (r = tr - 1, f = tf + 1; r >= 0 && f<=7; r--, f++) {
+  for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
     attacks |= (1ULL << (r * 8 + f));
+    if ((1ULL << (r * 8 + f)) & occ) break;
   }
-  for (r = tr + 1, f = tf - 1; r <=7 && f>=0; r++, f--) {
+  for (r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--) {
     attacks |= (1ULL << (r * 8 + f));
+    if ((1ULL << (r * 8 + f)) & occ) break;
   }
-  for (r = tr - 1, f = tf - 1; r >= 0 && f>=0; r--, f--) {
+  for (r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--) {
     attacks |= (1ULL << (r * 8 + f));
+    if ((1ULL << (r * 8 + f)) & occ) break;
   }
-
   return BitBoard(attacks);
 }
 
-/*******************************************************
-* get the regular rook attacks for the given square
-* 
-********************************************************/
-BitBoard BoardManager::get_rook_otf(int square)
+/*******************************************************************************
+ *
+ * Method: init_slider_attacks()
+ *
+ *******************************************************************************/
+constexpr void BoardManager::init_slider_attacks()
+{
+  auto set_occupancy = [this](uint64_t index, int bits_in_mask, BitBoard attack_mask)
+  {
+    uint64_t occupancy = 0ULL;
+
+    for (int count = 0; count < bits_in_mask; count++)
+    {
+        int square = *get_lsb_index(attack_mask);
+        attack_mask.clear(square);
+
+        if (index & (1ULL << count))
+        {
+          occupancy |= (1ULL << square);
+        }
+    }
+
+    return occupancy;
+  };
+
+  const auto populate_attack_tables = [this,set_occupancy](bool is_bishop) {
+
+    for (int square = 0; square < 64; square++)
+    {
+      BitBoard attack_mask = (is_bishop ? bishop_masks[square] : rook_masks[square]);
+      int relevant_bits_count = (is_bishop ? bishop_relevant_bits[square] : rook_relevant_bits[square]);
+      int occupancy_indicies = (1ULL << relevant_bits_count);
+
+      for (int index = 0; index < occupancy_indicies; index++)
+      {
+        uint64_t occupancy = set_occupancy(index, relevant_bits_count, attack_mask);
+        auto magic = (is_bishop ? bishop_magics[square] : rook_magics[square]);
+
+        int magic_index = (occupancy * magic) >> (64 - relevant_bits_count);
+
+        if (is_bishop) {
+          bishop_attacks[square][magic_index] = get_bishop_otf(square, occupancy);
+        }
+        else {
+          rook_attacks[square][magic_index] = get_rook_otf(square, occupancy);
+        }
+      }
+    }
+  };
+
+  populate_attack_tables(true); // bishop
+  populate_attack_tables(false); // rook
+}
+
+/*******************************************************************************
+ *
+ * Method: get_rook_otf(int square, uint64_t occ)
+ *
+ *******************************************************************************/
+constexpr BitBoard BoardManager::get_rook_otf(int square, uint64_t occ)
 {
   uint64_t attacks {0ULL};
 
@@ -290,15 +446,43 @@ BitBoard BoardManager::get_rook_otf(int square)
 
   for (r = tr + 1; r <= 7; r++) {
     attacks |= (1ULL << (r * 8 + tf));
+    if ((1ULL << (r * 8 + tf)) & occ) break;
   }
   for (r = tr - 1; r >= 0; r--) {
     attacks |= (1ULL << (r * 8 + tf));
+    if ((1ULL << (r * 8 + tf)) & occ) break;
   }
   for (f = tf + 1; f <= 7; f++) {
     attacks |= (1ULL << (tr * 8 + f));
+    if ((1ULL << (tr * 8 + f)) & occ) break;
   }
   for (f = tf - 1; f >= 0; f--) {
     attacks |= (1ULL << (tr * 8 + f));
+    if ((1ULL << (tr * 8 + f)) & occ) break;
   }
   return BitBoard(attacks);
+}
+
+/*******************************************************************************
+ *
+ * Method: get_lsb_index(BitBoard b)
+ *
+ *******************************************************************************/
+std::optional<int> BoardManager::get_lsb_index(BitBoard b)
+{
+  std::optional<int> ret;
+  uint64_t bb = b.get();
+  const auto count = [](uint64_t b){
+    uint32_t count = 0;
+    while (b) {
+      count++;
+      b &= b - 1;
+    }
+    return count;
+  };
+
+  if (bb) {
+    ret.emplace(count((bb & -bb) - 1));
+  }
+  return ret;
 }

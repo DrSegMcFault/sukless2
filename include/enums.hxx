@@ -1,7 +1,7 @@
 #pragma once
 
 namespace chess {
-  enum class Color {
+  enum Color {
     white,
     black
   };
@@ -15,7 +15,7 @@ namespace chess {
     Draw
   };
 
-  enum class Piece {
+  enum Piece {
     w_pawn, w_knight, w_bishop,
     w_rook, w_queen,  w_king,
     b_pawn, b_knight, b_bishop,
