@@ -12,7 +12,8 @@ add_executable(chess)
 target_sources(chess PRIVATE src/main.cpp
                              src/BoardManager.cpp
                              src/Game.cpp
-                             src/App.cpp)
+                             src/App.cpp
+                             src/util.cpp)
 
 
 target_include_directories(chess PRIVATE include)

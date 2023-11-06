@@ -1,6 +1,4 @@
-#include "Bitboard.hxx"
 #include "BoardManager.hxx"
-#include "Bitboard.hxx"
 #include "Game.hxx"
 
 using namespace chess;
