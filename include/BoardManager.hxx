@@ -2,7 +2,7 @@
 
 #include <optional>
 
-#include "BitBoard.hxx"
+#include "Bitboard.hxx"
 #include "enums.hxx"
 
 namespace chess {
@@ -10,14 +10,15 @@ namespace chess {
 class BoardManager
 {
   private:
-    BitBoard _board[13];
+    // collection of all Bitboards
+    Bitboard _board[13];
 
-    // pre-calculated attack bitboards
-    BitBoard pawn_attacks[2][64];
-    BitBoard knight_attacks[64];
-    BitBoard king_attacks[64];
-    BitBoard bishop_attacks[64][512] = {{BitBoard{0ULL}}};
-    BitBoard rook_attacks[64][4096] = {{BitBoard{0ULL}}};
+    // pre-calculated attack Bitboards
+    Bitboard pawn_attacks[2][64];
+    Bitboard knight_attacks[64];
+    Bitboard king_attacks[64];
+    Bitboard bishop_attacks[64][512] = {{Bitboard{0ULL}}};
+    Bitboard rook_attacks[64][4096] = {{Bitboard{0ULL}}};
 
     // https://www.chessprogramming.org/Magic_Bitboards
     // under the 'How it Works' section
@@ -88,7 +89,8 @@ class BoardManager
       0x4010011029020020ULL
     }; 
 
-    BitBoard bishop_masks[64];
+    // attack masks per square
+    Bitboard bishop_masks[64];
 
     uint64_t rook_magics[64] {
       0x8a80104000800020ULL,
@@ -157,11 +159,11 @@ class BoardManager
       0x1004081002402ULL
     };
     
-    // attack masks for each squarex
-    BitBoard rook_masks[64];
+    // attack masks for each square
+    Bitboard rook_masks[64];
 
     // bitcounts for each mask
-    uint64_t bishop_relevant_bits[64] =
+    uint64_t bishop_bits[64] =
     { 6,5,5,5,5,5,5,6,
       5,5,5,5,5,5,5,5,
       5,5,7,7,7,7,5,5,
@@ -172,7 +174,7 @@ class BoardManager
       6,5,5,5,5,5,5,6 };
 
     // bitcounts for each mask
-    uint64_t rook_relevant_bits[64] = 
+    uint64_t rook_bits[64] = 
     { 12,11,11,11,11,11,11,12,
       11,10,10,10,10,10,10,11,
       11,10,10,10,10,10,10,11,
@@ -188,17 +190,19 @@ class BoardManager
     static constexpr uint64_t not_hg_file = 4557430888798830399ULL;
     static constexpr uint64_t not_ab_file = 18229723555195321596ULL;
 
+    // initialization functions
+    constexpr void init_attack_tables();
     constexpr void init_pawn_attacks();
     constexpr void init_knight_attacks();
     constexpr void init_king_attacks();
-    constexpr void init_bishop_rel_occ();
-    constexpr void init_rook_rel_occ();
-    constexpr void init_attack_tables();
+    constexpr void init_bishop_masks();
+    constexpr void init_rook_masks();
     constexpr void init_slider_attacks();
-    constexpr BitBoard get_bishop_otf(int square, uint64_t occ);
-    constexpr BitBoard get_rook_otf(int sqaure, uint64_t occ);
+    constexpr Bitboard calc_bishop_attacks(int square, uint64_t occ);
+    constexpr Bitboard calc_rook_attacks(int sqaure, uint64_t occ);
 
-    std::optional<int> get_lsb_index(BitBoard b);
+    // least significant bit index
+    std::optional<int> get_lsb_index(Bitboard b);
 
     // flags for the game state
     struct State {
@@ -216,20 +220,18 @@ class BoardManager
     ~BoardManager() = default;
     BoardManager& operator=(const BoardManager&) = default;
 
-    BitBoard get_bishop_attacks(Pos square, const BitBoard occ);
-    BitBoard get_rook_attacks(Pos square, const BitBoard occ);
-    BitBoard get_queen_attacks(Pos square, const BitBoard occ);
+    // attack retrieval functions
+    Bitboard get_bishop_attacks(Pos square, Bitboard occ);
+    Bitboard get_rook_attacks(Pos square, Bitboard occ);
+    Bitboard get_queen_attacks(Pos square, Bitboard occ);
 
     bool is_square_attacked(int square, Color side) const;
     bool is_attack_valid(const Move& m) const;
 
+    // convienence functions
     const auto& operator[](Piece piece) { return _board[piece]; }
-
-    auto get_piece_count(Piece piece) const { return _board[piece].count(); }
-
+    auto piece_count(Piece piece) const { return _board[piece].count(); }
     void print(Piece p = Piece::All) { _board[p].print(); }
-
-    const BitBoard& all() { return _board[Piece::All]; }
+    const Bitboard& all() { return _board[Piece::All]; }
 };
 } // namespace chess
-

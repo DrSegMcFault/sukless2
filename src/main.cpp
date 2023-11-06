@@ -1,12 +1,9 @@
-#include "BitBoard.hxx"
+#include "Bitboard.hxx"
 #include "BoardManager.hxx"
-#include "BitBoard.hxx"
+#include "Bitboard.hxx"
 #include "Game.hxx"
-#include <vector>
-#include <cassert>
 
 using namespace chess;
-
 
 int main() {
   std::cout << "Starting chess engine...\n";
