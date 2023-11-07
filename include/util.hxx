@@ -3,6 +3,7 @@
 
 namespace chess {
   using Bitboard = uint64_t;
+
   enum Color {
     white,
     black
@@ -43,37 +44,44 @@ namespace chess {
     Color color;
   };
 
-  // cool thing i didnt know about inline is that
-  // it allows the function to be definined in multiple
-  // translation units without causing duplicate symbol linker
-  // errors
-  // set the bit at index i
-  inline void set(int i, Bitboard& b) { b |= (1ULL << i); }
-
-  // clear the bit at index i
-  inline void clear(int i, Bitboard& b) { b &= ~(1ULL << i); }
-
-  // is the bit at index i set
-  inline bool is_set(int i, const Bitboard& b) {
-    return (b & (1ULL << i));
-  }
-
-  // move the bit at index 'from' to index 'to'
-  inline void move(int from, int to, Bitboard& b) {
-    clear(from, b);
-    set(to, b);
-  }
-
-  // count the number of set bits
-  inline uint32_t count(Bitboard b) {
-    uint32_t count = 0;
-    while (b) {
-      count++;
-      b &= b - 1;
-    }
-    return count;
-  }
-
   void print_board(const Bitboard& b);
-  int get_lsb_index(Bitboard b);
-}
+
+  namespace util::bits {
+
+    // index of least significant bit
+    int get_lsb_index(Bitboard b);
+
+    // set the bit at index i
+    inline void set(int i, Bitboard& b) { b |= (1ULL << i); }
+
+    // clear the bit at index i
+    inline void clear(int i, Bitboard& b) { b &= ~(1ULL << i); }
+
+    // is the bit at index i set
+    inline bool is_set(int i, const Bitboard& b) {
+      return (b & (1ULL << i));
+    }
+
+    // move the bit at index 'from' to index 'to'
+    inline void move(int from, int to, Bitboard& b) {
+      clear(from, b);
+      set(to, b);
+    }
+
+    // count the number of set bits
+    inline uint32_t count(Bitboard b) {
+      #if defined (__GNUC__) || defined (__clang__)
+        return __builtin_popcountll(b);
+      #else
+        int count = 0;
+        while(b) [
+          count++;
+          b &= b - 1;
+        ]
+        return count;
+      #endif
+    }
+
+  } // namespace util
+
+} // namespace chess
