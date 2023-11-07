@@ -62,7 +62,7 @@ std::optional<int> chess::util::fen::algebraic_to_index(const std::string& alg)
 /*******************************************************************************
  *
  * Function: piece_from_char(const std::string& alg)
- * converts algebraic notation to the associated index
+ *
  *******************************************************************************/
 chess::Piece chess::util::fen::piece_from_char(char c) {
   using enum Piece;

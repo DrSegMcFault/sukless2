@@ -224,6 +224,7 @@ class BoardManager
     static constexpr Bitboard not_h_file = 9187201950435737471ULL;
     static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
     static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
+    const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     // after move update functions
     Bitboard calc_white_occupancy();
@@ -235,7 +236,11 @@ class BoardManager
     // attack retrieval functions
     Bitboard get_bishop_attacks(Pos square, Bitboard occ) const;
     Bitboard get_rook_attacks(Pos square, Bitboard occ) const;
-    Bitboard get_queen_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_queen_attacks(Pos square, Bitboard occ) const
+    {
+      return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
+    }
+
     Bitboard get_pseudo_legal_attack_bitboard(Piece p, int square) const;
 
     // initialization functions
