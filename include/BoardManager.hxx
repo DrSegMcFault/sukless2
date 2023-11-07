@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <iostream>
 #include "util.hxx"
 
 namespace chess {
@@ -39,6 +38,14 @@ class BoardManager
     std::array<Bitboard, 64> king_attacks;
     std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
     std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
+
+    // flags for the game state
+    struct State {
+      bool white_can_castle = true;
+      bool black_can_castle = true;
+      // target enpassant square
+      int en_passant = -1;
+    } _state;
 
     // https://www.chessprogramming.org/Magic_Bitboards
     // under the 'How it Works' section
@@ -178,7 +185,7 @@ class BoardManager
       0x2006104900a0804ULL,
       0x1004081002402ULL
     };
-    
+
     // attack masks for each square
     std::array<Bitboard, 64> rook_masks;
 
@@ -223,15 +230,7 @@ class BoardManager
 
     void init_from_fen(const std::string& fen);
 
-    // test
+    // tests
     void test_attack_lookup();
-
-    // flags for the game state
-    struct State {
-      bool white_can_castle = true;
-      bool black_can_castle = true;
-      // target enpassant square
-      int en_passant = -1;
-    } _state;
 };
 } // namespace chess
