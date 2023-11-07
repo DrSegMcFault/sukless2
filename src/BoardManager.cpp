@@ -10,11 +10,8 @@ using namespace chess;
  *
  *******************************************************************************/
 BoardManager::BoardManager() {
-  using enum Piece;
-
   init_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   init_attack_tables();
-  print_board(pawn_attacks[Color::white][0]);
 }
 
 /*******************************************************************************
