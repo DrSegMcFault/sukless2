@@ -3,51 +3,45 @@
 
 using namespace chess;
 
+/*******************************************************************************
+ *
+ * Method: Game()
+ *
+ *******************************************************************************/
 Game::Game()
 {
 }
 
-/*******************************************************
-* Attempts to make the given move. Returns a MoveResult
-*
-********************************************************/
-MoveResult Game::try_move(const Move& /*m*/)
+/*******************************************************************************
+ *
+ * Method: try_move(int square)
+ *
+ *******************************************************************************/
+MoveResult Game::try_move(const Move& m)
 {
-  // check if it is within the pieces psuedo-legal moves
+  if (!is_move_pseudo_legal(m)) {
+    return MoveResult::Illegal;
+  }
 
   return MoveResult::Success;
 }
 
-/*******************************************************
-* returns whether or not the given move is pseudo-legal.
-*
-********************************************************/
-bool Game::is_move_pseudo_legal(const Move& m)
+/*******************************************************************************
+ *
+ * Method: is_move_pseudo_legal(const Move& m)
+ *
+ *******************************************************************************/
+bool Game::is_move_pseudo_legal(const Move& m) const
 {
-  return _mgr.is_attack_valid(m);
+  return util::contains(get_pseudo_legal_moves(m.from), m.to);
 }
 
-/*******************************************************
-* Converts algebraic notation ex. ("a1") to the
-* associated index. In this impl, a1 = 0, h8 = 63
-********************************************************/
-int Game::alg_to_index(const std::string& alg) const 
+/*******************************************************************************
+ *
+ * Method: get_pseudo_legal_moves(int square, Piece p)
+ * returns the squares the piece can go to 
+ *******************************************************************************/
+std::vector<int> Game::get_pseudo_legal_moves(int square) const
 {
-  if (alg.length() != 2) {
-    std::cerr << "Invalid algebraic notation: " << 
-      alg << std::endl;
-    return -1;
-  }
-
-  const char& file = alg[0];
-  const char& rank = alg[1];
-
-  if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
-      std::cerr << "Invalid algebraic notation: "
-        << alg << std::endl;
-      return -1;
-  }
-
-  int index = (rank - '1') * 8 + (file - 'a');
-  return index;
+  return _mgr.get_pseudo_legal_moves(square);
 }

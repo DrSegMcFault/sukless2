@@ -275,7 +275,7 @@ constexpr void BoardManager::init_rook_masks()
  * Method: calc_bishop_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ)
+constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ) const
 {
   Bitboard attacks {0ULL};
 
@@ -308,7 +308,7 @@ constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ)
  * Method: calc_rook_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-constexpr Bitboard BoardManager::calc_rook_attacks(int square, Bitboard occ)
+constexpr Bitboard BoardManager::calc_rook_attacks(int square, Bitboard occ) const
 {
   Bitboard attacks {0ULL};
 
@@ -335,6 +335,34 @@ constexpr Bitboard BoardManager::calc_rook_attacks(int square, Bitboard occ)
   }
 
   return attacks;
+}
+
+/*******************************************************************************
+ *
+ * Method: calc_white_occupancy()
+ *
+ *******************************************************************************/
+Bitboard BoardManager::calc_white_occupancy() {
+  return (_board[w_pawn] |
+          _board[w_knight] |
+          _board[w_bishop] |
+          _board[w_rook] |
+          _board[w_queen] |
+          _board[w_king]);
+}
+
+/*******************************************************************************
+ *
+ * Method: calc_black_occupancy()
+ *
+ *******************************************************************************/
+Bitboard BoardManager::calc_black_occupancy() {
+  return (_board[b_pawn] |
+          _board[b_knight] |
+          _board[b_bishop] |
+          _board[b_rook] |
+          _board[b_queen] |
+          _board[b_king]);
 }
 
 /*******************************************************************************
@@ -455,25 +483,6 @@ void BoardManager::init_from_fen(const std::string &fen)
     b = 0ULL;
   }
 
-  auto piece_from_char = [](char c) {
-    using enum Piece;
-    switch (c) {
-      case 'P': return w_pawn;
-      case 'N': return w_knight;
-      case 'B': return w_bishop;
-      case 'R': return w_rook;
-      case 'Q': return w_queen;
-      case 'K': return w_king;
-      case 'p': return b_pawn;
-      case 'n': return b_knight;
-      case 'b': return b_bishop;
-      case 'r': return b_rook;
-      case 'q': return b_queen;
-      case 'k': return b_king;
-      default: throw std::runtime_error("invalid FEN string");
-    }
-  };
-
   // parse the FEN string
   uint32_t square = 0;
   for (auto c : fen) {
@@ -485,34 +494,107 @@ void BoardManager::init_from_fen(const std::string &fen)
     } else if (c == ' ') {
       break;
     }
-    auto piece = piece_from_char(c);
+    auto piece = util::fen::piece_from_char(c);
     util::bits::set(square, _board[piece]);
     square++;
   }
-  // set the all pieces board
-  _board[All] = _board[w_pawn] |
-                _board[w_knight] |
-                _board[w_bishop] |
-                _board[w_rook] |
-                _board[w_queen] |
-                _board[w_king] |
-                _board[b_pawn] |
-                _board[b_knight] |
-                _board[b_bishop] |
-                _board[b_rook] |
-                _board[b_queen] |
-                _board[b_king];
+
+  _board[w_all] = calc_white_occupancy();
+  _board[b_all] = calc_black_occupancy();
+  _board[All] = calc_global_occupancy();
+
   print();
 }
 
 /*******************************************************************************
  *
- * Method: is_attack_valid(const Move& m)
+ * Method: square_to_piece(int square)
  *
  *******************************************************************************/
-bool BoardManager::is_attack_valid(const Move& /*m*/) const
+std::optional<Piece> BoardManager::square_to_piece(int square) const
 {
-  return false;
+  std::optional<Piece> ret;
+  for (int p = static_cast<int>(w_pawn); p <= static_cast<int>(b_king); p++) {
+    if (util::bits::is_set(square, _board[p])) {
+      ret.emplace(static_cast<Piece>(p));
+      return ret;
+    }
+  }
+
+  return ret;
+}
+
+/*******************************************************************************
+ *
+ * Method: get_pseudo_legal_attack_bitboard()
+ *
+ *******************************************************************************/
+Bitboard BoardManager::get_pseudo_legal_attack_bitboard(Piece p, int square) const
+{
+  switch (p) {
+    case w_pawn:
+      return pawn_attacks[Color::white][square] & ~(_board[w_all]);
+
+    case b_pawn:
+      return pawn_attacks[Color::black][square] & ~(_board[b_all]);
+
+    case w_knight:
+      return knight_attacks[square] & ~(_board[w_all]);
+
+    case b_knight:
+      return knight_attacks[square] & ~(_board[b_all]);
+
+    case w_bishop:
+      return get_bishop_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[w_all]);
+
+    case b_bishop:
+      return get_bishop_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[b_all]);
+
+    case w_rook:
+      return get_rook_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[w_all]);
+
+    case b_rook:
+      return get_rook_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[b_all]);
+
+    case w_queen:
+      return get_queen_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[w_all]);
+
+    case b_queen:
+      return get_queen_attacks(static_cast<Pos>(square), _board[All]) & ~(_board[b_all]);
+
+    case w_king:
+      return king_attacks[square] & ~(_board[w_all]);
+
+    case b_king:
+      return king_attacks[square] & ~(_board[b_all]);
+
+    case b_all:
+    case w_all:
+    case All:
+      return 0ULL;
+   }
+}
+
+/*******************************************************************************
+ *
+ * Method: get_pseudo_legal_moves(int square)
+ *
+ *******************************************************************************/
+std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
+{
+  std::vector<int> ret(55);
+
+  if (auto piece = square_to_piece(square)) {
+    if (auto board = get_pseudo_legal_attack_bitboard(*piece, square)) {
+      while (board) {
+        int index = util::bits::get_lsb_index(board);
+        util::bits::clear(index, board);
+        ret.push_back(index);
+      }
+    }
+  }
+
+  return ret;
 }
 
 /*******************************************************************************
@@ -526,7 +608,7 @@ void BoardManager::test_attack_lookup()
   std::mt19937 gen(rd());
 
   for (auto i = 0; i < 100000000; i ++) {
-    std::uniform_int_distribution<unsigned long long> dis(
+    std::uniform_int_distribution<uint64_t> dis(
       std::numeric_limits<std::uint64_t>::min(),
       std::numeric_limits<std::uint64_t>::max());
 

@@ -1,21 +1,23 @@
 #pragma once
 #include "BoardManager.hxx"
 #include <string>
+#include <vector>
 
 namespace chess {
 
 class Game {
   private:
-    BoardManager _mgr{};
+    BoardManager _mgr {};
 
   public:
 
-    Game(); 
+    Game();
 
     MoveResult try_move(const Move& m);
 
-    bool is_move_pseudo_legal(const Move& m);
+    bool is_move_pseudo_legal(const Move& m) const;
 
-    int alg_to_index(const std::string &alg) const;
+    // for gui purposes. returns the squares the piece can go to
+    std::vector<int> get_pseudo_legal_moves(int square) const;
 };
 }

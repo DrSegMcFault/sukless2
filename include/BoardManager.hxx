@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <optional>
 #include "util.hxx"
 
 namespace chess {
@@ -14,23 +15,30 @@ class BoardManager
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
 
-    // attack retrieval functions
-    Bitboard get_bishop_attacks(Pos square, Bitboard occ) const;
-    Bitboard get_rook_attacks(Pos square, Bitboard occ) const;
-    Bitboard get_queen_attacks(Pos square, Bitboard occ) const;
-
+    std::optional<Piece> square_to_piece(int square) const;
+    std::vector<int> get_pseudo_legal_moves(int square) const;
     bool is_square_attacked(int square, Color side) const;
-    bool is_attack_valid(const Move& m) const;
 
     // convienence functions
-    const auto& operator[](Piece piece) const { return _board[piece]; }
-    auto piece_count(Piece piece) const { return util::bits::count(_board[piece]); }
-    void print(Piece p = Piece::All) const { chess::print_board(_board[p]); }
-    const Bitboard& all() const { return _board[Piece::All]; }
+    const auto& operator[](Piece piece) const {
+      return _board[piece];
+    }
+
+    auto piece_count(Piece piece = Piece::All) const {
+       return util::bits::count(_board[piece]);
+    }
+
+    void print(Piece p = Piece::All) const {
+      chess::print_board(_board[p]);
+    }
+
+    const Bitboard& all() const {
+      return _board[Piece::All];
+    }
 
   private:
     // collection of all Bitboards
-    std::array<Bitboard, 13> _board;
+    std::array<Bitboard, 15> _board;
 
     // pre-calculated attack Bitboards
     std::array<std::array<Bitboard, 64>, 2> pawn_attacks;
@@ -191,31 +199,44 @@ class BoardManager
 
     // bitcounts for each mask
     const std::array<Bitboard, 64> bishop_bits =
-    { 6,5,5,5,5,5,5,6,
-      5,5,5,5,5,5,5,5,
-      5,5,7,7,7,7,5,5,
-      5,5,7,9,9,7,5,5,
-      5,5,7,9,9,7,5,5,
-      5,5,7,7,7,7,5,5,
-      5,5,5,5,5,5,5,5,
-      6,5,5,5,5,5,5,6 };
+    { 6, 5, 5, 5, 5, 5, 5, 6,
+      5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 7, 7, 7, 7, 5, 5,
+      5, 5, 7, 9, 9, 7, 5, 5,
+      5, 5, 7, 9, 9, 7, 5, 5,
+      5, 5, 7, 7, 7, 7, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5,
+      6, 5, 5, 5, 5, 5, 5, 6 };
 
     // bitcounts for each mask
     const std::array<Bitboard, 64> rook_bits = 
-    { 12,11,11,11,11,11,11,12,
-      11,10,10,10,10,10,10,11,
-      11,10,10,10,10,10,10,11,
-      11,10,10,10,10,10,10,11,
-      11,10,10,10,10,10,10,11,
-      11,10,10,10,10,10,10,11,
-      11,10,10,10,10,10,10,11,
-      12,11,11,11,11,11,11,12 };
+    { 12, 11, 11, 11, 11, 11, 11, 12,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      12, 11, 11, 11, 11, 11, 11, 12 };
 
     // useful constants
     static constexpr Bitboard not_a_file = 18374403900871474942ULL;
     static constexpr Bitboard not_h_file = 9187201950435737471ULL;
     static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
     static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
+
+    // after move update functions
+    Bitboard calc_white_occupancy();
+    Bitboard calc_black_occupancy();
+    Bitboard calc_global_occupancy() {
+      return (calc_white_occupancy() | calc_black_occupancy());
+    }
+
+    // attack retrieval functions
+    Bitboard get_bishop_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_rook_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_queen_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_pseudo_legal_attack_bitboard(Piece p, int square) const;
 
     // initialization functions
     constexpr void init_attack_tables();
@@ -225,9 +246,8 @@ class BoardManager
     constexpr void init_bishop_masks();
     constexpr void init_rook_masks();
     constexpr void init_slider_attacks();
-    constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ);
-    constexpr Bitboard calc_rook_attacks(int sqaure, Bitboard occ);
-
+    constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ) const;
+    constexpr Bitboard calc_rook_attacks(int sqaure, Bitboard occ) const;
     void init_from_fen(const std::string& fen);
 
     // tests
