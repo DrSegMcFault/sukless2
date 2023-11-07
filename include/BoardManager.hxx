@@ -8,6 +8,27 @@ namespace chess {
 
 class BoardManager
 {
+  public:
+    BoardManager();
+    BoardManager(const std::string& fen);
+    BoardManager(const BoardManager&) noexcept = default;
+    BoardManager(BoardManager&&) = delete;
+    ~BoardManager() = default;
+
+    // attack retrieval functions
+    Bitboard get_bishop_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_rook_attacks(Pos square, Bitboard occ) const;
+    Bitboard get_queen_attacks(Pos square, Bitboard occ) const;
+
+    bool is_square_attacked(int square, Color side) const;
+    bool is_attack_valid(const Move& m) const;
+
+    // convienence functions
+    const auto& operator[](Piece piece) const { return _board[piece]; }
+    auto piece_count(Piece piece) const { return util::bits::count(_board[piece]); }
+    void print(Piece p = Piece::All) const { chess::print_board(_board[p]); }
+    const Bitboard& all() const { return _board[Piece::All]; }
+
   private:
     // collection of all Bitboards
     std::array<Bitboard, 13> _board;
@@ -196,10 +217,14 @@ class BoardManager
     constexpr void init_king_attacks();
     constexpr void init_bishop_masks();
     constexpr void init_rook_masks();
-    constexpr void init_sliderook_actualttacks();
-    void init_from_fen(const std::string& fen);
+    constexpr void init_slider_attacks();
     constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ);
     constexpr Bitboard calc_rook_attacks(int sqaure, Bitboard occ);
+
+    void init_from_fen(const std::string& fen);
+
+    // test
+    void test_attack_lookup();
 
     // flags for the game state
     struct State {
@@ -208,27 +233,5 @@ class BoardManager
       // target enpassant square
       int en_passant = -1;
     } _state;
-
-  public:
-
-    BoardManager();
-    BoardManager(const std::string& fen);
-    BoardManager(const BoardManager&) noexcept = default;
-    BoardManager(BoardManager&&) = delete;
-    ~BoardManager() = default;
-
-    // attack retrieval functions
-    Bitboard get_bishop_attacks(Pos square, Bitboard occ);
-    Bitboard get_rook_attacks(Pos square, Bitboard occ);
-    Bitboard get_queen_attacks(Pos square, Bitboard occ);
-
-    bool is_square_attacked(int square, Color side) const;
-    bool is_attack_valid(const Move& m) const;
-
-    // convienence functions
-    const auto& operator[](Piece piece) { return _board[piece]; }
-    auto piece_count(Piece piece) const { return count(_board[piece]); }
-    void print(Piece p = Piece::All) { chess::print_board(_board[p]); }
-    const Bitboard& all() { return _board[Piece::All]; }
 };
 } // namespace chess

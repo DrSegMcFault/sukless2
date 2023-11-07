@@ -6,7 +6,7 @@ void chess::print_board(const Bitboard& b) {
       int square = rank * 8 + file;
       if (!file)
         std::cout << "  " << rank + 1 << " ";
-      std::cout << is_set(square, b) << " ";
+      std::cout << util::bits::is_set(square, b) << " ";
     }
     if (rank != 0) {
       std::cout << "\n";
@@ -15,7 +15,7 @@ void chess::print_board(const Bitboard& b) {
   std::cout << "\n    a b c d e f g h\n\n" << std::endl;
 }
 
-int chess::get_lsb_index(Bitboard b)
+int chess::util::bits::get_lsb_index(Bitboard b)
 {
   if (b) {
     return count((b & -b) - 1);
