@@ -75,7 +75,7 @@ namespace chess {
       }
 
       // count the number of set bits
-      inline uint32_t count(Bitboard b) {
+      inline int count(Bitboard b) {
         #if defined (__GNUC__) || defined (__clang__)
           return __builtin_popcountll(b);
         #else
