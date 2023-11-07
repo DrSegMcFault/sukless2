@@ -10,7 +10,7 @@ using namespace chess;
  *
  *******************************************************************************/
 BoardManager::BoardManager() {
-  init_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  init_from_fen(starting_position);
   init_attack_tables();
 }
 
@@ -393,36 +393,6 @@ Bitboard BoardManager::get_rook_attacks(Pos square, Bitboard occupancy) const
 
 /*******************************************************************************
  *
- * Method: get_rook_attacks(int square, Bitboard occ)
- *
- *******************************************************************************/
-Bitboard BoardManager::get_queen_attacks(Pos square, Bitboard occ) const
-{
-  // i was getting a warning for bitwise oring the
-  // bishop and rook get attacks methods, so, this was born
-  Bitboard ret{0ULL};
-
-  // bishop lookup
-  auto b_occ = occ;
-  b_occ &= bishop_masks[square];
-  int b_index = 
-    (b_occ * bishop_magics[square]) >> (64ULL - bishop_bits[square]);
-
-  ret = bishop_attacks[square][b_index];
-
-  // rook lookup
-  auto r_occ = occ;
-  r_occ &= rook_masks[square];
-  int r_index = 
-    (r_occ * rook_magics[square]) >> (64ULL - rook_bits[square]);
-
-  ret |= rook_attacks[square][r_index];
-
-  return ret;
-}
-
-/*******************************************************************************
- *
  * Method: is_square_attacked(int square, Color side)
  * is the given square attacked by the given side
  *******************************************************************************/
@@ -502,8 +472,6 @@ void BoardManager::init_from_fen(const std::string &fen)
   _board[w_all] = calc_white_occupancy();
   _board[b_all] = calc_black_occupancy();
   _board[All] = calc_global_occupancy();
-
-  print();
 }
 
 /*******************************************************************************
@@ -637,6 +605,7 @@ void BoardManager::test_attack_lookup()
 
       assert(false);
     }
+
     if (rook_actual != rook_calculated) {
       std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
       print_board(occ);
@@ -648,6 +617,7 @@ void BoardManager::test_attack_lookup()
       print_board(rook_masks[r_square]);
       assert(false);
     }
+
     if (queen_actual != queen_calculated) {
       std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
       print_board(occ);
