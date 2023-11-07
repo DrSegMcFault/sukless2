@@ -234,9 +234,9 @@ class BoardManager
     }
 
     // attack retrieval functions
-    Bitboard get_bishop_attacks(Pos square, Bitboard occ) const;
-    Bitboard get_rook_attacks(Pos square, Bitboard occ) const;
-    Bitboard get_queen_attacks(Pos square, Bitboard occ) const
+    Bitboard get_bishop_attacks(int square, Bitboard occ) const;
+    Bitboard get_rook_attacks(int square, Bitboard occ) const;
+    Bitboard get_queen_attacks(int square, Bitboard occ) const
     {
       return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
     }
@@ -252,7 +252,7 @@ class BoardManager
     constexpr void init_rook_masks();
     constexpr void init_slider_attacks();
     constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ) const;
-    constexpr Bitboard calc_rook_attacks(int sqaure, Bitboard occ) const;
+    constexpr Bitboard calc_rook_attacks(int square, Bitboard occ) const;
     void init_from_fen(const std::string& fen);
 
     // tests

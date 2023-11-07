@@ -53,7 +53,7 @@ std::optional<int> chess::util::fen::algebraic_to_index(const std::string& alg)
   if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
       std::cerr << "Invalid algebraic notation: "
         << alg << std::endl;
-      return -1;
+      return index;
   }
   index.emplace((rank - '1') * 8 + (file - 'a'));
   return index;

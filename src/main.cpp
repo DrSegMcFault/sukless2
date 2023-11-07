@@ -1,5 +1,6 @@
 #include "BoardManager.hxx"
 #include "Game.hxx"
+#include <iostream>
 
 using namespace chess;
 
