@@ -80,10 +80,10 @@ namespace chess {
           return __builtin_popcountll(b);
         #else
           int count = 0;
-          while(b) [
+          while(b) {
             count++;
             b &= b - 1;
-          ]
+          }
           return count;
         #endif
       }
