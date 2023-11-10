@@ -436,6 +436,11 @@ bool BoardManager::is_square_attacked(int square, Color side) const
     return true;
   }
 
+  if (king_attacks[square] & _board[(side == Color::white) ? w_king : b_king] )
+  {
+    return true;
+  }
+
   return false;
 }
 
@@ -493,7 +498,7 @@ std::optional<Piece> BoardManager::square_to_piece(int square) const
 
 /*******************************************************************************
  *
- * Method: get_pseudo_legal_attack_bitboard()
+ * Method: get_pseudo_legal_attack_bitboard(Piece p, int square)
  *
  *******************************************************************************/
 Bitboard BoardManager::get_pseudo_legal_attack_bitboard(Piece p, int square) const
