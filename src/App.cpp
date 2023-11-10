@@ -1,6 +1,7 @@
 #include "App.hxx"
 #include <optional>
 #include <iostream>
+#include <cassert>
 
 /******************************************************************************
  *
@@ -203,26 +204,26 @@ void App::render_all_pieces() {
  *****************************************************************************/
 void App::display_possible_moves()
 {
- SDL_RenderClear(_renderer);
+  SDL_RenderClear(_renderer);
 
- render_background();
- render_all_pieces();
+  render_background();
+  render_all_pieces();
 
- SDL_Rect src = { 0 ,0, 30, 30};
+  SDL_Rect src = { 0 ,0, 30, 30};
  
- for (auto move : _possible_moves) {
+  for (auto move : _possible_moves) {
 
-   SDL_Rect dest = {
-     (move % 8) * (_screenW / 8) + 30,
-     _screenH - ((move / 8 + 1) * (_screenH / 8)) + 30, 
-     30,
-     30
-   };
+    SDL_Rect dest = {
+      (move % 8) * (_screenW / 8) + 30,
+      _screenH - ((move / 8 + 1) * (_screenH / 8)) + 30, 
+      30,
+      30
+    };
 
-   SDL_RenderCopy(_renderer, _circleTexture, &src, &dest);
- }
+    SDL_RenderCopy(_renderer, _circleTexture, &src, &dest);
+  }
 
- SDL_RenderPresent(_renderer);
+  SDL_RenderPresent(_renderer);
 }
 
 /******************************************************************************
@@ -232,26 +233,27 @@ void App::display_possible_moves()
  *****************************************************************************/
 void App::render_background()
 {
-	bool white = true;
-	SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
+  bool white = true;
+  SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
 
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < 8; j++) {
-			if (white) {
-				SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-			} else {
-				SDL_SetRenderDrawColor(_renderer, 83, 132, 172, 255);
-			}
+  for (int i = 0; i < 8; i++) {
+	for (int j = 0; j < 8; j++) {
+      if (white) {
+        SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
+	  } else { 	
+        SDL_SetRenderDrawColor(_renderer, 83, 132, 172, 255);
+	  }
 
-			white = !white;
-			SDL_Rect rectangle = { i * _screenW / 8,
-								   j * _screenH / 8,
-								   _screenW / 8,
-								   _screenH / 8 };
-			SDL_RenderFillRect(_renderer, &rectangle);
-		}
-		white = !white;
+      white = !white;
+      SDL_Rect rectangle = { i * _screenW / 8,
+                             j * _screenH / 8,
+                             _screenW / 8,
+                             _screenH / 8 };
+      SDL_RenderFillRect(_renderer, &rectangle);
 	}
+
+    white = !white;
+  }
 }
 
 /******************************************************************************
@@ -282,7 +284,7 @@ SDL_Texture* App::load_texture(const char* filepath)
   auto* img = IMG_Load(filepath);
 
   if (!img) {
-    return nullptr;
+    assert(false);
   }
   SDL_Texture* txt = SDL_CreateTextureFromSurface(_renderer, img);
   
