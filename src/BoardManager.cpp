@@ -12,6 +12,7 @@ using namespace chess;
 BoardManager::BoardManager() {
   init_from_fen(starting_position);
   init_attack_tables();
+  init_slider_attacks();
 }
 
 /*******************************************************************************
@@ -26,7 +27,6 @@ constexpr void BoardManager::init_attack_tables()
   init_king_attacks();
   init_bishop_masks();
   init_rook_masks();
-  init_slider_attacks();
 }
 
 /*******************************************************************************
@@ -34,7 +34,7 @@ constexpr void BoardManager::init_attack_tables()
  * Method: init_slider_attacks()
  *
  *******************************************************************************/
-constexpr void BoardManager::init_slider_attacks()
+void BoardManager::init_slider_attacks()
 {
   const auto populate_attack_tables = [this](bool is_bishop) {
     // generates the ith permutation of the attack mask
@@ -46,10 +46,10 @@ constexpr void BoardManager::init_slider_attacks()
       for (int count = 0; count < bits_in_mask; count++)
       {
         int square = util::bits::get_lsb_index(attack_mask);
-        util::bits::clear(square, attack_mask);
+        clear_bit(square, attack_mask);
 
-        if (util::bits::is_set(count, index)) {
-          util::bits::set(square, occupancy);
+        if (is_set(count, index)) {
+          set_bit(square, occupancy);
         }
       }
 
@@ -94,7 +94,7 @@ constexpr void BoardManager::init_pawn_attacks()
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
-    util::bits::set(square, b);
+    set_bit(square, b);
 
     // white
     if (side == white) {
@@ -103,9 +103,10 @@ constexpr void BoardManager::init_pawn_attacks()
 
       if ((b << 9) & not_a_file)
         attacks |= (b << 9);
+
     } else {
       if ((b >> 7) & not_a_file)
-         attacks |= (b >> 7);
+        attacks |= (b >> 7);
 
       if ((b >> 9) & not_h_file)
         attacks |= (b >> 9);
@@ -130,7 +131,7 @@ constexpr void BoardManager::init_knight_attacks()
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
-    util::bits::set(square, b);
+    set_bit(square, b);
 
     if ((b << 17) & not_a_file)
       attacks |= b << 17;
@@ -168,7 +169,7 @@ constexpr void BoardManager::init_king_attacks()
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
-    util::bits::set(square, b);
+    set_bit(square, b);
 
     if ((b << 8))
       attacks |= b << 8;
@@ -212,16 +213,16 @@ constexpr void BoardManager::init_bishop_masks()
     int tf = square % 8;
 
     for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
-      util::bits::set(r * 8 + f, attacks);
+      set_bit(r * 8 + f, attacks);
     }
     for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
-      util::bits::set(r * 8 + f, attacks);
+      set_bit(r * 8 + f, attacks);
     }
     for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
-      util::bits::set(r * 8 + f, attacks);
+      set_bit(r * 8 + f, attacks);
     }
     for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
-      util::bits::set(r * 8 + f, attacks);
+      set_bit(r * 8 + f, attacks);
     }
 
     return attacks;
@@ -248,16 +249,16 @@ constexpr void BoardManager::init_rook_masks()
     int tf = square % 8;
 
     for (r = tr + 1; r <= 6; r++) {
-      util::bits::set(r * 8 + tf, attacks);
+      set_bit(r * 8 + tf, attacks);
     }
     for (r = tr - 1; r >= 1; r--) {
-      util::bits::set(r * 8 + tf, attacks);
+      set_bit(r * 8 + tf, attacks);
     }
     for (f = tf + 1; f <= 6; f++) {
-      util::bits::set(tr * 8 + f, attacks);
+      set_bit(tr * 8 + f, attacks);
     }
     for (f = tf - 1; f >= 1; f--) {
-      util::bits::set(tr * 8 + f, attacks);
+      set_bit(tr * 8 + f, attacks);
     }
 
     return attacks;
@@ -282,20 +283,20 @@ constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ) c
   int tf = square % 8;
 
   for (r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++) {
-    util::bits::set(r * 8 + f, attacks);
-    if (util::bits::is_set(r * 8 + f, occ)) break;
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
   }
   for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
-    util::bits::set(r * 8 + f, attacks);
-    if (util::bits::is_set(r * 8 + f, occ)) break;
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
   }
   for (r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--) {
-    util::bits::set(r * 8 + f, attacks);
-    if (util::bits::is_set(r * 8 + f, occ)) break;
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
   }
   for (r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--) {
-    util::bits::set(r * 8 + f, attacks);
-    if (util::bits::is_set(r * 8 + f, occ)) break;
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
   }
 
   return attacks;
@@ -316,20 +317,20 @@ constexpr Bitboard BoardManager::calc_rook_attacks(int square, Bitboard occ) con
   int tf = square % 8;
 
   for (r = tr + 1; r <= 7; r++) {
-    util::bits::set(r * 8 + tf, attacks);
-    if (util::bits::is_set(r * 8 + tf, occ)) break;
+    set_bit(r * 8 + tf, attacks);
+    if (is_set(r * 8 + tf, occ)) break;
   }
   for (r = tr - 1; r >= 0; r--) {
-    util::bits::set(r * 8 + tf, attacks);
-    if (util::bits::is_set(r * 8 + tf, occ)) break;
+    set_bit(r * 8 + tf, attacks);
+    if (is_set(r * 8 + tf, occ)) break;
   }
   for (f = tf + 1; f <= 7; f++) {
-    util::bits::set(tr * 8 + f, attacks);
-    if (util::bits::is_set(tr * 8 + f, occ)) break;
+    set_bit(tr * 8 + f, attacks);
+    if (is_set(tr * 8 + f, occ)) break;
   }
   for (f = tf - 1; f >= 0; f--) {
-    util::bits::set(tr * 8 + f, attacks);
-    if (util::bits::is_set(tr * 8 + f, occ)) break;
+    set_bit(tr * 8 + f, attacks);
+    if (is_set(tr * 8 + f, occ)) break;
   }
 
   return attacks;
@@ -463,7 +464,7 @@ void BoardManager::init_from_fen(const std::string &fen)
       break;
     }
     auto piece = util::fen::piece_from_char(c);
-    util::bits::set(square, _board[piece]);
+    set_bit(square, _board[piece]);
     square++;
   }
 
@@ -481,7 +482,7 @@ std::optional<Piece> BoardManager::square_to_piece(int square) const
 {
   std::optional<Piece> ret;
   for (int p = static_cast<int>(w_pawn); p <= static_cast<int>(b_king); p++) {
-    if (util::bits::is_set(square, _board[p])) {
+    if (is_set(square, _board[p])) {
       ret.emplace(static_cast<Piece>(p));
       return ret;
     }
@@ -554,7 +555,7 @@ std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
     if (auto board = get_pseudo_legal_attack_bitboard(*piece, square)) {
       while (board) {
         int index = util::bits::get_lsb_index(board);
-        util::bits::clear(index, board);
+        clear_bit(index, board);
         ret.push_back(index);
       }
     }

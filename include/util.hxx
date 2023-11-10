@@ -57,22 +57,10 @@ namespace chess {
       // index of least significant bit
       int get_lsb_index(Bitboard b);
 
-      // set the bit at index i
-      inline void set(int i, Bitboard& b) { b |= (1ULL << i); }
-
-      // clear the bit at index i
-      inline void clear(int i, Bitboard& b) { b &= ~(1ULL << i); }
-
-      // is the bit at index i set
-      inline bool is_set(int i, const Bitboard& b) {
-        return (b & (1ULL << i));
-      }
-
-      // move the bit at index 'from' to index 'to'
-      inline void move(int from, int to, Bitboard& b) {
-        clear(from, b);
-        set(to, b);
-      }
+      #define set_bit(i, b) (b) |= (1ULL << (i))
+      #define clear_bit(i, b) (b) &= ~(1ULL << (i))
+      #define is_set(i, b) (b) & (1ULL << (i))
+      #define move_bit(from, to, b) do { clear_bit(from, b); set_bit(to, b); } while(0)
 
       // count the number of set bits
       inline int count(Bitboard b) {
@@ -80,7 +68,7 @@ namespace chess {
           return __builtin_popcountll(b);
         #else
           int count = 0;
-          while(b) {
+          while (b) {
             count++;
             b &= b - 1;
           }

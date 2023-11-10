@@ -11,7 +11,7 @@ void chess::print_board(const Bitboard& b) {
       int square = rank * 8 + file;
       if (!file)
         std::cout << "  " << rank + 1 << " ";
-      std::cout << util::bits::is_set(square, b) << " ";
+      std::cout << (is_set(square, b)) << " ";
     }
     if (rank != 0) {
       std::cout << "\n";
