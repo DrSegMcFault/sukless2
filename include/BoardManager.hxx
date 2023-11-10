@@ -18,6 +18,7 @@ class BoardManager
     std::optional<Piece> square_to_piece(int square) const;
     std::vector<int> get_pseudo_legal_moves(int square) const;
     bool is_square_attacked(int square, Color side) const;
+    std::array<std::optional<Piece>,64> get_current_board() const;
 
     // convienence functions
     const auto& operator[](Piece piece) const {
