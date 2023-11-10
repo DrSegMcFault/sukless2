@@ -453,10 +453,10 @@ void BoardManager::init_from_fen(const std::string &fen)
   }
 
   // parse the FEN string
-  auto square = 0;
+  auto square = 63;
   for (auto c : fen) {
     if (isdigit(c)) {
-      square += atoi(&c);
+      square -= atoi(&c);
       continue;
     } else if (c == '/') {
       continue;
@@ -465,7 +465,7 @@ void BoardManager::init_from_fen(const std::string &fen)
     }
     auto piece = util::fen::piece_from_char(c);
     set_bit(square, _board[piece]);
-    square++;
+    square--;
   }
 
   _board[w_all] = calc_white_occupancy();
@@ -549,7 +549,8 @@ Bitboard BoardManager::get_pseudo_legal_attack_bitboard(Piece p, int square) con
  *******************************************************************************/
 std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
 {
-  std::vector<int> ret(55);
+  std::vector<int> ret;
+  ret.reserve(55);
 
   if (auto piece = square_to_piece(square)) {
     if (auto board = get_pseudo_legal_attack_bitboard(*piece, square)) {
@@ -562,6 +563,20 @@ std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
   }
 
   return ret;
+}
+
+/*******************************************************************************
+ *
+ * Method: get_current_board()
+ *
+ *******************************************************************************/
+std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
+{
+  std::array<std::optional<Piece>, 64> board;
+  for (auto i = 0; i < 64; i++) {
+    board[i] = square_to_piece(i);
+  }
+  return board;
 }
 
 /*******************************************************************************

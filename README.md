@@ -15,3 +15,7 @@ improvement over sukless1. Sukless2 will also have a far superior AI to sukless1
 ## Future Plans
 The hope is that sukless2 will eventually be seperated into client and server
 applications
+
+### Building sukless2
+1. clone vcpkg from microsoft
+2. ./vcpkg install sdl2 sdl2-image sdl2-mixer

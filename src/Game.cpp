@@ -45,3 +45,13 @@ std::vector<int> Game::get_pseudo_legal_moves(int square) const
 {
   return _mgr.get_pseudo_legal_moves(square);
 }
+
+/*******************************************************************************
+ *
+ * Method: get_current_board()
+ * 
+ *******************************************************************************/
+std::array<std::optional<Piece>, 64> Game::get_current_board() const
+{
+  return _mgr.get_current_board();
+}
