@@ -143,9 +143,9 @@ void App::run()
          } else {
             // TODO: attempt the move
             if (_game->try_move({clicked.value(), square}) == MoveResult::Success) {
-              clicked.reset();
               _possible_moves.clear();
             }
+            clicked.reset();
             display();
         }
         break;

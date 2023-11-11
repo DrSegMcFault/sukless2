@@ -19,6 +19,10 @@ Game::Game()
  *******************************************************************************/
 MoveResult Game::try_move(const Move& m)
 {
+  // need to rethink this
+  // probably just want to return the result of _mgr.make_move()
+  // there is the additional issue of
+  // the the move not being fully encoded here
   if (!is_move_pseudo_legal(m)) {
     return MoveResult::Illegal;
   }

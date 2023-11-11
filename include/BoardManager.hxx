@@ -2,6 +2,7 @@
 
 #include <array>
 #include <optional>
+#include <unordered_map>
 #include "util.hxx"
 
 namespace chess {
@@ -53,8 +54,7 @@ class BoardManager
     std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
     std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
-    // this will end up being a map
-    std::vector<uint32_t> _move_list;
+    std::unordered_map<uint32_t, bool> _move_list;
 
     // flags for the game state
     struct State {

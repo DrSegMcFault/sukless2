@@ -479,6 +479,7 @@ void BoardManager::init_from_fen(const std::string &fen)
   _board[All] = calc_global_occupancy();
 
   _state.side_to_move = (fen.find("w") != std::string::npos) ? Color::white : Color::black;
+  generate_moves();
 
   // TODO: castling rights, en_passant
   _state.en_passant_target = -1;
@@ -563,14 +564,9 @@ std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
 {
   std::vector<int> ret;
   ret.reserve(55);
-
-  if (auto piece = square_to_piece(square)) {
-    if (auto board = get_pseudo_legal_attack_bitboard(*piece, square)) {
-      while (board) {
-        int index = *util::bits::get_lsb_index(board);
-        clear_bit(index, board);
-        ret.push_back(index);
-      }
+  for (const auto& [key, value] : _move_list) {
+    if (get_move_source(key) == square) {
+      ret.push_back(get_move_target(key));
     }
   }
 
@@ -601,8 +597,9 @@ inline void BoardManager::add_move(uint32_t source, uint32_t target,
                             uint32_t capture, uint32_t double_push,
                             uint32_t enpassant, uint32_t castling)
 {
-  _move_list.push_back(
-    encode_move(source, target, piece, promotion, capture, double_push, enpassant, castling));
+  _move_list.insert(
+    std::make_pair<uint32_t, bool>(
+      encode_move(source, target, piece, promotion, capture, double_push, enpassant, castling), true));
 }
 
 /*******************************************************************************
@@ -642,6 +639,8 @@ MoveResult BoardManager::make_move(uint32_t move) {
   //   _board = board_copy;
   //   _state = state_copy;
   // }
+  _move_list.clear();
+  generate_moves();
   return result;
 }
 
@@ -941,7 +940,7 @@ void BoardManager::generate_bishop_moves(Color side_to_move)
 
   while (board) {
     source_square = *util::bits::get_lsb_index(board);
-    attacks = get_bishop_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+    attacks = get_bishop_attacks(source_square, _board[All]) & ~(_board[(side_to_move == Color::white) ? w_all : b_all]);
 
     while (attacks) {
       target_square = *util::bits::get_lsb_index(attacks);
@@ -973,7 +972,7 @@ void BoardManager::generate_rook_moves(Color side_to_move)
 
   while (board) {
     source_square = *util::bits::get_lsb_index(board);
-    attacks = get_rook_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+    attacks = get_rook_attacks(source_square, _board[All]) & ~(_board[(side_to_move == Color::white) ? w_all : b_all]);
 
     while (attacks) {
       target_square = *util::bits::get_lsb_index(attacks);
@@ -989,7 +988,6 @@ void BoardManager::generate_rook_moves(Color side_to_move)
 
     clear_bit(source_square, board);
   }
-
 }
 
 /*******************************************************************************
@@ -1006,7 +1004,7 @@ void BoardManager::generate_queen_moves(Color side_to_move)
 
   while (board) {
     source_square = *util::bits::get_lsb_index(board);
-    attacks = get_queen_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+    attacks = get_queen_attacks(source_square, _board[All]) & ~(_board[(side_to_move == Color::white) ? w_all : b_all]);
 
     while (attacks) {
       target_square = *util::bits::get_lsb_index(attacks);
