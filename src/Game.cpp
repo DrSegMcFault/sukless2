@@ -23,6 +23,8 @@ MoveResult Game::try_move(const Move& m)
     return MoveResult::Illegal;
   }
 
+  _mgr.make_move(encode_move(m.from, m.to, _mgr.square_to_piece(m.from).value(), 0, 0, 0, 0, 0));
+
   return MoveResult::Success;
 }
 

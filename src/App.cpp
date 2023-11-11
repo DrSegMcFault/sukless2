@@ -30,7 +30,7 @@ App::App()
   }
 
   if (!_window || !_renderer ) {
-    std::cout << "ERROR IN INIT \n";
+    assert(false);
   }
 
   _move_sound = Mix_LoadWAV("resources/place_down.wav"); 
@@ -142,7 +142,11 @@ void App::run()
 
          } else {
             // TODO: attempt the move
-            clicked.reset(); 
+            if (_game->try_move({clicked.value(), square}) == MoveResult::Success) {
+              clicked.reset();
+              _possible_moves.clear();
+            }
+            display();
         }
         break;
       }
@@ -187,13 +191,12 @@ void App::display()
  * 
  *****************************************************************************/
 void App::render_all_pieces() {
-  // TODO: change index based on viewing perspective
-  int index = 63;
+  int index = 0;
   for (auto piece : _game->get_current_board()) {
     if (piece) {
       render_piece(p_textures.at(piece.value()), index);
     }
-    index--;
+    index++;
   }
 }
 
@@ -237,12 +240,12 @@ void App::render_background()
   SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
 
   for (int i = 0; i < 8; i++) {
-	for (int j = 0; j < 8; j++) {
+	  for (int j = 0; j < 8; j++) {
       if (white) {
         SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-	  } else { 	
+	    } else {
         SDL_SetRenderDrawColor(_renderer, 83, 132, 172, 255);
-	  }
+	    }
 
       white = !white;
       SDL_Rect rectangle = { i * _screenW / 8,
@@ -250,7 +253,7 @@ void App::render_background()
                              _screenW / 8,
                              _screenH / 8 };
       SDL_RenderFillRect(_renderer, &rectangle);
-	}
+	  }
 
     white = !white;
   }
@@ -263,14 +266,12 @@ void App::render_background()
  *****************************************************************************/
 void App::render_piece(SDL_Texture *texture, int square)
 {
-  auto x = square / 8;
-  auto y = square % 8;
   SDL_Rect src = {0, 0, 80, 80};
-  SDL_Rect dest = { 
-                    _screenW / 8 * y + 5,
-		            _screenH / 8 * x + 5,
-			        _screenW / 8 - 10,
-			        _screenH / 8 - 10};
+  SDL_Rect dest = {
+                    (square % 8) * (_screenW / 8) + 5,
+                    _screenH - ((square / 8 + 1) * (_screenH / 8)) + 5,
+			              _screenW / 8 - 10,
+			              _screenH / 8 - 10};
   SDL_RenderCopy(_renderer, texture, &src, &dest);
 }
 

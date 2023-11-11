@@ -15,10 +15,15 @@ class BoardManager
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
 
+    MoveResult make_move(uint32_t move);
+
     std::optional<Piece> square_to_piece(int square) const;
+
     std::vector<int> get_pseudo_legal_moves(int square) const;
+
     bool is_square_attacked(int square, Color side) const;
-    std::array<std::optional<Piece>,64> get_current_board() const;
+
+    std::array<std::optional<Piece>, 64> get_current_board() const;
 
     // convienence functions
     const auto& operator[](Piece piece) const {
@@ -48,12 +53,15 @@ class BoardManager
     std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
     std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
+    // this will end up being a map
+    std::vector<uint32_t> _move_list;
+
     // flags for the game state
     struct State {
-      bool white_can_castle = true;
-      bool black_can_castle = true;
+      uint32_t castling_rights;
+      Color side_to_move;
       // target enpassant square
-      int en_passant = -1;
+      uint32_t en_passant_target;
     } _state;
 
     // https://www.chessprogramming.org/Magic_Bitboards
@@ -123,7 +131,7 @@ class BoardManager
       0x6000020202d0240ULL,
       0x8918844842082200ULL,
       0x4010011029020020ULL
-    }; 
+    };
 
     // attack masks per square
     std::array<Bitboard, 64> bishop_masks;
@@ -210,7 +218,7 @@ class BoardManager
       6, 5, 5, 5, 5, 5, 5, 6 };
 
     // bitcounts for each mask
-    const std::array<Bitboard, 64> rook_bits = 
+    const std::array<Bitboard, 64> rook_bits =
     { 12, 11, 11, 11, 11, 11, 11, 12,
       11, 10, 10, 10, 10, 10, 10, 11,
       11, 10, 10, 10, 10, 10, 10, 11,
@@ -255,6 +263,26 @@ class BoardManager
     constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ) const;
     constexpr Bitboard calc_rook_attacks(int square, Bitboard occ) const;
     void init_from_fen(const std::string& fen);
+
+
+    // move generation
+    inline void add_move(uint32_t source, uint32_t target,
+                  uint32_t piece, uint32_t promotion,
+                  uint32_t capture, uint32_t double_push,
+                  uint32_t enpassant, uint32_t castling);
+
+    void generate_moves();
+    void generate_white_moves();
+    void generate_black_moves();
+    void generate_white_pawn_moves();
+    void generate_black_pawn_moves();
+    void generate_white_castling_moves();
+    void generate_black_castling_moves();
+    void generate_king_moves(Color side_to_move);
+    void generate_knight_moves(Color side_to_move);
+    void generate_bishop_moves(Color side_to_move);
+    void generate_rook_moves(Color side_to_move);
+    void generate_queen_moves(Color side_to_move);
 
     // tests
     void test_attack_lookup();

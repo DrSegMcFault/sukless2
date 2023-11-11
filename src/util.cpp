@@ -11,7 +11,7 @@ void chess::print_board(const Bitboard& b) {
       int square = rank * 8 + file;
       if (!file)
         std::cout << "  " << rank + 1 << " ";
-      std::cout << (is_set(square, b)) << " ";
+      std::cout << ((is_set(square, b)) ? "1" : "0") << " ";
     }
     if (rank != 0) {
       std::cout << "\n";
@@ -23,15 +23,16 @@ void chess::print_board(const Bitboard& b) {
 /*******************************************************************************
  *
  * Function: chess::util::bits::get_lsb_index(Bitboard b)
- *
+ * i may remove the optional return type, as this function thus far has only
+ * been called with a non-zero Bitboard
  *******************************************************************************/
-int chess::util::bits::get_lsb_index(Bitboard b)
+std::optional<int> chess::util::bits::get_lsb_index(Bitboard b)
 {
+  std::optional<int> index;
   if (b) {
-    return count((b & -b) - 1);
-  } else {
-    throw std::runtime_error("get_lsb_index: bitboard is empty");
+    return index.emplace(count((b & -b) - 1));
   }
+  return index;
 }
 
 /*******************************************************************************
@@ -81,5 +82,32 @@ chess::Piece chess::util::fen::piece_from_char(char c) {
     case 'k': return b_king;
     default:
       throw std::runtime_error("in function: piece_from_char()::invalid FEN string");
+  }
+}
+
+/*******************************************************************************
+ *
+ * Function: char_from_piece(Piece p)
+ *
+ *******************************************************************************/
+char chess::util::fen::char_from_piece(Piece p)
+{
+  switch (p) {
+    case w_pawn: return 'P';
+    case w_knight: return 'N';
+    case w_bishop: return 'B';
+    case w_rook: return 'R';
+    case w_queen: return 'Q';
+    case w_king: return 'K';
+    case b_pawn: return 'p';
+    case b_knight: return 'n';
+    case b_bishop: return 'b';
+    case b_rook: return 'r';
+    case b_queen: return 'q';
+    case b_king: return 'k';
+    case b_all:
+    case w_all:
+    case All:
+      return ' ';
   }
 }

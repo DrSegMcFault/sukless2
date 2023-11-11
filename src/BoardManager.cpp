@@ -13,6 +13,7 @@ BoardManager::BoardManager() {
   init_from_fen(starting_position);
   init_attack_tables();
   init_slider_attacks();
+  _move_list.reserve(256);
 }
 
 /*******************************************************************************
@@ -45,7 +46,7 @@ void BoardManager::init_slider_attacks()
 
       for (int count = 0; count < bits_in_mask; count++)
       {
-        int square = util::bits::get_lsb_index(attack_mask);
+        int square = *util::bits::get_lsb_index(attack_mask);
         clear_bit(square, attack_mask);
 
         if (is_set(count, index)) {
@@ -458,7 +459,7 @@ void BoardManager::init_from_fen(const std::string &fen)
   }
 
   // parse the FEN string
-  auto square = 63;
+  uint32_t square = 63;
   for (auto c : fen) {
     if (isdigit(c)) {
       square -= atoi(&c);
@@ -476,6 +477,12 @@ void BoardManager::init_from_fen(const std::string &fen)
   _board[w_all] = calc_white_occupancy();
   _board[b_all] = calc_black_occupancy();
   _board[All] = calc_global_occupancy();
+
+  _state.side_to_move = (fen.find("w") != std::string::npos) ? Color::white : Color::black;
+
+  // TODO: castling rights, en_passant
+  _state.en_passant_target = -1;
+  _state.castling_rights = -1;
 }
 
 /*******************************************************************************
@@ -505,10 +512,10 @@ Bitboard BoardManager::get_pseudo_legal_attack_bitboard(Piece p, int square) con
 {
   switch (p) {
     case w_pawn:
-      return pawn_attacks[Color::white][square] & ~(_board[w_all]);
+      return pawn_attacks[Color::white][square] & (_board[b_all]);
 
     case b_pawn:
-      return pawn_attacks[Color::black][square] & ~(_board[b_all]);
+      return pawn_attacks[Color::black][square] & (_board[w_all]);
 
     case w_knight:
       return knight_attacks[square] & ~(_board[w_all]);
@@ -560,7 +567,7 @@ std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
   if (auto piece = square_to_piece(square)) {
     if (auto board = get_pseudo_legal_attack_bitboard(*piece, square)) {
       while (board) {
-        int index = util::bits::get_lsb_index(board);
+        int index = *util::bits::get_lsb_index(board);
         clear_bit(index, board);
         ret.push_back(index);
       }
@@ -582,6 +589,470 @@ std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
     board[i] = square_to_piece(i);
   }
   return board;
+}
+
+/*******************************************************************************
+ *
+ * Method: add_move()
+ *
+ *******************************************************************************/
+inline void BoardManager::add_move(uint32_t source, uint32_t target,
+                            uint32_t piece, uint32_t promotion,
+                            uint32_t capture, uint32_t double_push,
+                            uint32_t enpassant, uint32_t castling)
+{
+  _move_list.push_back(
+    encode_move(source, target, piece, promotion, capture, double_push, enpassant, castling));
+}
+
+/*******************************************************************************
+ *
+ * Method: make_move(uint32_t move)
+ *
+ *******************************************************************************/
+MoveResult BoardManager::make_move(uint32_t move) {
+
+  MoveResult result = MoveResult::Illegal;
+
+  // copy the board and state in case of illegal move
+  std::array<Bitboard, 15> board_copy = _board;
+  State state_copy = _state;
+
+  // parse the move
+  uint32_t source_square = get_move_source(move);
+  uint32_t target_square = get_move_target(move);
+  Piece piece = static_cast<Piece>(get_move_piece(move));
+  bool was_promotion = (get_move_promoted(move) != 0);
+  Piece promoted_to = static_cast<Piece>(get_move_promoted(move));
+  bool capture = static_cast<bool>(get_move_capture(move));
+  bool double_push = static_cast<bool>(get_move_double(move));
+  bool en_passant = static_cast<bool>(get_move_enpassant(move));
+  int castling = get_move_castling(move);
+
+  // for now, unconditionally make the move
+  move_bit(source_square, target_square, _board[piece]);
+
+  _board[w_all] = calc_white_occupancy();
+  _board[b_all] = calc_black_occupancy();
+  _board[All] = calc_global_occupancy();
+
+  // if the move was not illegal the new board will be set
+  // to the copy
+  // if (result != MoveResult::Illegal) {
+  //   _board = board_copy;
+  //   _state = state_copy;
+  // }
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_moves()
+{
+  switch (_state.side_to_move) {
+    case Color::white:
+      generate_white_moves();
+      break;
+    case Color::black:
+      generate_black_moves();
+      break;
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_white_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_white_moves()
+{
+  generate_white_pawn_moves();
+  generate_white_castling_moves();
+  generate_knight_moves(Color::white);
+  generate_bishop_moves(Color::white);
+  generate_rook_moves(Color::white);
+  generate_queen_moves(Color::white);
+  generate_king_moves(Color::white);
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_black_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_black_moves()
+{
+  generate_black_pawn_moves();
+  generate_black_castling_moves();
+  generate_knight_moves(Color::black);
+  generate_bishop_moves(Color::black);
+  generate_rook_moves(Color::black);
+  generate_queen_moves(Color::black);
+  generate_king_moves(Color::black);
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_white_pawn_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_white_pawn_moves() 
+{
+  Bitboard board = _board[w_pawn];
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    // this is a white pawn push of 1 square
+    target_square = source_square + 8;
+
+    // if the target square is on board and not occupied
+    if (target_square <= Pos::h8 && !(is_set(target_square, _board[All]))) {
+      // promotion
+      if (source_square >= Pos::a7 && source_square <= Pos::h7) {
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_queen, 0,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_rook,  0,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_bishop,0,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_knight,0,0,0,0);
+
+      } else { // one move forward, no promotion
+        add_move(source_square, target_square, Piece::w_pawn, 0, 0,0,0,0);
+
+        if ((source_square >= Pos::a2 && source_square <= Pos::h2) &&
+            !is_set(target_square + 8, _board[All]))
+        {
+           // two square push
+           add_move(source_square, target_square + 8, Piece::w_pawn, 0, 0,1,0,0);
+        }
+      }
+    }
+
+    auto attacks = pawn_attacks[Color::white][source_square] & _board[b_all];
+
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+
+      // promotion
+      if (source_square >= Pos::a7 && source_square <= Pos::h7) {
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_queen, 1,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_rook,  1,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_bishop,1,0,0,0);
+        add_move(source_square, target_square, Piece::w_pawn, Piece::w_knight,1,0,0,0);
+
+      } else { // capture, no promotion
+        add_move(source_square, target_square, Piece::w_pawn, 0, 1,0,0,0);
+      }
+
+      clear_bit(target_square, attacks);
+    }
+
+    if (_state.en_passant_target != -1) {
+      auto en_passant_attacks = pawn_attacks[Color::white][source_square] & (1ULL << _state.en_passant_target);
+      if (en_passant_attacks) {
+        auto attack_square = *util::bits::get_lsb_index(en_passant_attacks);
+        add_move(source_square, attack_square, Piece::w_pawn, 0,1,0,1,0);
+      }
+    }
+
+    clear_bit(source_square, board); 
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_black_pawn_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_black_pawn_moves() 
+{
+   Bitboard board = _board[b_pawn];
+   int source_square = -1;
+   int target_square = -1;
+
+   while (board) {
+     source_square = *util::bits::get_lsb_index(board);
+     // this is a black pawn push of 1 square
+     target_square = source_square - 8;
+
+     // if the target square is on board and not occupied
+     if (target_square >= Pos::a1 && !is_set(target_square, _board[All])) {
+       // promotion
+       if (source_square >= Pos::a2 && source_square <= Pos::h2) {
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_queen, 0,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_rook,  0,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_bishop,0,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_knight,0,0,0,0);
+
+       } else { // one move forward, no promotion
+         add_move(source_square, target_square, Piece::b_pawn, 0, 0,0,0,0);
+
+         if ((source_square >= Pos::a7 && source_square <= Pos::h7) &&
+             !is_set(target_square - 8, _board[All]))
+         {
+           // two square push
+           add_move(source_square, target_square - 8, Piece::b_pawn, 0, 0,1,0,0);
+         }
+       }
+     }
+
+     auto attacks = pawn_attacks[Color::black][source_square] & _board[w_all];
+
+     while (attacks) {
+       target_square = *util::bits::get_lsb_index(attacks);
+
+       // promotion
+       if (source_square >= Pos::a2 && source_square <= Pos::h2) {
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_queen, 1,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_rook,  1,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_bishop,1,0,0,0);
+         add_move(source_square, target_square, Piece::b_pawn, Piece::b_knight,1,0,0,0);
+       } else { // capture, no promotion
+         add_move(source_square, target_square, Piece::b_pawn, 0, 1,0,0,0);
+       }
+       clear_bit(target_square, attacks);
+     }
+
+     if (_state.en_passant_target != -1) {
+       auto en_passant_attacks = pawn_attacks[Color::black][source_square] & (1ULL << _state.en_passant_target);
+       if (en_passant_attacks) {
+         auto attack_square = *util::bits::get_lsb_index(en_passant_attacks);
+         add_move(source_square, attack_square, Piece::b_pawn, 0,1,0,1,0);
+       }
+     }
+     clear_bit(source_square, board);
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_white_castling_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_white_castling_moves() 
+{
+  // kingside castle
+  if (_state.castling_rights & 0b0001) {
+    if (!is_set(Pos::f1, _board[All]) &&
+        !is_set(Pos::g1, _board[All]))
+    {
+      if (!is_square_attacked(Pos::e1, Color::black) &&
+          !is_square_attacked(Pos::f1, Color::black))
+      {
+        add_move(Pos::e1, Pos::g1, Piece::w_king, 0,0,0,0,1);
+       }
+     }
+   }
+
+   // queenside castle
+   if (_state.castling_rights & 0b0010) {
+     if (!(is_set(Pos::d1, _board[All])) &&
+         !(is_set(Pos::c1, _board[All])) &&
+         !(is_set(Pos::b1, _board[All])))
+     {
+       if (!is_square_attacked(Pos::e1, Color::black) &&
+           !is_square_attacked(Pos::d1, Color::black))
+       {
+         add_move(Pos::e1, Pos::c1, Piece::w_king, 0,0,0,0,1);
+       }
+     }
+   }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_black_castling_moves()
+ *
+ *******************************************************************************/
+void BoardManager::generate_black_castling_moves() 
+{
+   // castling moves king side
+   if (_state.castling_rights & 0b0100) {
+     if (!is_set(Pos::f8, _board[All]) &&
+         !is_set(Pos::g8, _board[All]))
+     {
+       if (!is_square_attacked(Pos::e8, Color::white) &&
+           !is_square_attacked(Pos::f8, Color::white))
+       {
+         add_move(Pos::e8, Pos::g8, Piece::b_king, 0,0,0,0,1);
+       }
+     }
+   }
+
+   // queenside
+   if (_state.castling_rights & 0b1000) {
+     if (!is_set(Pos::d8, _board[All]) &&
+         !is_set(Pos::c8, _board[All]) &&
+         !is_set(Pos::b8, _board[All]))
+     {
+       if (!is_square_attacked(Pos::e8, Color::white) &&
+           !is_square_attacked(Pos::d8, Color::white))
+       {
+         add_move(Pos::e8, Pos::c8, Piece::b_king, 0,0,0,0,1);
+       }
+     }
+   }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_knight_moves(Color side_to_move)
+ *
+ *******************************************************************************/
+void BoardManager::generate_knight_moves(Color side_to_move) {
+  Bitboard board = _board[(side_to_move == Color::white) ? w_knight : b_knight];
+  Bitboard attacks = 0ULL;
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    attacks = knight_attacks[source_square] & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+
+       // is not capture?
+       if (!is_set(target_square, _board[side_to_move == Color::white ? w_all : b_all])) {
+         add_move(source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 0,0,0,0);
+       } else {
+         add_move(source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 1,0,0,0);
+       }
+
+      clear_bit(target_square, attacks);
+    }
+    clear_bit(source_square, board);
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_bishop_moves(Color side_to_move)
+ *
+ *******************************************************************************/
+void BoardManager::generate_bishop_moves(Color side_to_move) 
+{
+  Bitboard board = _board[(side_to_move == Color::white) ? w_bishop : b_bishop];
+  Bitboard attacks = 0ULL;
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    attacks = get_bishop_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+      // is not caputure?
+      if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_bishop : b_bishop, 0, 0,0,0,0);
+      } else { 
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_bishop : b_bishop, 0, 1,0,0,0);
+      }
+
+      clear_bit(target_square, attacks);
+    }
+
+    clear_bit(source_square, board);
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_rook_moves(Color side_to_move)
+ *
+ *******************************************************************************/
+void BoardManager::generate_rook_moves(Color side_to_move) 
+{
+  Bitboard board = _board[(side_to_move == Color::white) ? w_rook : b_rook];
+  Bitboard attacks = 0ULL;
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    attacks = get_rook_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+      // is not caputure?
+      if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_rook : b_rook, 0, 0,0,0,0);
+      } else { 
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_rook : b_rook, 0, 1,0,0,0);
+      }
+
+      clear_bit(target_square, attacks);
+    }
+
+    clear_bit(source_square, board);
+  }
+
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_queen_moves(Color side_to_move)
+ *
+ *******************************************************************************/
+void BoardManager::generate_queen_moves(Color side_to_move) 
+{
+  Bitboard board = _board[(side_to_move == Color::white) ? w_queen : b_queen];
+  Bitboard attacks = 0ULL;
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    attacks = get_queen_attacks(source_square, _board[All]) & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+      // is not caputure?
+      if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_queen : b_queen, 0, 0,0,0,0);
+      } else { 
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_queen : b_queen, 0, 1,0,0,0);
+      }
+
+      clear_bit(target_square, attacks);
+    }
+
+    clear_bit(source_square, board);
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_king_moves(Color side_to_move)
+ *
+ *******************************************************************************/
+void BoardManager::generate_king_moves(Color side_to_move) {
+  Bitboard board = _board[(side_to_move == Color::white) ? w_king : b_king];
+  Bitboard attacks = 0ULL;
+  int source_square = -1;
+  int target_square = -1;
+
+  while (board) {
+    source_square = *util::bits::get_lsb_index(board);
+    attacks = king_attacks[source_square] & (side_to_move == Color::white ? ~(_board[w_all]) : ~(_board[b_all]));
+
+    while (attacks) {
+      target_square = *util::bits::get_lsb_index(attacks);
+
+      // is not caputure?
+      if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_king : b_king, 0, 0,0,0,0);
+      } else { 
+        add_move(source_square, target_square, (side_to_move == Color::white) ? w_king : b_king, 0, 1,0,0,0);
+      }
+
+      clear_bit(target_square, attacks);
+    }
+    clear_bit(source_square, board);
+  }
 }
 
 /*******************************************************************************
@@ -609,7 +1080,7 @@ void BoardManager::test_attack_lookup()
     Bitboard rook_calculated = calc_rook_attacks(r_square, occ);
     Bitboard queen_actual = get_queen_attacks(r_square, occ);
     Bitboard queen_calculated =
-     (calc_rook_attacks(r_square, occ)) | calc_bishop_attacks(r_square, occ);
+      (calc_rook_attacks(r_square, occ)) | calc_bishop_attacks(r_square, occ);
 
     if (bishop_actual != bishop_calculated) {
       std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
