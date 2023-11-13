@@ -10,10 +10,10 @@ using namespace chess;
  *
  *******************************************************************************/
 BoardManager::BoardManager() {
-  init_from_fen(starting_position);
+  _move_list.reserve(256);
   init_attack_tables();
   init_slider_attacks();
-  _move_list.reserve(256);
+  init_from_fen(starting_position);
 }
 
 /*******************************************************************************
@@ -459,19 +459,23 @@ void BoardManager::init_from_fen(const std::string &fen)
   }
 
   // parse the FEN string
-  uint32_t square = 63;
+  uint32_t rank = 7; // start from the 8th rank
+  uint32_t file = 0;
+  
   for (auto c : fen) {
     if (isdigit(c)) {
-      square -= atoi(&c);
-      continue;
+      file += (c - '0');
     } else if (c == '/') {
-      continue;
+      rank--;
+      file = 0;
     } else if (c == ' ') {
       break;
+    } else {
+      auto piece = util::fen::piece_from_char(c);
+      uint32_t square = rank * 8 + file;
+      set_bit(square, _board[piece]);
+      file++;
     }
-    auto piece = util::fen::piece_from_char(c);
-    set_bit(square, _board[piece]);
-    square--;
   }
 
   _board[w_all] = calc_white_occupancy();
@@ -479,6 +483,7 @@ void BoardManager::init_from_fen(const std::string &fen)
   _board[All] = calc_global_occupancy();
 
   _state.side_to_move = (fen.find("w") != std::string::npos) ? Color::white : Color::black;
+
   generate_moves();
 
   // TODO: castling rights, en_passant
@@ -858,12 +863,13 @@ void BoardManager::generate_knight_moves(Color side_to_move) {
 
   while (board) {
     source_square = *util::bits::get_lsb_index(board);
-    attacks = knight_attacks[source_square] & ~(_board[side_to_move == Color::white ? w_all : b_all]);
+    attacks = knight_attacks[source_square] & ~(_board[(side_to_move == Color::white) ? w_all : b_all]);
+
     while (attacks) {
       target_square = *util::bits::get_lsb_index(attacks);
 
        // is not capture?
-       if (!is_set(target_square, _board[side_to_move == Color::white ? w_all : b_all])) {
+       if (!is_set(target_square, _board[(side_to_move == Color::white) ? b_all : w_all])) {
          add_move(source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 0,0,0,0);
        } else {
          add_move(source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 1,0,0,0);
