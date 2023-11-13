@@ -506,57 +506,6 @@ std::optional<Piece> BoardManager::square_to_piece(int square) const
 
 /*******************************************************************************
  *
- * Method: get_pseudo_legal_attack_bitboard(Piece p, int square)
- *
- *******************************************************************************/
-Bitboard BoardManager::get_pseudo_legal_attack_bitboard(Piece p, int square) const
-{
-  switch (p) {
-    case w_pawn:
-      return pawn_attacks[Color::white][square] & (_board[b_all]);
-
-    case b_pawn:
-      return pawn_attacks[Color::black][square] & (_board[w_all]);
-
-    case w_knight:
-      return knight_attacks[square] & ~(_board[w_all]);
-
-    case b_knight:
-      return knight_attacks[square] & ~(_board[b_all]);
-
-    case w_bishop:
-      return get_bishop_attacks(square, _board[All]) & ~(_board[w_all]);
-
-    case b_bishop:
-      return get_bishop_attacks(square, _board[All]) & ~(_board[b_all]);
-
-    case w_rook:
-      return get_rook_attacks(square, _board[All]) & ~(_board[w_all]);
-
-    case b_rook:
-      return get_rook_attacks(square, _board[All]) & ~(_board[b_all]);
-
-    case w_queen:
-      return get_queen_attacks(square, _board[All]) & ~(_board[w_all]);
-
-    case b_queen:
-      return get_queen_attacks(square, _board[All]) & ~(_board[b_all]);
-
-    case w_king:
-      return king_attacks[square] & ~(_board[w_all]);
-
-    case b_king:
-      return king_attacks[square] & ~(_board[b_all]);
-
-    case b_all:
-    case w_all:
-    case All:
-      return 0ULL;
-   }
-}
-
-/*******************************************************************************
- *
  * Method: get_pseudo_legal_moves(int square)
  *
  *******************************************************************************/

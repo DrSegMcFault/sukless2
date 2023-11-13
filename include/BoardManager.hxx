@@ -250,8 +250,6 @@ class BoardManager
       return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
     }
 
-    Bitboard get_pseudo_legal_attack_bitboard(Piece p, int square) const;
-
     // initialization functions
     constexpr void init_attack_tables();
     constexpr void init_pawn_attacks();
@@ -264,12 +262,11 @@ class BoardManager
     constexpr Bitboard calc_rook_attacks(int square, Bitboard occ) const;
     void init_from_fen(const std::string& fen);
 
-
     // move generation
     inline void add_move(uint32_t source, uint32_t target,
-                  uint32_t piece, uint32_t promotion,
-                  uint32_t capture, uint32_t double_push,
-                  uint32_t enpassant, uint32_t castling);
+                         uint32_t piece, uint32_t promotion,
+                         uint32_t capture, uint32_t double_push,
+                         uint32_t enpassant, uint32_t castling);
 
     void generate_moves();
     void generate_white_moves();
