@@ -25,6 +25,7 @@ class App {
     Mix_Chunk* _win_sound;
     Mix_Chunk* _lose_sound;
     std::map<Piece, SDL_Texture*> p_textures;
+    std::array<std::optional<Piece>, 64> _current_board;
 
     
     std::vector<int> _possible_moves;

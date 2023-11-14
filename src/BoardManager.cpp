@@ -585,10 +585,6 @@ MoveResult BoardManager::make_move(uint32_t move) {
   // do the move, update the bitboard of the piece that moved
   move_bit(source_square, target_square, board_copy[piece]);
 
-  board_copy[w_all] = calc_white_occupancy(board_copy);
-  board_copy[b_all] = calc_black_occupancy(board_copy);
-  board_copy[All] = calc_global_occupancy(board_copy);
-
   // if the move was a capture move, remove the captured piece
   if (capture) {
     Piece start_piece;
@@ -613,11 +609,6 @@ MoveResult BoardManager::make_move(uint32_t move) {
         break;
       }
     }
-
-    // figure out a work-around to not have to do this every time
-    board_copy[w_all] = calc_white_occupancy(board_copy);
-    board_copy[b_all] = calc_black_occupancy(board_copy);
-    board_copy[All] = calc_global_occupancy(board_copy);
   }
 
   if (was_promotion) {
@@ -631,11 +622,6 @@ MoveResult BoardManager::make_move(uint32_t move) {
         set_bit(target_square, board_copy[promoted_to]);
         break;
     }
-
-    // figure out a work-around to not have to do this every time
-    board_copy[w_all] = calc_white_occupancy(board_copy);
-    board_copy[b_all] = calc_black_occupancy(board_copy);
-    board_copy[All] = calc_global_occupancy(board_copy);
   }
 
   if (was_en_passant) {
@@ -649,11 +635,6 @@ MoveResult BoardManager::make_move(uint32_t move) {
         clear_bit(target_square + 8, board_copy[w_pawn]);
         break;
     }
-
-    // figure out a work-around to not have to do this every time
-    board_copy[w_all] = calc_white_occupancy(board_copy);
-    board_copy[b_all] = calc_black_occupancy(board_copy);
-    board_copy[All] = calc_global_occupancy(board_copy);
   }
 
   if (state_copy.en_passant_target != -1) {
@@ -673,6 +654,13 @@ MoveResult BoardManager::make_move(uint32_t move) {
         state_copy.en_passant_target = target_square + 8;
         break;
     }
+  }
+
+  if (piece == w_king && !castling) {
+    state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+  }
+  if (piece == b_king && !castling) {
+    state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
   }
 
   // if the move was a castling move
@@ -705,6 +693,11 @@ MoveResult BoardManager::make_move(uint32_t move) {
     board_copy[All] = calc_global_occupancy(board_copy);
   }
 
+  // update occupancies
+  board_copy[w_all] = calc_white_occupancy(board_copy);
+  board_copy[b_all] = calc_black_occupancy(board_copy);
+  board_copy[All] = calc_global_occupancy(board_copy);
+
   // if the the king is under attack after the move, the move is illegal
   if (is_square_attacked(((state_copy.side_to_move == Color::white)  
                           ? util::bits::get_lsb_index(board_copy[w_king]) 
@@ -720,7 +713,7 @@ MoveResult BoardManager::make_move(uint32_t move) {
   // update the state
   state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
 
-  // if the move was not illegal the new board will be set
+  // if the move was not illegal the board and state will be set
   // to the copy
   if (result != MoveResult::Illegal) {
     _board = board_copy;

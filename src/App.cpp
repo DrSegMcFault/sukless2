@@ -53,6 +53,8 @@ App::App()
   p_textures.insert({Piece::b_knight, load_texture("resources/knight_black.png") });
 
   _game = new Game();
+  _current_board = _game->get_current_board();
+  _possible_moves.reserve(55);
 }
 
 /******************************************************************************
@@ -76,8 +78,9 @@ void App::run()
     Mix_PlayChannel(0, _move_sound, 0);
   };
 
-  auto handle_move = [&](auto move) {
+  auto handle_move = [&](chess::Move move) {
     auto result = _game->try_move(move);
+    _current_board = _game->get_current_board();
     display();
     switch (result) {
       case MoveResult::Success:
@@ -99,6 +102,7 @@ void App::run()
       default:
         break;
     }
+    clicked.reset();
     return result;
   };
 
@@ -131,22 +135,16 @@ void App::run()
         int square = grid_x + 8 * grid_y;
 
         // get the piece that was clicked on
-        if (!clicked.has_value()) {
+        if (!clicked) {
           if (auto moves = _game->get_pseudo_legal_moves(square);
               moves.size())
           { 
-            clicked = square;
+            clicked.emplace(square);
             _possible_moves = moves;
             display_possible_moves();
           }
-
-         } else {
-            // TODO: attempt the move
-            if (_game->try_move({clicked.value(), square}) != MoveResult::Illegal) {
-              _possible_moves.clear();
-            }
-            clicked.reset();
-            display();
+        } else {
+            handle_move({clicked.value(), square});
         }
         break;
       }
@@ -192,7 +190,7 @@ void App::display()
  *****************************************************************************/
 void App::render_all_pieces() {
   int index = 0;
-  for (auto piece : _game->get_current_board()) {
+  for (auto piece : _current_board) {
     if (piece) {
       render_piece(p_textures.at(piece.value()), index);
     }
