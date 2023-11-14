@@ -132,7 +132,7 @@ void App::run()
 
         // get the piece that was clicked on
         if (!clicked.has_value()) {
-          if (auto moves = _game->get_pseudo_legal_moves(square); 
+          if (auto moves = _game->get_pseudo_legal_moves(square);
               moves.size())
           { 
             clicked = square;
@@ -142,7 +142,7 @@ void App::run()
 
          } else {
             // TODO: attempt the move
-            if (_game->try_move({clicked.value(), square}) == MoveResult::Success) {
+            if (_game->try_move({clicked.value(), square}) != MoveResult::Illegal) {
               _possible_moves.clear();
             }
             clicked.reset();

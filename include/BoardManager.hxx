@@ -56,6 +56,16 @@ class BoardManager
 
     std::unordered_map<uint32_t, bool> _move_list;
 
+    enum CastlingRights {
+      WhiteKingSide = 1,
+      WhiteQueenSide = 2,
+      WhiteCastlingRights = 3,
+      BlackKingSide = 4,
+      BlackQueenSide = 8,
+      BlackCastlingRights = 12
+
+    };
+
     // flags for the game state
     struct State {
       uint32_t castling_rights = 0b1111;

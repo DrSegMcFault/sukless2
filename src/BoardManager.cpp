@@ -681,19 +681,19 @@ MoveResult BoardManager::make_move(uint32_t move) {
       // white castling king side
       case Pos::g1:
         move_bit(Pos::h1, Pos::f1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~0b0011;
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
         break;
       case Pos::c1:
         move_bit(Pos::a1, Pos::d1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~0b0011;
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
         break;
       case Pos::g8:
         move_bit(Pos::h8, Pos::f8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~0b1100;
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
         break;
       case Pos::c8:
         move_bit(Pos::a8, Pos::d8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~0b1100;
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
         break;
       default:
         break;
@@ -922,7 +922,8 @@ void BoardManager::generate_black_pawn_moves()
 void BoardManager::generate_white_castling_moves() 
 {
   // kingside castle
-  if (_state.castling_rights & 0b0001) {
+  if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteKingSide))
+  {
     if (!is_set(Pos::f1, _board[All]) &&
         !is_set(Pos::g1, _board[All]))
     {
@@ -935,7 +936,8 @@ void BoardManager::generate_white_castling_moves()
    }
 
    // queenside castle
-   if (_state.castling_rights & 0b0010) {
+   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteQueenSide))
+   {
      if (!(is_set(Pos::d1, _board[All])) &&
          !(is_set(Pos::c1, _board[All])) &&
          !(is_set(Pos::b1, _board[All])))
@@ -957,7 +959,8 @@ void BoardManager::generate_white_castling_moves()
 void BoardManager::generate_black_castling_moves() 
 {
    // castling moves king side
-   if (_state.castling_rights & 0b0100) {
+   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackKingSide))
+   {
      if (!is_set(Pos::f8, _board[All]) &&
          !is_set(Pos::g8, _board[All]))
      {
@@ -970,7 +973,8 @@ void BoardManager::generate_black_castling_moves()
    }
 
    // queenside
-   if (_state.castling_rights & 0b1000) {
+   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackQueenSide))
+   {
      if (!is_set(Pos::d8, _board[All]) &&
          !is_set(Pos::c8, _board[All]) &&
          !is_set(Pos::b8, _board[All]))
