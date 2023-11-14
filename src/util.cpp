@@ -23,16 +23,14 @@ void chess::print_board(const Bitboard& b) {
 /*******************************************************************************
  *
  * Function: chess::util::bits::get_lsb_index(Bitboard b)
- * i may remove the optional return type, as this function thus far has only
- * been called with a non-zero Bitboard
+ *
  *******************************************************************************/
-std::optional<int> chess::util::bits::get_lsb_index(Bitboard b)
+int chess::util::bits::get_lsb_index(Bitboard b)
 {
-  std::optional<int> index;
   if (b) {
-    return index.emplace(count((b & -b) - 1));
+    return count((b & -b) - 1);
   }
-  return index;
+  return -1;
 }
 
 /*******************************************************************************

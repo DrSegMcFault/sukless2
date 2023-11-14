@@ -22,7 +22,7 @@ class BoardManager
 
     std::vector<int> get_pseudo_legal_moves(int square) const;
 
-    bool is_square_attacked(int square, Color side) const;
+    std::optional<uint32_t> find_move(int source, int target) const;
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
 
@@ -58,10 +58,10 @@ class BoardManager
 
     // flags for the game state
     struct State {
-      uint32_t castling_rights;
-      Color side_to_move;
+      uint32_t castling_rights = 0b1111;
+      Color side_to_move = Color::white;
       // target enpassant square
-      uint32_t en_passant_target;
+      int en_passant_target = -1;
     } _state;
 
     // https://www.chessprogramming.org/Magic_Bitboards
@@ -235,11 +235,15 @@ class BoardManager
     static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
     const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+    bool is_square_attacked(int square,
+                            Color side,
+                            std::array<Bitboard, 15>& board) const;
+
     // after move update functions
-    Bitboard calc_white_occupancy();
-    Bitboard calc_black_occupancy();
-    Bitboard calc_global_occupancy() {
-      return (calc_white_occupancy() | calc_black_occupancy());
+    Bitboard calc_white_occupancy(std::array<Bitboard, 15>& board);
+    Bitboard calc_black_occupancy(std::array<Bitboard, 15>& board);
+    Bitboard calc_global_occupancy(std::array<Bitboard, 15>& board) {
+      return (calc_white_occupancy(board) | calc_black_occupancy(board));
     }
 
     // attack retrieval functions

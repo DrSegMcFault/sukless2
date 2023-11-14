@@ -55,7 +55,7 @@ namespace chess {
     namespace bits {
 
       // index of least significant bit
-      std::optional<int> get_lsb_index(Bitboard b);
+      int get_lsb_index(Bitboard b);
 
       #define set_bit(i, b) ((b) |= (1ULL << (i)))
       #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
