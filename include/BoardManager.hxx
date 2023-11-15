@@ -3,6 +3,7 @@
 #include <array>
 #include <optional>
 #include <unordered_map>
+#include <vector>
 #include "util.hxx"
 
 namespace chess {
