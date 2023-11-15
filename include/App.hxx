@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include "SDL.h"
 #include "SDL_image.h"
