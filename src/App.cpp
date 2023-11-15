@@ -39,20 +39,20 @@ App::App()
   _win_sound = Mix_LoadWAV("resources/game_win.wav");
   _lose_sound = Mix_LoadWAV("resources/game_lose.wav");
 
-  p_textures.insert({Piece::w_pawn, load_texture("resources/pawn_white.png") });
-  p_textures.insert({Piece::b_pawn, load_texture("resources/pawn_black.png") });
-  p_textures.insert({Piece::w_king, load_texture("resources/king_white.png") });
-  p_textures.insert({Piece::b_king, load_texture("resources/king_black.png") });
-  p_textures.insert({Piece::w_queen, load_texture("resources/queen_white.png") });
-  p_textures.insert({Piece::b_queen, load_texture("resources/queen_black.png") });
-  p_textures.insert({Piece::w_rook, load_texture("resources/rook_white.png") });
-  p_textures.insert({Piece::b_rook, load_texture("resources/rook_black.png") });
-  p_textures.insert({Piece::w_bishop, load_texture("resources/bishop_white.png") });
-  p_textures.insert({Piece::b_bishop, load_texture("resources/bishop_black.png") });
-  p_textures.insert({Piece::w_knight, load_texture("resources/knight_white.png") });
-  p_textures.insert({Piece::b_knight, load_texture("resources/knight_black.png") });
+  p_textures.insert( { Piece::w_pawn,   load_texture("resources/pawn_white.png") } );
+  p_textures.insert( { Piece::b_pawn,   load_texture("resources/pawn_black.png") } );
+  p_textures.insert( { Piece::w_king,   load_texture("resources/king_white.png") } );
+  p_textures.insert( { Piece::b_king,   load_texture("resources/king_black.png") } );
+  p_textures.insert( { Piece::w_queen,  load_texture("resources/queen_white.png") } );
+  p_textures.insert( { Piece::b_queen,  load_texture("resources/queen_black.png") } );
+  p_textures.insert( { Piece::w_rook,   load_texture("resources/rook_white.png") } );
+  p_textures.insert( { Piece::b_rook,   load_texture("resources/rook_black.png") } );
+  p_textures.insert( { Piece::w_bishop, load_texture("resources/bishop_white.png") } );
+  p_textures.insert( { Piece::b_bishop, load_texture("resources/bishop_black.png") } );
+  p_textures.insert( { Piece::w_knight, load_texture("resources/knight_white.png") } );
+  p_textures.insert( { Piece::b_knight, load_texture("resources/knight_black.png") } );
 
-  _game = new Game();
+  _game = std::make_shared<Game>(); 
   _current_board = _game->get_current_board();
   _possible_moves.reserve(55);
 }
@@ -80,8 +80,10 @@ void App::run()
 
   auto handle_move = [&](chess::Move move) {
     auto result = _game->try_move(move);
-    _current_board = _game->get_current_board();
-    display();
+    if (result != MoveResult::Illegal) {
+      _current_board = _game->get_current_board();
+    }
+
     switch (result) {
       case MoveResult::Success:
         Mix_PlayChannel( 0, _move_sound, 0 );
@@ -103,6 +105,7 @@ void App::run()
         break;
     }
     clicked.reset();
+    display();
     return result;
   };
 
@@ -138,16 +141,17 @@ void App::run()
         if (!clicked) {
           if (auto moves = _game->get_pseudo_legal_moves(square);
               moves.size())
-          { 
+          {
             clicked.emplace(square);
             _possible_moves = moves;
             display_possible_moves();
           }
         } else {
-            handle_move({clicked.value(), square});
+          handle_move({ clicked.value(), square });
         }
         break;
       }
+
       case SDL_KEYDOWN:
       {
         switch (ev.key.keysym.sym) {
@@ -210,7 +214,7 @@ void App::display_possible_moves()
   render_background();
   render_all_pieces();
 
-  SDL_Rect src = { 0 ,0, 30, 30};
+  SDL_Rect src = { 0, 0, 30, 30 };
  
   for (auto move : _possible_moves) {
 
@@ -286,7 +290,7 @@ SDL_Texture* App::load_texture(const char* filepath)
     assert(false);
   }
   SDL_Texture* txt = SDL_CreateTextureFromSurface(_renderer, img);
-  
+
   return txt;
 }
 
@@ -304,5 +308,4 @@ App::~App()
   IMG_Quit();
   Mix_Quit();
   SDL_Quit();
-  delete _game;
 }

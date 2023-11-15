@@ -63,7 +63,6 @@ class BoardManager
       BlackKingSide = 4,
       BlackQueenSide = 8,
       BlackCastlingRights = 12
-
     };
 
     // flags for the game state

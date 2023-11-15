@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
@@ -24,7 +24,7 @@ class App {
     Mix_Chunk* _move_sound;
     Mix_Chunk* _win_sound;
     Mix_Chunk* _lose_sound;
-    std::map<Piece, SDL_Texture*> p_textures;
+    std::unordered_map<Piece, SDL_Texture*> p_textures;
     std::array<std::optional<Piece>, 64> _current_board;
 
     
@@ -37,7 +37,7 @@ class App {
 
     AppState _state;
 
-    Game* _game;
+    std::shared_ptr<Game> _game;
 
     SDL_Texture* load_texture(const char* filepath);
 

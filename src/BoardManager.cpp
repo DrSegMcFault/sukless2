@@ -589,15 +589,20 @@ MoveResult BoardManager::make_move(uint32_t move) {
   if (capture) {
     Piece start_piece;
     Piece end_piece;
+    
     switch(state_copy.side_to_move) {
       case Color::white:
+      {
         start_piece = Piece::b_pawn;
         end_piece = Piece::b_king;
         break;
+      }
       case Color::black:
+      {
         start_piece = Piece::w_pawn;
         end_piece = Piece::w_king;
         break;
+      }
     }
 
     // loop over possible capture pieces
@@ -608,19 +613,6 @@ MoveResult BoardManager::make_move(uint32_t move) {
         clear_bit(target_square, board_copy[p]);
         break;
       }
-    }
-  }
-
-  if (was_promotion) {
-    switch (state_copy.side_to_move) {
-      case Color::white:
-        clear_bit(target_square, board_copy[w_pawn]);
-        set_bit(target_square, board_copy[promoted_to]);
-        break;
-      case Color::black:
-        clear_bit(target_square, board_copy[b_pawn]);
-        set_bit(target_square, board_copy[promoted_to]);
-        break;
     }
   }
 
@@ -635,16 +627,10 @@ MoveResult BoardManager::make_move(uint32_t move) {
         clear_bit(target_square + 8, board_copy[w_pawn]);
         break;
     }
-  }
-
-  if (state_copy.en_passant_target != -1) {
+  } else {
     state_copy.en_passant_target = -1;
   }
 
-  state_copy.en_passant_target = -1;
-
-  // if the move was a double pawn push
-  // set the en_passant target square
   if (double_push) {
     switch (state_copy.side_to_move) {
       case Color::white:
@@ -655,42 +641,59 @@ MoveResult BoardManager::make_move(uint32_t move) {
         break;
     }
   }
+  else if (was_promotion) {
+    switch (state_copy.side_to_move) {
+      case Color::white:
+      {
+        clear_bit(target_square, board_copy[w_pawn]);
+        set_bit(target_square, board_copy[promoted_to]);
+        break;
+      }
+      case Color::black:
+      {
+        clear_bit(target_square, board_copy[b_pawn]);
+        set_bit(target_square, board_copy[promoted_to]);
+        break;
+      }
+    }
+  }
+  else if (castling) {
+    switch (static_cast<Pos>(target_square)) {
+      // white castling king side
+      case Pos::g1:
+      {
+        move_bit(Pos::h1, Pos::f1, board_copy[w_rook]);
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+        break;
+      }
+      case Pos::c1:
+      {
+        move_bit(Pos::a1, Pos::d1, board_copy[w_rook]);
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+        break;
+      }
+      case Pos::g8:
+      {
+        move_bit(Pos::h8, Pos::f8, board_copy[b_rook]);
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
+        break;
+      }
+      case Pos::c8:
+      {
+        move_bit(Pos::a8, Pos::d8, board_copy[b_rook]);
+        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
+        break;
+      }
+      default:
+        break;
+    }
+  }
 
   if (piece == w_king && !castling) {
     state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
   }
-  if (piece == b_king && !castling) {
+  else if (piece == b_king && !castling) {
     state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
-  }
-
-  // if the move was a castling move
-  if (castling) {
-    switch (static_cast<Pos>(target_square)) {
-      // white castling king side
-      case Pos::g1:
-        move_bit(Pos::h1, Pos::f1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
-        break;
-      case Pos::c1:
-        move_bit(Pos::a1, Pos::d1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
-        break;
-      case Pos::g8:
-        move_bit(Pos::h8, Pos::f8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
-        break;
-      case Pos::c8:
-        move_bit(Pos::a8, Pos::d8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
-        break;
-      default:
-        break;
-    }
-
-    // figure out a work-around to not have to do this every time
-    board_copy[w_all] = calc_white_occupancy(board_copy);
-    board_copy[b_all] = calc_black_occupancy(board_copy);
-    board_copy[All] = calc_global_occupancy(board_copy);
   }
 
   // update occupancies
@@ -705,17 +708,13 @@ MoveResult BoardManager::make_move(uint32_t move) {
                           ((state_copy.side_to_move == Color::white) ? Color::black : Color::white),
                           board_copy))
   {
-    result = MoveResult::Illegal;
-  } else {
-    result = MoveResult::Success;
+    return MoveResult::Illegal;
   }
+  else {
+    result = MoveResult::Success;
+    // update the state
+    state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
 
-  // update the state
-  state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
-
-  // if the move was not illegal the board and state will be set
-  // to the copy
-  if (result != MoveResult::Illegal) {
     _board = board_copy;
     _state = state_copy;
     _move_list.clear();
