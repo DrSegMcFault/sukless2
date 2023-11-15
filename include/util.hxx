@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <optional>
+#include <cstdint>
 
 namespace chess {
   using Bitboard = uint64_t;
