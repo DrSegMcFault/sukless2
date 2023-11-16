@@ -1,7 +1,8 @@
 #pragma once
-#include "BoardManager.hxx"
 #include <string>
 #include <vector>
+
+#include "BoardManager.hxx"
 
 namespace chess {
 
@@ -16,6 +17,8 @@ class Game {
     MoveResult try_move(const Move& m);
 
     bool is_move_pseudo_legal(const Move& m) const;
+
+    Color get_side_to_move() const;
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
 

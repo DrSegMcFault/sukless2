@@ -18,6 +18,18 @@ BoardManager::BoardManager() {
 
 /*******************************************************************************
  *
+ * Method: BoardManager(const std::string& fen)
+ *
+ *******************************************************************************/
+BoardManager::BoardManager(const std::string& fen) {
+  _move_list.reserve(256);
+  init_attack_tables();
+  init_slider_attacks();
+  init_from_fen(fen);
+}
+
+/*******************************************************************************
+ *
  * Method: init_attack_tables()
  *
  *******************************************************************************/
@@ -128,7 +140,7 @@ constexpr void BoardManager::init_pawn_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_knight_attacks()
 {
-  constexpr auto get_mask = [](int square) {
+  for (uint64_t square = 0; square < 64ULL; square++) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -151,11 +163,7 @@ constexpr void BoardManager::init_knight_attacks()
     if ((b >> 6) & not_ab_file)
       attacks |= b >> 6;
 
-    return attacks;
-  };
-
-  for (int i = 0; i < 64; i++) {
-    knight_attacks[i] = get_mask(i);
+    knight_attacks[square] = attacks;
   }
 }
 
@@ -166,7 +174,7 @@ constexpr void BoardManager::init_knight_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_king_attacks()
 {
-  constexpr auto get_mask = [](int square) {
+  for (uint64_t square = 0; square < 64ULL; square++) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -190,11 +198,7 @@ constexpr void BoardManager::init_king_attacks()
     if ((b >> 1) & not_h_file)
       attacks |= b >> 1;
 
-    return attacks;
-  };
-
-  for (int i = 0; i < 64; i++) {
-    king_attacks[i] = get_mask(i);
+    king_attacks[square] = attacks;
   }
 }
 
@@ -205,7 +209,7 @@ constexpr void BoardManager::init_king_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_bishop_masks()
 {
-  constexpr auto get_mask = [] (int square) {
+  for (uint64_t square = 0; square < 64ULL; square++) { 
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -226,11 +230,7 @@ constexpr void BoardManager::init_bishop_masks()
       set_bit(r * 8 + f, attacks);
     }
 
-    return attacks;
-  };
-
-  for (int i = 0; i < 64; i++) {
-    bishop_masks[i] = get_mask(i);
+    bishop_masks[square] = attacks;
   }
 }
 
@@ -241,7 +241,7 @@ constexpr void BoardManager::init_bishop_masks()
  *******************************************************************************/
 constexpr void BoardManager::init_rook_masks()
 {
-  constexpr auto get_mask = [] (int square) {
+  for (uint64_t square = 0; square < 64ULL; square++) {
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -262,11 +262,7 @@ constexpr void BoardManager::init_rook_masks()
       set_bit(tr * 8 + f, attacks);
     }
 
-    return attacks;
-  };
-
-  for (int i = 0; i < 64; i++) {
-    rook_masks[i] = get_mask(i);
+    rook_masks[square] = attacks;
   }
 }
 
@@ -620,12 +616,16 @@ MoveResult BoardManager::make_move(uint32_t move) {
     switch (state_copy.side_to_move) {
       // if white made an en passant capture
       case Color::white:
+      {
         clear_bit(target_square - 8, board_copy[b_pawn]);
         break;
+      }
       // if black made an en passant capture
       case Color::black:
+      {
         clear_bit(target_square + 8, board_copy[w_pawn]);
         break;
+      }
     }
   } else {
     state_copy.en_passant_target = -1;
@@ -634,11 +634,15 @@ MoveResult BoardManager::make_move(uint32_t move) {
   if (double_push) {
     switch (state_copy.side_to_move) {
       case Color::white:
+      {
         state_copy.en_passant_target = target_square - 8;
         break;
+      }
       case Color::black:
+      {
         state_copy.en_passant_target = target_square + 8;
         break;
+      }
     }
   }
   else if (was_promotion) {
@@ -733,11 +737,15 @@ void BoardManager::generate_moves()
 {
   switch (_state.side_to_move) {
     case Color::white:
+    {
       generate_white_moves();
       break;
+    }
     case Color::black:
+    {
       generate_black_moves();
       break;
+    }
   }
 }
 
@@ -913,7 +921,6 @@ void BoardManager::generate_black_pawn_moves()
  *******************************************************************************/
 void BoardManager::generate_white_castling_moves() 
 {
-  // kingside castle
   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteKingSide))
   {
     if (!is_set(Pos::f1, _board[All]) &&
@@ -927,7 +934,6 @@ void BoardManager::generate_white_castling_moves()
      }
    }
 
-   // queenside castle
    if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteQueenSide))
    {
      if (!(is_set(Pos::d1, _board[All])) &&
@@ -950,7 +956,6 @@ void BoardManager::generate_white_castling_moves()
  *******************************************************************************/
 void BoardManager::generate_black_castling_moves() 
 {
-   // castling moves king side
    if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackKingSide))
    {
      if (!is_set(Pos::f8, _board[All]) &&
@@ -964,7 +969,6 @@ void BoardManager::generate_black_castling_moves()
      }
    }
 
-   // queenside
    if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackQueenSide))
    {
      if (!is_set(Pos::d8, _board[All]) &&
@@ -985,7 +989,8 @@ void BoardManager::generate_black_castling_moves()
  * Method: generate_knight_moves(Color side_to_move)
  *
  *******************************************************************************/
-void BoardManager::generate_knight_moves(Color side_to_move) {
+void BoardManager::generate_knight_moves(Color side_to_move) 
+{
   Bitboard board = _board[(side_to_move == Color::white) ? w_knight : b_knight];
   Bitboard attacks = 0ULL;
   int source_square = -1;
@@ -998,7 +1003,7 @@ void BoardManager::generate_knight_moves(Color side_to_move) {
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-       // is not capture?
+       // if the move is not a capture
        if (!is_set(target_square, _board[(side_to_move == Color::white) ? b_all : w_all])) {
          add_move(source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 0,0,0,0);
        } else {
@@ -1029,7 +1034,8 @@ void BoardManager::generate_bishop_moves(Color side_to_move)
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
-      // is not caputure?
+
+      // if the move is not a capture 
       if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
         add_move(source_square, target_square, (side_to_move == Color::white) ? w_bishop : b_bishop, 0, 0,0,0,0);
       } else { 
@@ -1061,7 +1067,8 @@ void BoardManager::generate_rook_moves(Color side_to_move)
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
-      // is not caputure?
+
+      // if the move is not a capture
       if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
         add_move(source_square, target_square, (side_to_move == Color::white) ? w_rook : b_rook, 0, 0,0,0,0);
       } else { 
@@ -1093,7 +1100,8 @@ void BoardManager::generate_queen_moves(Color side_to_move)
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
-      // is not caputure?
+
+      // if the move is not a capture 
       if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
         add_move(source_square, target_square, (side_to_move == Color::white) ? w_queen : b_queen, 0, 0,0,0,0);
       } else { 
@@ -1125,7 +1133,7 @@ void BoardManager::generate_king_moves(Color side_to_move) {
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-      // is not caputure?
+      // if the move is not a capture 
       if (!is_set(target_square, _board[side_to_move == Color::white ? b_all : w_all])) {
         add_move(source_square, target_square, (side_to_move == Color::white) ? w_king : b_king, 0, 0,0,0,0);
       } else { 
@@ -1148,7 +1156,8 @@ std::optional<uint32_t> BoardManager::find_move(int source, int target) const
   std::optional<uint32_t> ret;
   for (const auto& [key, value] : _move_list) {
     if (get_move_source(key) == source && get_move_target(key) == target) {
-      return ret.emplace(key);
+      ret.emplace(key);
+      return ret;
     }
   }
 

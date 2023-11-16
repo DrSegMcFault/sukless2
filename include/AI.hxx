@@ -1,3 +1,7 @@
+#pragma once
+
+#include <memory>
+
 #include "Game.hxx"
 
 namespace chess {
@@ -5,13 +9,17 @@ namespace chess {
   {
     public:
       AI() = delete;
-      AI(Game* game, int depth) : _game(game), _depth(depth)  {}
+
+      AI(std::shared_ptr<Game> game, Color color, int depth)
+        : _game(game), _depth(depth), _controlling_color(color) {}
+
       AI(const AI&) = delete;
       AI(AI&&) = delete;
       ~AI() = default;
 
     private:
-      Game* _game;
+      std::shared_ptr<Game> _game;
       int _depth;
+      Color _controlling_color;
   };
 }

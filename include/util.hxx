@@ -1,4 +1,5 @@
 #pragma once
+
 #include <algorithm>
 #include <iostream>
 #include <optional>
@@ -81,14 +82,14 @@ namespace chess {
      */
 
       #define encode_move(source, target, piece, promoted, capture, double, enpassant, castling) \
-        (source) |          \
-        (target << 6) |     \
-        (piece << 12) |     \
-        (promoted << 16) |  \
-        (capture << 20) |   \
-        (double << 21) |    \
-        (enpassant << 22) | \
-        (castling << 23)
+        (source) |            \
+        ((target) << 6) |     \
+        ((piece) << 12) |     \
+        ((promoted) << 16) |  \
+        ((capture) << 20) |   \
+        ((double) << 21) |    \
+        ((enpassant) << 22) | \
+        ((castling) << 23)
 
       // extract source square
       #define get_move_source(move) (move & 0x3f)

@@ -4,6 +4,7 @@
 #include <optional>
 #include <unordered_map>
 #include <vector>
+
 #include "util.hxx"
 
 namespace chess {
@@ -26,6 +27,8 @@ class BoardManager
     std::optional<uint32_t> find_move(int source, int target) const;
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
+
+    Color side_to_move() const { return _state.side_to_move; }
 
     // convienence functions
     const auto& operator[](Piece piece) const {

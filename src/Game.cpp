@@ -14,7 +14,7 @@ Game::Game()
 
 /*******************************************************************************
  *
- * Method: try_move(int square)
+ * Method: try_move(const Move& move)
  *
  *******************************************************************************/
 MoveResult Game::try_move(const Move& m)
@@ -54,4 +54,14 @@ std::vector<int> Game::get_pseudo_legal_moves(int square) const
 std::array<std::optional<Piece>, 64> Game::get_current_board() const
 {
   return _mgr.get_current_board();
+}
+
+/*******************************************************************************
+ *
+ * Method: get_side_to_move()
+ * 
+ *******************************************************************************/
+Color Game::get_side_to_move() const
+{
+  return _mgr.side_to_move();
 }

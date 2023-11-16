@@ -86,24 +86,35 @@ void App::run()
 
     switch (result) {
       case MoveResult::Success:
+      {
         Mix_PlayChannel( 0, _move_sound, 0 );
         _possible_moves.clear();
         break;
+      }
 
       case MoveResult::Illegal:
+      {
         break;
+      }
 
       case MoveResult::Checkmate:
+      {
         game_over(_win_sound);
         break;
+      }
 
       case MoveResult::Draw:
+      {
         game_over(_lose_sound);
         break;
+      }
 
       default:
+      {
         break;
+      }
     }
+
     clicked.reset();
     display();
     return result;
@@ -125,8 +136,10 @@ void App::run()
 
     switch (ev.type) {
       case SDL_QUIT:
+      {
         _state = AppState::EXIT;
         break;
+      }
 
       case SDL_MOUSEBUTTONDOWN:
       {

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <unordered_map>
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
@@ -28,7 +29,6 @@ class App {
     std::unordered_map<Piece, SDL_Texture*> p_textures;
     std::array<std::optional<Piece>, 64> _current_board;
 
-    
     std::vector<int> _possible_moves;
 
     enum AppState {

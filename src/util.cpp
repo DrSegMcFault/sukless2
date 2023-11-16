@@ -106,6 +106,6 @@ char chess::util::fen::char_from_piece(Piece p)
     case b_all:
     case w_all:
     case All:
-      return ' ';
+      throw std::runtime_error("in function: char_from_piece()::invalid piece");
   }
 }
