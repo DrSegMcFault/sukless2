@@ -565,6 +565,7 @@ inline void BoardManager::add_move(uint32_t source, uint32_t target,
  *
  *******************************************************************************/
 MoveResult BoardManager::make_move(util::bits::HashedMove move) {
+  using namespace util;
 
   MoveResult result = MoveResult::Illegal;
 
@@ -602,8 +603,8 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
     }
 
     // loop over possible capture pieces
-    for (int p = static_cast<int>(start_piece);
-        p <= static_cast<int>(end_piece); p++)
+    for (uint8_t p = static_cast<uint8_t>(start_piece);
+        p <= static_cast<uint8_t>(end_piece); p++)
     {
       if (is_set(target_square, board_copy[p])) {
         clear_bit(target_square, board_copy[p]);
@@ -664,30 +665,29 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
   }
   else if (castling) {
     switch (target_square) {
-      using namespace util;
       // white castling king side
       case chess::G1:
       {
         move_bit(chess::H1, chess::F1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~util::toul(CastlingRights::WhiteCastlingRights);
+        state_copy.castling_rights &= ~toul(CastlingRights::WhiteCastlingRights);
         break;
       }
       case chess::C1:
       {
         move_bit(chess::A1, chess::D1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~util::toul(CastlingRights::WhiteCastlingRights);
+        state_copy.castling_rights &= ~toul(CastlingRights::WhiteCastlingRights);
         break;
       }
       case chess::G8:
       {
         move_bit(chess::H8, chess::F8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~util::toul(CastlingRights::BlackCastlingRights);
+        state_copy.castling_rights &= ~toul(CastlingRights::BlackCastlingRights);
         break;
       }
       case chess::C8:
       {
         move_bit(chess::A8, chess::D8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~util::toul(CastlingRights::BlackCastlingRights);
+        state_copy.castling_rights &= ~toul(CastlingRights::BlackCastlingRights);
         break;
       }
       default:
@@ -696,10 +696,10 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
   }
 
   if (piece == w_king && !castling) {
-    state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+    state_copy.castling_rights &= ~toul(CastlingRights::WhiteCastlingRights);
   }
   else if (piece == b_king && !castling) {
-    state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
+    state_copy.castling_rights &= ~toul(CastlingRights::BlackCastlingRights);
   }
 
   // update occupancies
@@ -707,7 +707,7 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
   board_copy[b_all] = calc_black_occupancy(board_copy);
   board_copy[All] = calc_global_occupancy(board_copy);
 
-  // if the the king is under attack after the move, the move is illegal
+  // if the king is under attack after the move, the move is illegal
   if (is_square_attacked(((state_copy.side_to_move == Color::white)  
                           ? util::bits::get_lsb_index(board_copy[w_king]) 
                           : util::bits::get_lsb_index(board_copy[b_king])), 
@@ -718,7 +718,6 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
   }
   else {
     result = MoveResult::Success;
-    // update the state
     state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
 
     _board = board_copy;
@@ -926,7 +925,8 @@ void BoardManager::generate_black_pawn_moves()
  *******************************************************************************/
 void BoardManager::generate_white_castling_moves() 
 {
-  if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide))
+  using namespace util;
+  if (_state.castling_rights & toul(CastlingRights::WhiteKingSide))
   {
     if (!is_set(chess::F1, _board[All]) &&
         !is_set(chess::G1, _board[All]))
@@ -939,7 +939,7 @@ void BoardManager::generate_white_castling_moves()
      }
    }
 
-   if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide))
+   if (_state.castling_rights & toul(CastlingRights::WhiteQueenSide))
    {
      if (!(is_set(chess::D1, _board[All])) &&
          !(is_set(chess::C1, _board[All])) &&
@@ -961,7 +961,8 @@ void BoardManager::generate_white_castling_moves()
  *******************************************************************************/
 void BoardManager::generate_black_castling_moves() 
 {
-   if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide))
+   using namespace util;
+   if (_state.castling_rights & toul(CastlingRights::BlackKingSide))
    {
      if (!is_set(chess::F8, _board[All]) &&
          !is_set(chess::G8, _board[All]))
@@ -974,7 +975,7 @@ void BoardManager::generate_black_castling_moves()
      }
    }
 
-   if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide))
+   if (_state.castling_rights & toul(CastlingRights::BlackQueenSide))
    {
      if (!is_set(chess::D8, _board[All]) &&
          !is_set(chess::C8, _board[All]) &&
