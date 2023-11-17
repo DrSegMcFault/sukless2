@@ -4,6 +4,7 @@
 #include <iostream>
 #include <optional>
 #include <cstdint>
+#include <tuple>
 
 namespace chess {
   using Bitboard = uint64_t;
@@ -29,21 +30,9 @@ namespace chess {
     b_rook, b_queen,  b_king,
     w_all,  b_all,    All
   };
-
-  enum Pos {
-    a1, b1, c1, d1, e1, f1, g1, h1,
-    a2, b2, c2, d2, e2, f2, g2, h2,
-    a3, b3, c3, d3, e3, f3, g3, h3,
-    a4, b4, c4, d4, e4, f4, g4, h4,
-    a5, b5, c5, d5, e5, f5, g5, h5,
-    a6, b6, c6, d6, e6, f6, g6, h6,
-    a7, b7, c7, d7, e7, f7, g7, h7,
-    a8, b8, c8, d8, e8, f8, g8, h8
-  };
-
   struct Move {
-    int from;
-    int to;
+    uint8_t from;
+    uint8_t to;
   };
 
   void print_board(const Bitboard& b);
@@ -55,10 +44,18 @@ namespace chess {
       return std::find(a.begin(), a.end(), b) != a.end();
     }
 
+    template <typename T>
+    concept EnumClass = std::is_enum_v<T> && !std::is_same_v<T, std::underlying_type_t<T>>;
+
+    template<EnumClass T>
+    inline auto toul(T enum_value) {
+      return static_cast<std::underlying_type_t<T>>(enum_value);
+    }
+
     namespace bits {
 
       // index of least significant bit
-      int get_lsb_index(Bitboard b);
+      uint8_t get_lsb_index(Bitboard b);
 
       #define set_bit(i, b) ((b) |= (1ULL << (i)))
       #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
@@ -80,40 +77,38 @@ namespace chess {
           0100 0000 0000 0000 0000 0000    enpassant flag      0x400000
           1000 0000 0000 0000 0000 0000    castling flag       0x800000
      */
+      union HashedMove {
+        struct {
+          uint32_t source : 6;
+          uint32_t target : 6;
+          uint32_t piece : 4;
+          uint32_t promoted : 4;
+          uint32_t capture : 1;
+          uint32_t double_push : 1;
+          uint32_t enpassant : 1;
+          uint32_t castling : 1;
+          uint32_t _padding : 8;
+        };
 
-      #define encode_move(source, target, piece, promoted, capture, double, enpassant, castling) \
-        (source) |            \
-        ((target) << 6) |     \
-        ((piece) << 12) |     \
-        ((promoted) << 16) |  \
-        ((capture) << 20) |   \
-        ((double) << 21) |    \
-        ((enpassant) << 22) | \
-        ((castling) << 23)
+        uint32_t move;
 
-      // extract source square
-      #define get_move_source(move) (move & 0x3f)
+        bool operator==(const HashedMove& other) const {
+          return move == other.move;
+        }
 
-      // extract target square
-      #define get_move_target(move) ((move & 0xfc0) >> 6)
-
-      // extract piece
-      #define get_move_piece(move) ((move & 0xf000) >> 12)
-
-      // extract promoted piece
-      #define get_move_promoted(move) ((move & 0xf0000) >> 16)
-
-      // extract capture flag
-      #define get_move_capture(move) (move & 0x100000)
-
-      // extract double pawn push flag
-      #define get_move_double(move) (move & 0x200000)
-
-      // extract enpassant flag
-      #define get_move_enpassant(move) (move & 0x400000)
-
-      // extract castling flag
-      #define get_move_castling(move) (move & 0x800000)
+       /*******************************************************************************
+        *
+        * Method: explode()
+        * returns a tuple of the anonymous struct in order of declaration
+        *******************************************************************************/
+        auto explode() const {
+          return
+              std::make_tuple(static_cast<uint8_t>(source), static_cast<uint8_t>(target),
+                              static_cast<Piece>(piece), static_cast<Piece>(promoted),
+                              static_cast<bool>(capture), static_cast<bool>(double_push),
+                              static_cast<bool>(enpassant), static_cast<bool>(castling));
+        }
+      };
 
       // count the number of set bits
       inline int count(Bitboard b) {
@@ -141,5 +136,36 @@ namespace chess {
     } // namespace util::fen
 
   } // namespace util
-
+  static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;
+  static constexpr uint8_t C1 = 2;  static constexpr uint8_t D1 = 3;
+  static constexpr uint8_t E1 = 4;  static constexpr uint8_t F1 = 5;
+  static constexpr uint8_t G1 = 6;  static constexpr uint8_t H1 = 7;
+  static constexpr uint8_t A2 = 8;  static constexpr uint8_t B2 = 9; 
+  static constexpr uint8_t C2 = 10; static constexpr uint8_t D2 = 11;
+  static constexpr uint8_t E2 = 12; static constexpr uint8_t F2 = 13;
+  static constexpr uint8_t G2 = 14; static constexpr uint8_t H2 = 15;
+  static constexpr uint8_t A3 = 16; static constexpr uint8_t B3 = 17;
+  static constexpr uint8_t C3 = 18; static constexpr uint8_t D3 = 19;
+  static constexpr uint8_t E3 = 20; static constexpr uint8_t F3 = 21;
+  static constexpr uint8_t G3 = 22; static constexpr uint8_t H3 = 23;
+  static constexpr uint8_t A4 = 24; static constexpr uint8_t B4 = 25;
+  static constexpr uint8_t C4 = 26; static constexpr uint8_t D4 = 27;
+  static constexpr uint8_t E4 = 28; static constexpr uint8_t F4 = 29;
+  static constexpr uint8_t G4 = 30; static constexpr uint8_t H4 = 31;
+  static constexpr uint8_t A5 = 32; static constexpr uint8_t B5 = 33;
+  static constexpr uint8_t C5 = 34; static constexpr uint8_t D5 = 35;
+  static constexpr uint8_t E5 = 36; static constexpr uint8_t F5 = 37;
+  static constexpr uint8_t G5 = 38; static constexpr uint8_t H5 = 39;
+  static constexpr uint8_t A6 = 40; static constexpr uint8_t B6 = 41;
+  static constexpr uint8_t C6 = 42; static constexpr uint8_t D6 = 43;
+  static constexpr uint8_t E6 = 44; static constexpr uint8_t F6 = 45;
+  static constexpr uint8_t G6 = 46; static constexpr uint8_t H6 = 47;
+  static constexpr uint8_t A7 = 48; static constexpr uint8_t B7 = 49;
+  static constexpr uint8_t C7 = 50; static constexpr uint8_t D7 = 51;
+  static constexpr uint8_t E7 = 52; static constexpr uint8_t F7 = 53;
+  static constexpr uint8_t G7 = 54; static constexpr uint8_t H7 = 55;
+  static constexpr uint8_t A8 = 56; static constexpr uint8_t B8 = 57;
+  static constexpr uint8_t C8 = 58; static constexpr uint8_t D8 = 59;
+  static constexpr uint8_t E8 = 60; static constexpr uint8_t F8 = 61;
+  static constexpr uint8_t G8 = 62; static constexpr uint8_t H8 = 63;
 } // namespace chess

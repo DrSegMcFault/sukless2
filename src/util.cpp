@@ -25,12 +25,12 @@ void chess::print_board(const Bitboard& b) {
  * Function: chess::util::bits::get_lsb_index(Bitboard b)
  *
  *******************************************************************************/
-int chess::util::bits::get_lsb_index(Bitboard b)
+uint8_t chess::util::bits::get_lsb_index(Bitboard b)
 {
   if (b) {
     return count((b & -b) - 1);
   }
-  return -1;
+  throw std::runtime_error("in function: get_lsb_index()::no set bits");
 }
 
 /*******************************************************************************

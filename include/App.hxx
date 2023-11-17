@@ -29,7 +29,7 @@ class App {
     std::unordered_map<Piece, SDL_Texture*> p_textures;
     std::array<std::optional<Piece>, 64> _current_board;
 
-    std::vector<int> _possible_moves;
+    std::vector<uint8_t> _possible_moves;
 
     enum AppState {
       PLAY = 0,

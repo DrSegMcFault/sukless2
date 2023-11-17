@@ -65,7 +65,7 @@ App::App()
 void App::run()
 {
   // cached piece that has been previously clicked
-  std::optional<int> clicked;
+  std::optional<uint8_t> clicked;
 
   // is_first_frame
   bool first = true;
@@ -148,7 +148,7 @@ void App::run()
         auto y = ev.button.y;
         int grid_x = floor(x / (_screenW / 8));
         int grid_y = floor((_screenH - y) / (_screenH / 8));
-        int square = grid_x + 8 * grid_y;
+        uint8_t square = grid_x + 8 * grid_y;
 
         // get the piece that was clicked on
         if (!clicked) {

@@ -18,13 +18,13 @@ class BoardManager
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
 
-    MoveResult make_move(uint32_t move);
+    MoveResult make_move(util::bits::HashedMove move);
 
-    std::optional<Piece> square_to_piece(int square) const;
+    std::optional<Piece> square_to_piece(uint8_t square) const;
 
-    std::vector<int> get_pseudo_legal_moves(int square) const;
+    std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
 
-    std::optional<uint32_t> find_move(int source, int target) const;
+    std::optional<util::bits::HashedMove> find_move(uint8_t source, uint8_t target) const;
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
 
@@ -58,9 +58,9 @@ class BoardManager
     std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
     std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
-    std::unordered_map<uint32_t, bool> _move_list;
+    std::vector<util::bits::HashedMove> _move_list;
 
-    enum CastlingRights {
+    enum class CastlingRights : uint8_t {
       WhiteKingSide = 1,
       WhiteQueenSide = 2,
       WhiteCastlingRights = 3,
@@ -71,7 +71,7 @@ class BoardManager
 
     // flags for the game state
     struct State {
-      uint32_t castling_rights = 0b1111;
+      uint8_t castling_rights = 0b00001111;
       Color side_to_move = Color::white;
       // target enpassant square
       int en_passant_target = -1;
@@ -248,7 +248,7 @@ class BoardManager
     static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
     const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    bool is_square_attacked(int square,
+    bool is_square_attacked(uint8_t square,
                             Color side,
                             std::array<Bitboard, 15>& board) const;
 
@@ -260,9 +260,9 @@ class BoardManager
     }
 
     // attack retrieval functions
-    Bitboard get_bishop_attacks(int square, Bitboard occ) const;
-    Bitboard get_rook_attacks(int square, Bitboard occ) const;
-    Bitboard get_queen_attacks(int square, Bitboard occ) const
+    Bitboard get_bishop_attacks(uint8_t square, Bitboard occ) const;
+    Bitboard get_rook_attacks(uint8_t square, Bitboard occ) const;
+    Bitboard get_queen_attacks(uint8_t square, Bitboard occ) const
     {
       return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
     }
@@ -275,8 +275,8 @@ class BoardManager
     constexpr void init_bishop_masks();
     constexpr void init_rook_masks();
     void init_slider_attacks();
-    constexpr Bitboard calc_bishop_attacks(int square, Bitboard occ) const;
-    constexpr Bitboard calc_rook_attacks(int square, Bitboard occ) const;
+    constexpr Bitboard calc_bishop_attacks(uint8_t square, Bitboard occ) const;
+    constexpr Bitboard calc_rook_attacks(uint8_t square, Bitboard occ) const;
     void init_from_fen(const std::string& fen);
 
     // move generation

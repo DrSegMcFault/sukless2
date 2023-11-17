@@ -23,6 +23,6 @@ class Game {
     std::array<std::optional<Piece>, 64> get_current_board() const;
 
     // for gui purposes. returns the squares the piece can go to
-    std::vector<int> get_pseudo_legal_moves(int square) const;
+    std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
 };
 }

@@ -56,9 +56,9 @@ void BoardManager::init_slider_attacks()
     {
       Bitboard occupancy = 0ULL;
 
-      for (int count = 0; count < bits_in_mask; count++)
+      for (uint8_t count = 0; count < bits_in_mask; count++)
       {
-        int square = util::bits::get_lsb_index(attack_mask);
+        uint8_t square = util::bits::get_lsb_index(attack_mask);
         clear_bit(square, attack_mask);
 
         if (is_set(count, index)) {
@@ -69,10 +69,10 @@ void BoardManager::init_slider_attacks()
       return occupancy;
     };
 
-    for (int square = 0; square < 64; square++) {
+    for (uint8_t square = 0; square < 64; square++) {
 
       Bitboard attack_mask = (is_bishop ? bishop_masks[square] : rook_masks[square]);
-      int bit_count = (is_bishop ? bishop_bits[square] : rook_bits[square]);
+      uint8_t bit_count = (is_bishop ? bishop_bits[square] : rook_bits[square]);
       uint64_t permutations = (1ULL << bit_count);
 
       for (uint64_t index = 0; index < permutations; index++)
@@ -110,7 +110,7 @@ constexpr void BoardManager::init_pawn_attacks()
     set_bit(square, b);
 
     // white
-    if (side == white) {
+    if (side == Color::white) {
       if ((b << 7) & not_h_file)
         attacks |= (b << 7);
 
@@ -209,7 +209,7 @@ constexpr void BoardManager::init_king_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_bishop_masks()
 {
-  for (uint64_t square = 0; square < 64ULL; square++) { 
+  for (uint8_t square = 0; square < 64; square++) {
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -241,7 +241,7 @@ constexpr void BoardManager::init_bishop_masks()
  *******************************************************************************/
 constexpr void BoardManager::init_rook_masks()
 {
-  for (uint64_t square = 0; square < 64ULL; square++) {
+  for (uint8_t square = 0; square < 64ULL; square++) {
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -271,7 +271,7 @@ constexpr void BoardManager::init_rook_masks()
  * Method: calc_bishop_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ) const
+constexpr Bitboard BoardManager::calc_bishop_attacks(uint8_t square, Bitboard occ) const
 {
   Bitboard attacks {0ULL};
 
@@ -304,7 +304,7 @@ constexpr Bitboard BoardManager::calc_bishop_attacks(int square, Bitboard occ) c
  * Method: calc_rook_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-constexpr Bitboard BoardManager::calc_rook_attacks(int square, Bitboard occ) const
+constexpr Bitboard BoardManager::calc_rook_attacks(uint8_t square, Bitboard occ) const
 {
   Bitboard attacks {0ULL};
 
@@ -366,10 +366,10 @@ Bitboard BoardManager::calc_black_occupancy(std::array<Bitboard, 15>& board) {
  * Method: get_bishop_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-Bitboard BoardManager::get_bishop_attacks(int square, Bitboard occupancy) const
+Bitboard BoardManager::get_bishop_attacks(uint8_t square, Bitboard occupancy) const
 {
   occupancy &= bishop_masks[square];
-  int index =
+  uint16_t index =
     (occupancy * bishop_magics[square]) >> (64ULL - bishop_bits[square]);
   return bishop_attacks[square][index];
 }
@@ -379,10 +379,10 @@ Bitboard BoardManager::get_bishop_attacks(int square, Bitboard occupancy) const
  * Method: get_rook_attacks(int square, Bitboard occ)
  *
  *******************************************************************************/
-Bitboard BoardManager::get_rook_attacks(int square, Bitboard occupancy) const
+Bitboard BoardManager::get_rook_attacks(uint8_t square, Bitboard occupancy) const
 {
   occupancy &= rook_masks[square];
-  int index =
+  uint16_t index =
     (occupancy * rook_magics[square]) >> (64ULL - rook_bits[square]);
   return rook_attacks[square][index];
 }
@@ -392,7 +392,7 @@ Bitboard BoardManager::get_rook_attacks(int square, Bitboard occupancy) const
  * Method: is_square_attacked(int square, Color side)
  * is the given square attacked by the given side
  *******************************************************************************/
-bool BoardManager::is_square_attacked(int square,
+bool BoardManager::is_square_attacked(uint8_t square,
                                       Color side,
                                       std::array<Bitboard, 15>& board) const
 {
@@ -470,7 +470,7 @@ void BoardManager::init_from_fen(const std::string &fen)
       break;
     } else {
       auto piece = util::fen::piece_from_char(c);
-      uint32_t square = rank * 8 + file;
+      uint8_t square = rank * 8 + file;
       set_bit(square, _board[piece]);
       file++;
     }
@@ -494,10 +494,10 @@ void BoardManager::init_from_fen(const std::string &fen)
  * Method: square_to_piece(int square)
  *
  *******************************************************************************/
-std::optional<Piece> BoardManager::square_to_piece(int square) const
+std::optional<Piece> BoardManager::square_to_piece(uint8_t square) const
 {
   std::optional<Piece> ret;
-  for (int p = static_cast<int>(w_pawn); p <= static_cast<int>(b_king); p++) {
+  for (uint8_t p = static_cast<uint8_t>(w_pawn); p <= static_cast<uint8_t>(b_king); p++) {
     if (is_set(square, _board[p])) {
       ret.emplace(static_cast<Piece>(p));
       return ret;
@@ -512,13 +512,13 @@ std::optional<Piece> BoardManager::square_to_piece(int square) const
  * Method: get_pseudo_legal_moves(int square)
  *
  *******************************************************************************/
-std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
+std::vector<uint8_t> BoardManager::get_pseudo_legal_moves(uint8_t square) const
 {
-  std::vector<int> ret;
+  std::vector<uint8_t> ret;
   ret.reserve(55);
-  for (const auto& [key, value] : _move_list) {
-    if (get_move_source(key) == square) {
-      ret.push_back(get_move_target(key));
+  for (const auto& move : _move_list) {
+    if (move.source == square) {
+      ret.push_back(move.target);
     }
   }
 
@@ -533,7 +533,7 @@ std::vector<int> BoardManager::get_pseudo_legal_moves(int square) const
 std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
 {
   std::array<std::optional<Piece>, 64> board;
-  for (auto i = 0; i < 64; i++) {
+  for (uint8_t i = 0; i < 64; i++) {
     board[i] = square_to_piece(i);
   }
   return board;
@@ -545,13 +545,18 @@ std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
  *
  *******************************************************************************/
 inline void BoardManager::add_move(uint32_t source, uint32_t target,
-                            uint32_t piece, uint32_t promotion,
-                            uint32_t capture, uint32_t double_push,
-                            uint32_t enpassant, uint32_t castling)
+                                   uint32_t piece, uint32_t promotion,
+                                   uint32_t capture, uint32_t double_push,
+                                   uint32_t enpassant, uint32_t castling)
 {
-  _move_list.insert(
-    std::make_pair<uint32_t, bool>(
-      encode_move(source, target, piece, promotion, capture, double_push, enpassant, castling), true));
+  _move_list.push_back({.source = source,
+                        .target= target,
+                        .piece = piece,
+                        .promoted = promotion,
+                        .capture = capture,
+                        .double_push = double_push,
+                        .enpassant = enpassant,
+                        .castling = castling});
 }
 
 /*******************************************************************************
@@ -559,7 +564,7 @@ inline void BoardManager::add_move(uint32_t source, uint32_t target,
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
-MoveResult BoardManager::make_move(uint32_t move) {
+MoveResult BoardManager::make_move(util::bits::HashedMove move) {
 
   MoveResult result = MoveResult::Illegal;
 
@@ -568,15 +573,10 @@ MoveResult BoardManager::make_move(uint32_t move) {
   State state_copy = _state;
 
   // parse the move
-  uint32_t source_square = get_move_source(move);
-  uint32_t target_square = get_move_target(move);
-  Piece piece = static_cast<Piece>(get_move_piece(move));
-  bool was_promotion = (get_move_promoted(move) != 0);
-  Piece promoted_to = static_cast<Piece>(get_move_promoted(move));
-  bool capture = static_cast<bool>(get_move_capture(move));
-  bool double_push = static_cast<bool>(get_move_double(move));
-  bool was_en_passant = static_cast<bool>(get_move_enpassant(move));
-  int castling = get_move_castling(move);
+  const auto&& [ source_square, target_square,
+                 piece, promoted_to,
+                 capture, double_push,
+                 was_en_passant, castling ] = move.explode();
 
   // do the move, update the bitboard of the piece that moved
   move_bit(source_square, target_square, board_copy[piece]);
@@ -645,7 +645,8 @@ MoveResult BoardManager::make_move(uint32_t move) {
       }
     }
   }
-  else if (was_promotion) {
+  else if (static_cast<uint8_t>(promoted_to))
+  {
     switch (state_copy.side_to_move) {
       case Color::white:
       {
@@ -662,30 +663,31 @@ MoveResult BoardManager::make_move(uint32_t move) {
     }
   }
   else if (castling) {
-    switch (static_cast<Pos>(target_square)) {
+    switch (target_square) {
+      using namespace util;
       // white castling king side
-      case Pos::g1:
+      case chess::G1:
       {
-        move_bit(Pos::h1, Pos::f1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+        move_bit(chess::H1, chess::F1, board_copy[w_rook]);
+        state_copy.castling_rights &= ~util::toul(CastlingRights::WhiteCastlingRights);
         break;
       }
-      case Pos::c1:
+      case chess::C1:
       {
-        move_bit(Pos::a1, Pos::d1, board_copy[w_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::WhiteCastlingRights);
+        move_bit(chess::A1, chess::D1, board_copy[w_rook]);
+        state_copy.castling_rights &= ~util::toul(CastlingRights::WhiteCastlingRights);
         break;
       }
-      case Pos::g8:
+      case chess::G8:
       {
-        move_bit(Pos::h8, Pos::f8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
+        move_bit(chess::H8, chess::F8, board_copy[b_rook]);
+        state_copy.castling_rights &= ~util::toul(CastlingRights::BlackCastlingRights);
         break;
       }
-      case Pos::c8:
+      case chess::C8:
       {
-        move_bit(Pos::a8, Pos::d8, board_copy[b_rook]);
-        state_copy.castling_rights &= ~static_cast<uint32_t>(CastlingRights::BlackCastlingRights);
+        move_bit(chess::A8, chess::D8, board_copy[b_rook]);
+        state_copy.castling_rights &= ~util::toul(CastlingRights::BlackCastlingRights);
         break;
       }
       default:
@@ -789,18 +791,20 @@ void BoardManager::generate_black_moves()
 void BoardManager::generate_white_pawn_moves() 
 {
   Bitboard board = _board[w_pawn];
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
+
     // this is a white pawn push of 1 square
     target_square = source_square + 8;
 
     // if the target square is on board and not occupied
-    if (target_square <= Pos::h8 && !(is_set(target_square, _board[All]))) {
+    if (target_square <= chess::H8 && !is_set(target_square, _board[All])) {
       // promotion
-      if (source_square >= Pos::a7 && source_square <= Pos::h7) {
+      if (source_square >= chess::A7 && source_square <= chess::H7) {
+
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_queen, 0,0,0,0);
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_rook,  0,0,0,0);
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_bishop,0,0,0,0);
@@ -809,7 +813,7 @@ void BoardManager::generate_white_pawn_moves()
       } else { // one move forward, no promotion
         add_move(source_square, target_square, Piece::w_pawn, 0, 0,0,0,0);
 
-        if ((source_square >= Pos::a2 && source_square <= Pos::h2) &&
+        if ((source_square >= chess::A2 && source_square <= chess::H2) &&
             !is_set(target_square + 8, _board[All]))
         {
            // two square push
@@ -824,7 +828,7 @@ void BoardManager::generate_white_pawn_moves()
       target_square = util::bits::get_lsb_index(attacks);
 
       // promotion
-      if (source_square >= Pos::a7 && source_square <= Pos::h7) {
+      if (source_square >= chess::A7 && source_square <= chess::H7) {
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_queen, 1,0,0,0);
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_rook,  1,0,0,0);
         add_move(source_square, target_square, Piece::w_pawn, Piece::w_bishop,1,0,0,0);
@@ -857,8 +861,8 @@ void BoardManager::generate_white_pawn_moves()
 void BoardManager::generate_black_pawn_moves() 
 {
    Bitboard board = _board[b_pawn];
-   int source_square = -1;
-   int target_square = -1;
+   uint8_t source_square = 0;
+   uint8_t target_square = 0;
 
    while (board) {
      source_square = util::bits::get_lsb_index(board);
@@ -866,9 +870,10 @@ void BoardManager::generate_black_pawn_moves()
      target_square = source_square - 8;
 
      // if the target square is on board and not occupied
-     if (target_square >= Pos::a1 && !is_set(target_square, _board[All])) {
+     if (target_square >= chess::A1 && !is_set(target_square, _board[All])) {
        // promotion
-       if (source_square >= Pos::a2 && source_square <= Pos::h2) {
+       if (source_square >= chess::A2 && source_square <= chess::H2)
+       {
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_queen, 0,0,0,0);
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_rook,  0,0,0,0);
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_bishop,0,0,0,0);
@@ -877,7 +882,7 @@ void BoardManager::generate_black_pawn_moves()
        } else { // one move forward, no promotion
          add_move(source_square, target_square, Piece::b_pawn, 0, 0,0,0,0);
 
-         if ((source_square >= Pos::a7 && source_square <= Pos::h7) &&
+         if (source_square >= chess::A7 && source_square <= chess::H7 &&
              !is_set(target_square - 8, _board[All]))
          {
            // two square push
@@ -892,7 +897,7 @@ void BoardManager::generate_black_pawn_moves()
        target_square = util::bits::get_lsb_index(attacks);
 
        // promotion
-       if (source_square >= Pos::a2 && source_square <= Pos::h2) {
+       if (source_square >= chess::A2 && source_square <= chess::H2) {
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_queen, 1,0,0,0);
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_rook,  1,0,0,0);
          add_move(source_square, target_square, Piece::b_pawn, Piece::b_bishop,1,0,0,0);
@@ -921,29 +926,29 @@ void BoardManager::generate_black_pawn_moves()
  *******************************************************************************/
 void BoardManager::generate_white_castling_moves() 
 {
-  if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteKingSide))
+  if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide))
   {
-    if (!is_set(Pos::f1, _board[All]) &&
-        !is_set(Pos::g1, _board[All]))
+    if (!is_set(chess::F1, _board[All]) &&
+        !is_set(chess::G1, _board[All]))
     {
-      if (!is_square_attacked(Pos::e1, Color::black, _board) &&
-          !is_square_attacked(Pos::f1, Color::black, _board))
+      if (!is_square_attacked(chess::E1, Color::black, _board) &&
+          !is_square_attacked(chess::F1, Color::black, _board))
       {
-        add_move(Pos::e1, Pos::g1, Piece::w_king, 0,0,0,0,1);
+        add_move(chess::E1, chess::G1, Piece::w_king, 0,0,0,0,1);
        }
      }
    }
 
-   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::WhiteQueenSide))
+   if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide))
    {
-     if (!(is_set(Pos::d1, _board[All])) &&
-         !(is_set(Pos::c1, _board[All])) &&
-         !(is_set(Pos::b1, _board[All])))
+     if (!(is_set(chess::D1, _board[All])) &&
+         !(is_set(chess::C1, _board[All])) &&
+         !(is_set(chess::B1, _board[All])))
      {
-       if (!is_square_attacked(Pos::e1, Color::black, _board) &&
-           !is_square_attacked(Pos::d1, Color::black, _board))
+       if (!is_square_attacked(chess::E1, Color::black, _board) &&
+           !is_square_attacked(chess::D1, Color::black, _board))
        {
-         add_move(Pos::e1, Pos::c1, Piece::w_king, 0,0,0,0,1);
+         add_move(chess::E1, chess::C1, Piece::w_king, 0,0,0,0,1);
        }
      }
    }
@@ -956,29 +961,29 @@ void BoardManager::generate_white_castling_moves()
  *******************************************************************************/
 void BoardManager::generate_black_castling_moves() 
 {
-   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackKingSide))
+   if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide))
    {
-     if (!is_set(Pos::f8, _board[All]) &&
-         !is_set(Pos::g8, _board[All]))
+     if (!is_set(chess::F8, _board[All]) &&
+         !is_set(chess::G8, _board[All]))
      {
-       if (!is_square_attacked(Pos::e8, Color::white, _board) &&
-           !is_square_attacked(Pos::f8, Color::white, _board))
+       if (!is_square_attacked(chess::E8, Color::white, _board) &&
+           !is_square_attacked(chess::F8, Color::white, _board))
        {
-         add_move(Pos::e8, Pos::g8, Piece::b_king, 0,0,0,0,1);
+         add_move(chess::E8, chess::G8, Piece::b_king, 0,0,0,0,1);
        }
      }
    }
 
-   if (_state.castling_rights & static_cast<uint32_t>(CastlingRights::BlackQueenSide))
+   if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide))
    {
-     if (!is_set(Pos::d8, _board[All]) &&
-         !is_set(Pos::c8, _board[All]) &&
-         !is_set(Pos::b8, _board[All]))
+     if (!is_set(chess::D8, _board[All]) &&
+         !is_set(chess::C8, _board[All]) &&
+         !is_set(chess::B8, _board[All]))
      {
-       if (!is_square_attacked(Pos::e8, Color::white, _board) &&
-           !is_square_attacked(Pos::d8, Color::white, _board))
+       if (!is_square_attacked(chess::E8, Color::white, _board) &&
+           !is_square_attacked(chess::D8, Color::white, _board))
        {
-         add_move(Pos::e8, Pos::c8, Piece::b_king, 0,0,0,0,1);
+         add_move(chess::E8, chess::C8, Piece::b_king, 0,0,0,0,1);
        }
      }
    }
@@ -993,8 +998,8 @@ void BoardManager::generate_knight_moves(Color side_to_move)
 {
   Bitboard board = _board[(side_to_move == Color::white) ? w_knight : b_knight];
   Bitboard attacks = 0ULL;
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
@@ -1025,8 +1030,8 @@ void BoardManager::generate_bishop_moves(Color side_to_move)
 {
   Bitboard board = _board[(side_to_move == Color::white) ? w_bishop : b_bishop];
   Bitboard attacks = 0ULL;
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
@@ -1058,8 +1063,8 @@ void BoardManager::generate_rook_moves(Color side_to_move)
 {
   Bitboard board = _board[(side_to_move == Color::white) ? w_rook : b_rook];
   Bitboard attacks = 0ULL;
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
@@ -1091,8 +1096,8 @@ void BoardManager::generate_queen_moves(Color side_to_move)
 {
   Bitboard board = _board[(side_to_move == Color::white) ? w_queen : b_queen];
   Bitboard attacks = 0ULL;
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
@@ -1123,8 +1128,8 @@ void BoardManager::generate_queen_moves(Color side_to_move)
 void BoardManager::generate_king_moves(Color side_to_move) {
   Bitboard board = _board[(side_to_move == Color::white) ? w_king : b_king];
   Bitboard attacks = 0ULL;
-  int source_square = -1;
-  int target_square = -1;
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
@@ -1151,12 +1156,12 @@ void BoardManager::generate_king_moves(Color side_to_move) {
  * Method: find_move(int source, int target)
  *
  *******************************************************************************/
-std::optional<uint32_t> BoardManager::find_move(int source, int target) const
+std::optional<util::bits::HashedMove> BoardManager::find_move(uint8_t source, uint8_t target) const
 {
-  std::optional<uint32_t> ret;
-  for (const auto& [key, value] : _move_list) {
-    if (get_move_source(key) == source && get_move_target(key) == target) {
-      ret.emplace(key);
+  std::optional<util::bits::HashedMove> ret;
+  for (const auto& move : _move_list) {
+    if (move.source == source && move.target == target) {
+      ret.emplace(move);
       return ret;
     }
   }
@@ -1180,7 +1185,7 @@ void BoardManager::test_attack_lookup()
       std::numeric_limits<std::uint64_t>::max());
 
     Bitboard occ = {dis(gen)}; 
-    Pos r_square = (Pos)(rand() % 64);
+    uint8_t r_square = (rand() % 64);
 
     Bitboard bishop_actual = get_bishop_attacks(r_square, occ);
     Bitboard bishop_calculated = calc_bishop_attacks(r_square, occ);
