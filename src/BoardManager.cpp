@@ -485,8 +485,9 @@ void BoardManager::init_from_fen(const std::string &fen)
   generate_moves();
 
   // TODO: castling rights, en_passant
-  _state.en_passant_target = -1;
-  _state.castling_rights = -1;
+  _state.en_passant_target = chess::NO_SQUARE;
+  _state.castling_rights = util::toul(CastlingRights::WhiteCastlingRights) |
+                           util::toul(CastlingRights::BlackCastlingRights);
 }
 
 /*******************************************************************************
@@ -629,7 +630,7 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
       }
     }
   } else {
-    state_copy.en_passant_target = -1;
+    state_copy.en_passant_target = chess::NO_SQUARE;
   }
 
   if (double_push) {
@@ -840,7 +841,7 @@ void BoardManager::generate_white_pawn_moves()
       clear_bit(target_square, attacks);
     }
 
-    if (_state.en_passant_target != -1) {
+    if (_state.en_passant_target != chess::NO_SQUARE) {
       auto en_passant_attacks = pawn_attacks[Color::white][source_square] & (1ULL << _state.en_passant_target);
       if (en_passant_attacks) {
         auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
@@ -907,7 +908,7 @@ void BoardManager::generate_black_pawn_moves()
        clear_bit(target_square, attacks);
      }
 
-     if (_state.en_passant_target != -1) {
+     if (_state.en_passant_target != chess::NO_SQUARE) {
        auto en_passant_attacks = pawn_attacks[Color::black][source_square] & (1ULL << _state.en_passant_target);
        if (en_passant_attacks) {
          auto attack_square = util::bits::get_lsb_index(en_passant_attacks);

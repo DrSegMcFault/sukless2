@@ -74,7 +74,7 @@ class BoardManager
       uint8_t castling_rights = 0b00001111;
       Color side_to_move = Color::white;
       // target enpassant square
-      int en_passant_target = -1;
+      uint8_t en_passant_target = chess::NO_SQUARE;
     } _state;
 
     // https://www.chessprogramming.org/Magic_Bitboards
@@ -241,11 +241,6 @@ class BoardManager
       11, 10, 10, 10, 10, 10, 10, 11,
       12, 11, 11, 11, 11, 11, 11, 12 };
 
-    // useful constants
-    static constexpr Bitboard not_a_file = 18374403900871474942ULL;
-    static constexpr Bitboard not_h_file = 9187201950435737471ULL;
-    static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
-    static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
     const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     bool is_square_attacked(uint8_t square,
@@ -280,6 +275,7 @@ class BoardManager
     void init_from_fen(const std::string& fen);
 
     // move generation
+
     inline void add_move(uint32_t source, uint32_t target,
                          uint32_t piece, uint32_t promotion,
                          uint32_t capture, uint32_t double_push,
@@ -300,5 +296,7 @@ class BoardManager
 
     // tests
     void test_attack_lookup();
+
+    friend class AI;
 };
 } // namespace chess

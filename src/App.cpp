@@ -255,12 +255,12 @@ void App::render_background()
   SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
 
   for (int i = 0; i < 8; i++) {
-	  for (int j = 0; j < 8; j++) {
+    for (int j = 0; j < 8; j++) {
       if (white) {
         SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-	    } else {
+      } else {
         SDL_SetRenderDrawColor(_renderer, 83, 132, 172, 255);
-	    }
+      }
 
       white = !white;
       SDL_Rect rectangle = { i * _screenW / 8,
@@ -268,7 +268,7 @@ void App::render_background()
                              _screenW / 8,
                              _screenH / 8 };
       SDL_RenderFillRect(_renderer, &rectangle);
-	  }
+    }
 
     white = !white;
   }
@@ -282,11 +282,10 @@ void App::render_background()
 void App::render_piece(SDL_Texture *texture, int square)
 {
   SDL_Rect src = {0, 0, 80, 80};
-  SDL_Rect dest = {
-                    (square % 8) * (_screenW / 8) + 5,
+  SDL_Rect dest = { (square % 8) * (_screenW / 8) + 5,
                     _screenH - ((square / 8 + 1) * (_screenH / 8)) + 5,
-			              _screenW / 8 - 10,
-			              _screenH / 8 - 10};
+                    _screenW / 8 - 10,
+                    _screenH / 8 - 10};
   SDL_RenderCopy(_renderer, texture, &src, &dest);
 }
 
@@ -314,8 +313,8 @@ SDL_Texture* App::load_texture(const char* filepath)
  *****************************************************************************/
 App::~App()
 {
-  SDL_DestroyWindow(_window);
   SDL_DestroyRenderer(_renderer);
+  SDL_DestroyWindow(_window);
   Mix_FreeChunk(_move_sound);
   Mix_FreeChunk(_win_sound);
   IMG_Quit();

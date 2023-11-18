@@ -30,6 +30,7 @@ namespace chess {
     b_rook, b_queen,  b_king,
     w_all,  b_all,    All
   };
+
   struct Move {
     uint8_t from;
     uint8_t to;
@@ -153,4 +154,11 @@ namespace chess {
   static constexpr uint8_t C8 = 58; static constexpr uint8_t D8 = 59;
   static constexpr uint8_t E8 = 60; static constexpr uint8_t F8 = 61;
   static constexpr uint8_t G8 = 62; static constexpr uint8_t H8 = 63;
+  static constexpr uint8_t NO_SQUARE = UINT8_MAX;
+
+  // useful constants
+  static constexpr Bitboard not_a_file = 18374403900871474942ULL;
+  static constexpr Bitboard not_h_file = 9187201950435737471ULL;
+  static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
+  static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
 } // namespace chess

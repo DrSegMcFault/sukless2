@@ -1,7 +1,5 @@
-#include "BoardManager.hxx"
-#include "Game.hxx"
-#include "App.hxx"
 #include <iostream>
+#include "App.hxx"
 
 using namespace chess;
 
