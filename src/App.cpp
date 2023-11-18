@@ -276,10 +276,10 @@ void App::render_background()
 
 /******************************************************************************
  *
- * Method: App::render_piece(*texture, int square)
+ * Method: App::render_piece(*texture, uint8_t square)
  *
  *****************************************************************************/
-void App::render_piece(SDL_Texture *texture, int square)
+void App::render_piece(SDL_Texture *texture, uint8_t square)
 {
   SDL_Rect src = {0, 0, 80, 80};
   SDL_Rect dest = { (square % 8) * (_screenW / 8) + 5,

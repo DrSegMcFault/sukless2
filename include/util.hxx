@@ -5,9 +5,11 @@
 #include <optional>
 #include <cstdint>
 #include <tuple>
+#include <ranges>
 
 namespace chess {
   using Bitboard = uint64_t;
+  using Board = std::array<Bitboard, 15>;
 
   enum Color {
     white,
@@ -43,6 +45,11 @@ namespace chess {
     template<typename T, typename V>
     bool contains(const T& a, const V& b) {
       return std::find(a.begin(), a.end(), b) != a.end();
+    }
+
+    template <typename T>
+    constexpr auto range(T end) {
+      return std::ranges::views::iota(static_cast<T>(0), end);
     }
 
     template <typename T>
@@ -114,7 +121,7 @@ namespace chess {
 
     namespace fen {
 
-      std::optional<int> algebraic_to_index(const std::string& alg);
+      std::optional<uint8_t> algebraic_to_index(const std::string& alg);
 
       Piece piece_from_char(char c);
       char char_from_piece(Piece p);
@@ -154,7 +161,7 @@ namespace chess {
   static constexpr uint8_t C8 = 58; static constexpr uint8_t D8 = 59;
   static constexpr uint8_t E8 = 60; static constexpr uint8_t F8 = 61;
   static constexpr uint8_t G8 = 62; static constexpr uint8_t H8 = 63;
-  static constexpr uint8_t NO_SQUARE = UINT8_MAX;
+  static constexpr uint8_t NoSquare = 64;
 
   // useful constants
   static constexpr Bitboard not_a_file = 18374403900871474942ULL;

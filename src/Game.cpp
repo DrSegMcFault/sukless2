@@ -38,7 +38,7 @@ bool Game::is_move_pseudo_legal(const Move& m) const
 
 /*******************************************************************************
  *
- * Method: get_pseudo_legal_moves(int square)
+ * Method: get_pseudo_legal_moves(uint8_t square)
  * returns the squares the piece can go to 
  *******************************************************************************/
 std::vector<uint8_t> Game::get_pseudo_legal_moves(uint8_t square) const

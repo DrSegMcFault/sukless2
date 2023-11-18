@@ -8,7 +8,7 @@
 void chess::print_board(const Bitboard& b) {
   for (int rank = 7; rank >= 0; rank--) {
     for (int file = 0; file < 8; file++) {
-      int square = rank * 8 + file;
+      uint8_t square = rank * 8 + file;
       if (!file)
         std::cout << "  " << rank + 1 << " ";
       std::cout << ((is_set(square, b)) ? "1" : "0") << " ";
@@ -38,9 +38,9 @@ uint8_t chess::util::bits::get_lsb_index(Bitboard b)
  * Function: algebraic_to_index(const std::string& alg)
  * converts algebraic notation to the associated index
  *******************************************************************************/
-std::optional<int> chess::util::fen::algebraic_to_index(const std::string& alg)
+std::optional<uint8_t> chess::util::fen::algebraic_to_index(const std::string& alg)
 {
-  std::optional<int> index;
+  std::optional<uint8_t> index;
 
   if (alg.length() != 2) {
     return index;

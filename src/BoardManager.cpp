@@ -52,11 +52,11 @@ void BoardManager::init_slider_attacks()
   const auto populate_attack_tables = [this](bool is_bishop) {
     // generates the ith permutation of the attack mask
     const auto ith_permutation =
-      [](uint64_t index, int bits_in_mask, Bitboard attack_mask)
+      [](uint64_t index, uint8_t bits_in_mask, Bitboard attack_mask)
     {
       Bitboard occupancy = 0ULL;
 
-      for (uint8_t count = 0; count < bits_in_mask; count++)
+      for (auto count : util::range(bits_in_mask))
       {
         uint8_t square = util::bits::get_lsb_index(attack_mask);
         clear_bit(square, attack_mask);
@@ -69,18 +69,18 @@ void BoardManager::init_slider_attacks()
       return occupancy;
     };
 
-    for (uint8_t square = 0; square < 64; square++) {
+    for (auto square : util::range(NoSquare)) {
 
       Bitboard attack_mask = (is_bishop ? bishop_masks[square] : rook_masks[square]);
       uint8_t bit_count = (is_bishop ? bishop_bits[square] : rook_bits[square]);
       uint64_t permutations = (1ULL << bit_count);
 
-      for (uint64_t index = 0; index < permutations; index++)
+      for (auto index : util::range(permutations))
       {
         Bitboard occupancy = ith_permutation(index, bit_count, attack_mask);
         auto magic = (is_bishop ? bishop_magics[square] : rook_magics[square]);
 
-        int magic_index = (occupancy * magic) >> (64ULL - bit_count);
+        uint16_t magic_index = (occupancy * magic) >> (64ULL - bit_count);
 
         if (is_bishop) {
           bishop_attacks[square][magic_index] = calc_bishop_attacks(square, occupancy);
@@ -103,7 +103,7 @@ void BoardManager::init_slider_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_pawn_attacks()
 {
-  constexpr auto get_mask = [](Color side, int square) {
+  constexpr auto get_mask = [](Color side, uint8_t square) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -127,7 +127,7 @@ constexpr void BoardManager::init_pawn_attacks()
     return attacks;
   };
 
-  for (int i = 0; i < 64; i++) {
+  for (auto i : util::range(NoSquare)) {
     pawn_attacks[white][i] = get_mask(white, i);
     pawn_attacks[black][i] = get_mask(black, i);
   }
@@ -140,7 +140,7 @@ constexpr void BoardManager::init_pawn_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_knight_attacks()
 {
-  for (uint64_t square = 0; square < 64ULL; square++) {
+  for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -174,7 +174,7 @@ constexpr void BoardManager::init_knight_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_king_attacks()
 {
-  for (uint64_t square = 0; square < 64ULL; square++) {
+  for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -209,7 +209,7 @@ constexpr void BoardManager::init_king_attacks()
  *******************************************************************************/
 constexpr void BoardManager::init_bishop_masks()
 {
-  for (uint8_t square = 0; square < 64; square++) {
+  for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -241,7 +241,7 @@ constexpr void BoardManager::init_bishop_masks()
  *******************************************************************************/
 constexpr void BoardManager::init_rook_masks()
 {
-  for (uint8_t square = 0; square < 64ULL; square++) {
+  for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
 
     int r = 0;
@@ -268,7 +268,7 @@ constexpr void BoardManager::init_rook_masks()
 
 /*******************************************************************************
  *
- * Method: calc_bishop_attacks(int square, Bitboard occ)
+ * Method: calc_bishop_attacks(uint8_t square, Bitboard occ)
  *
  *******************************************************************************/
 constexpr Bitboard BoardManager::calc_bishop_attacks(uint8_t square, Bitboard occ) const
@@ -301,7 +301,7 @@ constexpr Bitboard BoardManager::calc_bishop_attacks(uint8_t square, Bitboard oc
 
 /*******************************************************************************
  *
- * Method: calc_rook_attacks(int square, Bitboard occ)
+ * Method: calc_rook_attacks(uint8_t square, Bitboard occ)
  *
  *******************************************************************************/
 constexpr Bitboard BoardManager::calc_rook_attacks(uint8_t square, Bitboard occ) const
@@ -338,7 +338,7 @@ constexpr Bitboard BoardManager::calc_rook_attacks(uint8_t square, Bitboard occ)
  * Method: calc_white_occupancy()
  *
  *******************************************************************************/
-Bitboard BoardManager::calc_white_occupancy(std::array<Bitboard, 15>& board) {
+Bitboard BoardManager::calc_white_occupancy(Board& board) {
   return (board[w_pawn] |
           board[w_knight] |
           board[w_bishop] |
@@ -352,7 +352,7 @@ Bitboard BoardManager::calc_white_occupancy(std::array<Bitboard, 15>& board) {
  * Method: calc_black_occupancy()
  *
  *******************************************************************************/
-Bitboard BoardManager::calc_black_occupancy(std::array<Bitboard, 15>& board) {
+Bitboard BoardManager::calc_black_occupancy(Board& board) {
   return (board[b_pawn] |
           board[b_knight] |
           board[b_bishop] |
@@ -363,7 +363,7 @@ Bitboard BoardManager::calc_black_occupancy(std::array<Bitboard, 15>& board) {
 
 /*******************************************************************************
  *
- * Method: get_bishop_attacks(int square, Bitboard occ)
+ * Method: get_bishop_attacks(uint8_t square, Bitboard occ)
  *
  *******************************************************************************/
 Bitboard BoardManager::get_bishop_attacks(uint8_t square, Bitboard occupancy) const
@@ -376,7 +376,7 @@ Bitboard BoardManager::get_bishop_attacks(uint8_t square, Bitboard occupancy) co
 
 /*******************************************************************************
  *
- * Method: get_rook_attacks(int square, Bitboard occ)
+ * Method: get_rook_attacks(uint8_t square, Bitboard occ)
  *
  *******************************************************************************/
 Bitboard BoardManager::get_rook_attacks(uint8_t square, Bitboard occupancy) const
@@ -389,7 +389,7 @@ Bitboard BoardManager::get_rook_attacks(uint8_t square, Bitboard occupancy) cons
 
 /*******************************************************************************
  *
- * Method: is_square_attacked(int square, Color side)
+ * Method: is_square_attacked(uint8_t square, Color side)
  * is the given square attacked by the given side
  *******************************************************************************/
 bool BoardManager::is_square_attacked(uint8_t square,
@@ -485,14 +485,14 @@ void BoardManager::init_from_fen(const std::string &fen)
   generate_moves();
 
   // TODO: castling rights, en_passant
-  _state.en_passant_target = chess::NO_SQUARE;
+  _state.en_passant_target = chess::NoSquare;
   _state.castling_rights = util::toul(CastlingRights::WhiteCastlingRights) |
                            util::toul(CastlingRights::BlackCastlingRights);
 }
 
 /*******************************************************************************
  *
- * Method: square_to_piece(int square)
+ * Method: square_to_piece(uint8_t square)
  *
  *******************************************************************************/
 std::optional<Piece> BoardManager::square_to_piece(uint8_t square) const
@@ -510,7 +510,7 @@ std::optional<Piece> BoardManager::square_to_piece(uint8_t square) const
 
 /*******************************************************************************
  *
- * Method: get_pseudo_legal_moves(int square)
+ * Method: get_pseudo_legal_moves(uint8_t square)
  *
  *******************************************************************************/
 std::vector<uint8_t> BoardManager::get_pseudo_legal_moves(uint8_t square) const
@@ -534,7 +534,7 @@ std::vector<uint8_t> BoardManager::get_pseudo_legal_moves(uint8_t square) const
 std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
 {
   std::array<std::optional<Piece>, 64> board;
-  for (uint8_t i = 0; i < 64; i++) {
+  for (auto i : util::range(NoSquare)) {
     board[i] = square_to_piece(i);
   }
   return board;
@@ -630,7 +630,7 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
       }
     }
   } else {
-    state_copy.en_passant_target = chess::NO_SQUARE;
+    state_copy.en_passant_target = chess::NoSquare;
   }
 
   if (double_push) {
@@ -841,7 +841,7 @@ void BoardManager::generate_white_pawn_moves()
       clear_bit(target_square, attacks);
     }
 
-    if (_state.en_passant_target != chess::NO_SQUARE) {
+    if (_state.en_passant_target != chess::NoSquare) {
       auto en_passant_attacks = pawn_attacks[Color::white][source_square] & (1ULL << _state.en_passant_target);
       if (en_passant_attacks) {
         auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
@@ -908,7 +908,7 @@ void BoardManager::generate_black_pawn_moves()
        clear_bit(target_square, attacks);
      }
 
-     if (_state.en_passant_target != chess::NO_SQUARE) {
+     if (_state.en_passant_target != chess::NoSquare) {
        auto en_passant_attacks = pawn_attacks[Color::black][source_square] & (1ULL << _state.en_passant_target);
        if (en_passant_attacks) {
          auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
@@ -1155,7 +1155,7 @@ void BoardManager::generate_king_moves(Color side_to_move) {
 
 /*******************************************************************************
  *
- * Method: find_move(int source, int target)
+ * Method: find_move(uint8_t source, uint8_t target)
  *
  *******************************************************************************/
 std::optional<util::bits::HashedMove> BoardManager::find_move(uint8_t source, uint8_t target) const

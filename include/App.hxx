@@ -45,6 +45,6 @@ class App {
     void display();
     void display_possible_moves();
     void render_background();
-    void render_piece(SDL_Texture* txture, int square);
+    void render_piece(SDL_Texture* txture, uint8_t square);
     void render_all_pieces();
 };
