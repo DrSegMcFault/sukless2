@@ -14,7 +14,8 @@ target_sources(chess PRIVATE src/main.cpp
                              src/Game.cpp
                              src/App.cpp
                              src/util.cpp
-                             src/AI.cpp)
+                             src/AI.cpp
+                             src/MoveGen.cpp)
 
 find_package(SDL2 CONFIG REQUIRED)
 target_link_libraries(chess PRIVATE 

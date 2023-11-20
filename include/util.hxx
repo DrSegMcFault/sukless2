@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <tuple>
 #include <ranges>
+#include <array>
 
 namespace chess {
   using Bitboard = uint64_t;
@@ -37,6 +38,39 @@ namespace chess {
     uint8_t from;
     uint8_t to;
   };
+
+  enum class CastlingRights : uint8_t {
+    WhiteKingSide = 1,
+    WhiteQueenSide = 2,
+    WhiteCastlingRights = 3,
+    BlackKingSide = 4,
+    BlackQueenSide = 8,
+    BlackCastlingRights = 12
+  };
+
+  static constexpr uint8_t NoSquare = 64;
+
+  // flags for the game state
+  struct State {
+    uint8_t castling_rights = 0b00001111;
+    Color side_to_move = Color::white;
+    // target enpassant square
+    uint8_t en_passant_target = chess::NoSquare;
+  };
+
+  enum class AIDifficulty {
+    Easy,
+    Medium,
+    Hard
+  };
+
+  struct AIConfig {
+    AIDifficulty difficulty;
+    uint8_t max_depth;
+    Color controlling;
+  };
+
+  const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   void print_board(const Bitboard& b);
 
@@ -80,7 +114,7 @@ namespace chess {
           uint32_t double_push : 1;
           uint32_t enpassant : 1;
           uint32_t castling : 1;
-          uint32_t _padding : 8;
+          uint32_t : 8;
         };
 
         uint32_t move;
@@ -161,7 +195,6 @@ namespace chess {
   static constexpr uint8_t C8 = 58; static constexpr uint8_t D8 = 59;
   static constexpr uint8_t E8 = 60; static constexpr uint8_t F8 = 61;
   static constexpr uint8_t G8 = 62; static constexpr uint8_t H8 = 63;
-  static constexpr uint8_t NoSquare = 64;
 
   // useful constants
   static constexpr Bitboard not_a_file = 18374403900871474942ULL;

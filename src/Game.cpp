@@ -2,14 +2,16 @@
 #include <iostream>
 
 using namespace chess;
-
 /*******************************************************************************
  *
- * Method: Game()
+ * Method: Game::Game()
  *
  *******************************************************************************/
-Game::Game()
-{
+Game::Game() {
+  _generator = std::make_shared<MoveGen>();
+  _mgr = std::make_shared<BoardManager>(_generator);
+  _ai = std::make_shared<AI>(this, _generator,
+           AIConfig { AIDifficulty::Medium, 10, Color::black } );
 }
 
 /*******************************************************************************
@@ -19,8 +21,8 @@ Game::Game()
  *******************************************************************************/
 MoveResult Game::try_move(const Move& m)
 {
-  if (auto move = _mgr.find_move(m.from, m.to)) {
-    return _mgr.make_move(move.value());
+  if (auto move = _mgr->find_move(m.from, m.to)) {
+    return _mgr->make_move(move.value());
   }
 
   return MoveResult::Illegal;
@@ -43,7 +45,7 @@ bool Game::is_move_pseudo_legal(const Move& m) const
  *******************************************************************************/
 std::vector<uint8_t> Game::get_pseudo_legal_moves(uint8_t square) const
 {
-  return _mgr.get_pseudo_legal_moves(square);
+  return _mgr->get_pseudo_legal_moves(square);
 }
 
 /*******************************************************************************
@@ -53,7 +55,7 @@ std::vector<uint8_t> Game::get_pseudo_legal_moves(uint8_t square) const
  *******************************************************************************/
 std::array<std::optional<Piece>, 64> Game::get_current_board() const
 {
-  return _mgr.get_current_board();
+  return _mgr->get_current_board();
 }
 
 /*******************************************************************************
@@ -63,5 +65,5 @@ std::array<std::optional<Piece>, 64> Game::get_current_board() const
  *******************************************************************************/
 Color Game::get_side_to_move() const
 {
-  return _mgr.side_to_move();
+  return _mgr->side_to_move();
 }

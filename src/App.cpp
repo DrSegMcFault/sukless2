@@ -10,7 +10,6 @@
  *****************************************************************************/
 App::App() 
 {
-
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 );
 
@@ -52,7 +51,7 @@ App::App()
   p_textures.insert( { Piece::w_knight, load_texture("resources/knight_white.png") } );
   p_textures.insert( { Piece::b_knight, load_texture("resources/knight_black.png") } );
 
-  _game = std::make_shared<Game>(); 
+  _game = std::make_shared<Game>();
   _current_board = _game->get_current_board();
   _possible_moves.reserve(55);
 }
