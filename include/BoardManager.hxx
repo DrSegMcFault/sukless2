@@ -24,6 +24,10 @@ class BoardManager
     std::optional<util::bits::HashedMove> find_move(uint8_t source, uint8_t target) const;
     std::array<std::optional<Piece>, 64> get_current_board() const;
 
+    std::tuple<Board,State> get_board_info() const {
+      return { _board, _state };
+    }
+
     Color side_to_move() const { return _state.side_to_move; }
 
     // convienence functions

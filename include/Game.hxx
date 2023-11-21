@@ -22,6 +22,7 @@ class Game {
     Color get_side_to_move() const;
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
+    std::tuple<Board, State> get_board_info() const { return _mgr->get_board_info(); }
 
     // for gui purposes. returns the squares the piece can go to
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;

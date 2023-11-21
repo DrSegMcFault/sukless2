@@ -25,6 +25,7 @@ AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
       _depth = 5;
       break;
   }
+
   _controlling_color = cfg.controlling;
 }
 
@@ -35,5 +36,13 @@ AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
  *****************************************************************************/
 Move AI::get_best_move() const
 {
+  auto&& [ board_copy, state_copy ] = _game->get_board_info();
+  std::vector<util::bits::HashedMove> moves;
+  moves.reserve(256);
+  _generator->generate_moves(board_copy, state_copy, moves);
+  for (auto& m : moves) {
+    (void)m;
+  }
+
   return {0,0};
 }

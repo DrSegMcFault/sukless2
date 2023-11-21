@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
+#include <tuple>
+
 #include "util.hxx"
 #include "Game.hxx"
 
