@@ -11,7 +11,7 @@ Game::Game() {
   _generator = std::make_shared<MoveGen>();
   _mgr = std::make_shared<BoardManager>(_generator);
   _ai = std::make_shared<AI>(this, _generator,
-                             AIConfig { AIDifficulty::Medium, 10, Color::black } );
+           AIConfig { AIDifficulty::Medium, 10, Color::black } );
 }
 
 /*******************************************************************************
@@ -41,7 +41,7 @@ bool Game::is_move_pseudo_legal(const Move& m) const
 /*******************************************************************************
  *
  * Method: get_pseudo_legal_moves(uint8_t square)
- * returns the squares the piece can go to
+ * returns the squares the piece can go to 
  *******************************************************************************/
 std::vector<uint8_t> Game::get_pseudo_legal_moves(uint8_t square) const
 {
@@ -51,7 +51,7 @@ std::vector<uint8_t> Game::get_pseudo_legal_moves(uint8_t square) const
 /*******************************************************************************
  *
  * Method: get_current_board()
- *
+ * 
  *******************************************************************************/
 std::array<std::optional<Piece>, 64> Game::get_current_board() const
 {

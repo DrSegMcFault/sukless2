@@ -8,30 +8,30 @@
 #include "Game.hxx"
 
 namespace chess {
-class Game;
-class AI
-{
-public:
-    AI() = delete;
+  class Game;
+  class AI
+  {
+    public:
+      AI() = delete;
 
-    AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg);
+      AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg);
 
-    AI(const AI&) = delete;
-    AI(AI&&) = delete;
-    ~AI() = default;
+      AI(const AI&) = delete;
+      AI(AI&&) = delete;
+      ~AI() = default;
 
-    int get_white_eval() const { return _white_eval; };
-    int get_black_eval() const { return _black_eval; };
-    Move get_best_move() const;
+      int get_white_eval() const { return _white_eval; };
+      int get_black_eval() const { return _black_eval; };
+      Move get_best_move() const;
 
-private:
-    Game* _game;
-    std::shared_ptr<MoveGen> _generator;
-    int _depth;
-    int _white_eval;
-    int _black_eval;
-    int _white_material_score;
-    int _black_material_score;
-    Color _controlling_color;
-};
+    private:
+      Game* _game;
+      std::shared_ptr<MoveGen> _generator;
+      int _depth;
+      int _white_eval;
+      int _black_eval;
+      int _white_material_score;
+      int _black_material_score;
+      Color _controlling_color;
+  };
 }

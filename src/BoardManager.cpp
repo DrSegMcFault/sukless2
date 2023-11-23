@@ -10,7 +10,7 @@ using namespace chess;
  *
  *******************************************************************************/
 BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
-    : _generator(g)
+  : _generator(g)
 {
   _move_list.reserve(256);
   init_from_fen(starting_position);
@@ -38,13 +38,13 @@ void BoardManager::init_from_fen(const std::string &fen)
   // populate board occupancies and game state
   // using a FEN string
   for (auto& b : _board) {
-     b = 0ULL;
+    b = 0ULL;
   }
 
   // parse the FEN string
   uint32_t rank = 7; // start from the 8th rank
   uint32_t file = 0;
-
+  
   for (auto c : fen) {
     if (isdigit(c)) {
       file += (c - '0');
@@ -170,12 +170,12 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
 
     // loop over possible capture pieces
     for (uint8_t p = static_cast<uint8_t>(start_piece);
-         p <= static_cast<uint8_t>(end_piece); p++)
+        p <= static_cast<uint8_t>(end_piece); p++)
     {
-       if (is_set(target_square, board_copy[p])) {
-           clear_bit(target_square, board_copy[p]);
-           break;
-       }
+      if (is_set(target_square, board_copy[p])) {
+        clear_bit(target_square, board_copy[p]);
+        break;
+      }
     }
   }
 
@@ -275,14 +275,14 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
 
   // if the king is under attack after the move, the move is illegal
   if (_generator->is_square_attacked(((state_copy.side_to_move == Color::white)
-                                      ? util::bits::get_lsb_index(board_copy[w_king])
-                                      : util::bits::get_lsb_index(board_copy[b_king])),
-                                     ((state_copy.side_to_move == Color::white) ? Color::black : Color::white),
-                                     board_copy))
+                          ? util::bits::get_lsb_index(board_copy[w_king])
+                          : util::bits::get_lsb_index(board_copy[b_king])),
+                          ((state_copy.side_to_move == Color::white) ? Color::black : Color::white),
+                          board_copy))
   {
     return MoveResult::Illegal;
   }
-  else
+  else 
   {
     result = MoveResult::Success;
     state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
