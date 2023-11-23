@@ -1,36 +1,66 @@
-cmake_minimum_required(VERSION 3.25.0)
+cmake_minimum_required(VERSION 3.16)
 
+project(chess-qt VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
-project(chess LANGUAGES C CXX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Multimedia Qml Widgets Positioning)
 
-set(CMAKE_BUILD_TYPE "Debug")
+qt_standard_project_setup()
 
-add_executable(chess)
-target_sources(chess PRIVATE src/main.cpp
-                             src/BoardManager.cpp
-                             src/Game.cpp
-                             src/App.cpp
-                             src/util.cpp
-                             src/AI.cpp
-                             src/MoveGen.cpp)
+qt_add_executable(appchess-qt
+    src/main.cpp
+    images.qrc
+)
+target_include_directories(appchess-qt PRIVATE include)
 
-find_package(SDL2 CONFIG REQUIRED)
-target_link_libraries(chess PRIVATE 
-                            $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
-                            $<IF:$<TARGET_EXISTS:SDL2::SDL2>, SDL2::SDL2, SDL2::SDL2-static>)
 
-find_package(SDL2_mixer CONFIG REQUIRED)
-target_link_libraries(chess PRIVATE 
-                             $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>, SDL2_mixer::SDL2_mixer, SDL2_mixer::SDL2_mixer-static>)
+qt_add_qml_module(appchess-qt
+    URI chess-qt
+    VERSION 1.0
+    QML_FILES qml/Main.qml
+    QML_FILES qml/AppContent.qml
+    QML_FILES qml/NavStack.qml
+    QML_FILES qml/Home.qml
+    QML_FILES qml/Board.qml
+    QML_FILES qml/HomeRightPane.qml
+    QML_FILES qml/HomeLeftPane.qml
+    SOURCES include/BoardModel.h
+    SOURCES include/Game.hxx
+    SOURCES include/BoardManager.hxx
+    SOURCES include/util.hxx
+    SOURCES include/MoveGen.hxx
+    SOURCES include/BoardConstants.hxx
+    SOURCES include/AI.hxx
+    SOURCES src/BoardModel.cpp
+    SOURCES src/util.cpp
+    SOURCES src/BoardManager.cpp
+    SOURCES src/MoveGen.cpp
+    SOURCES src/AI.cpp
+    SOURCES src/Game.cpp
+)
 
-find_package(SDL2_image CONFIG REQUIRED)
-target_link_libraries(chess PRIVATE 
-                             $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>, SDL2_image::SDL2_image, SDL2_image::SDL2_image-static>)
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
+set_target_properties(appchess-qt PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appchess-qt
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
 
-target_include_directories(chess PRIVATE include)
-target_link_libraries(chess)
+target_link_libraries(appchess-qt
+    PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Positioning Qt6::Qml Qt6::Widgets
+)
 
-file(COPY resources DESTINATION ${PROJECT_BINARY_DIR})
+include(GNUInstallDirs)
+install(TARGETS appchess-qt
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

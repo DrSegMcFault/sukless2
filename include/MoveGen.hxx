@@ -6,7 +6,7 @@
 namespace chess {
 
 class MoveGen {
-  public:
+public:
     MoveGen();
     MoveGen(const MoveGen&) = delete;
     MoveGen(MoveGen&&) = delete;
@@ -19,14 +19,14 @@ class MoveGen {
     void generate_moves(const Board& board,
                         const State& state,
                         std::vector<util::bits::HashedMove>& moves);
-  private:
+private:
 
     // pre-calculated attack Bitboards
     std::array<std::array<Bitboard, 64>, 2> pawn_attacks;
     std::array<Bitboard, 64> knight_attacks;
     std::array<Bitboard, 64> king_attacks;
     std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
-    std::array<std::array<Bitboard, 4096>, 64> rook_attacks; 
+    std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
     // attack masks per square
     std::array<Bitboard, 64> bishop_masks;
@@ -38,7 +38,7 @@ class MoveGen {
     Bitboard get_rook_attacks(uint8_t square, Bitboard occ) const;
     Bitboard get_queen_attacks(uint8_t square, Bitboard occ) const
     {
-      return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
+        return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
     }
 
     // initialization functions
@@ -89,16 +89,16 @@ class MoveGen {
                              std::vector<util::bits::HashedMove>& moves);
 
     void generate_knight_moves(const Board& b, Color side_to_move,
-                                std::vector<util::bits::HashedMove>& moves);
+                               std::vector<util::bits::HashedMove>& moves);
 
     void generate_bishop_moves(const Board& b, Color side_to_move,
-                                std::vector<util::bits::HashedMove>& moves);
+                               std::vector<util::bits::HashedMove>& moves);
 
     void generate_rook_moves(const Board& b, Color side_to_move,
-                              std::vector<util::bits::HashedMove>& moves);
+                             std::vector<util::bits::HashedMove>& moves);
 
     void generate_queen_moves(const Board& b, Color side_to_move,
-                               std::vector<util::bits::HashedMove>& moves);
+                              std::vector<util::bits::HashedMove>& moves);
 
     // tests
     void test_attack_lookup();

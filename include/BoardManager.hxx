@@ -11,7 +11,7 @@ namespace chess {
 
 class BoardManager
 {
-  public:
+public:
     BoardManager(std::shared_ptr<MoveGen> g);
     BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen);
     BoardManager(const BoardManager&) noexcept = default;
@@ -25,29 +25,29 @@ class BoardManager
     std::array<std::optional<Piece>, 64> get_current_board() const;
 
     std::tuple<Board,State> get_board_info() const {
-      return { _board, _state };
+        return { _board, _state };
     }
 
     Color side_to_move() const { return _state.side_to_move; }
 
     // convienence functions
     const auto& operator[](Piece piece) const {
-      return _board[piece];
+        return _board[piece];
     }
 
     auto piece_count(Piece piece = Piece::All) const {
-       return util::bits::count(_board[piece]);
+        return util::bits::count(_board[piece]);
     }
 
     void print(Piece p = Piece::All) const {
-      chess::print_board(_board[p]);
+        chess::print_board(_board[p]);
     }
 
     const Bitboard& all() const {
-      return _board[Piece::All];
+        return _board[Piece::All];
     }
 
-  private:
+private:
     // collection of all Bitboards
     Board _board;
 
@@ -61,17 +61,17 @@ class BoardManager
 
     // after move update functions
     inline static Bitboard calc_white_occupancy(Board& board) {
-      return (board[w_pawn] | board[w_knight] | board[w_bishop] |
-              board[w_rook] | board[w_queen] | board[w_king]);
+        return (board[w_pawn] | board[w_knight] | board[w_bishop] |
+                board[w_rook] | board[w_queen] | board[w_king]);
     }
 
     inline static Bitboard calc_black_occupancy(Board& board) {
-      return (board[b_pawn] | board[b_knight] | board[b_bishop] |
-              board[b_rook] | board[b_queen] | board[b_king]);
+        return (board[b_pawn] | board[b_knight] | board[b_bishop] |
+                board[b_rook] | board[b_queen] | board[b_king]);
     }
 
     inline static Bitboard calc_global_occupancy(Board& board) {
-      return (calc_white_occupancy(board) | calc_black_occupancy(board));
+        return (calc_white_occupancy(board) | calc_black_occupancy(board));
     }
 };
 } // namespace chess
