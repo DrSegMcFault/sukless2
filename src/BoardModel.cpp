@@ -9,9 +9,10 @@
 BoardModel::BoardModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-    _game = std::make_shared<Game>();
-    _data = _game->get_current_board();
-    _possible_moves.reserve(55);
+  _game = std::make_shared<Game>();
+  _data = _game->get_current_board();
+
+  _possible_moves.reserve(55);
 }
 
 /******************************************************************************
@@ -112,3 +113,62 @@ QVariant BoardModel::data(const QModelIndex &index, int role) const
        return {};
    }
 }
+
+/******************************************************************************
+ *
+ * Method: move(int from, int to)
+ *
+ *****************************************************************************/
+void BoardModel::move(int from, int to) {
+    beginResetModel();
+
+    QUrl sound_to_play;
+
+    auto source = static_cast<uint8_t>(toInternalIndex(from));
+    auto target = static_cast<uint8_t>(toInternalIndex(to));
+
+    switch (_game->try_move( {source, target} )) {
+      case MoveResult::Success:
+      {
+        qDebug() << "Successful move\n";
+        _data = _game->get_current_board();
+        sound_to_play = _move_sound;
+        break;
+      }
+
+      case MoveResult::Illegal:
+      {
+        qDebug() << "Illegal Move!\n";
+        break;
+      }
+
+      case MoveResult::Checkmate:
+      {
+        qDebug() << "Checkmate!\n";
+        _data = _game->get_current_board();
+        sound_to_play = _move_sound;
+        emit checkmate(_game->get_side_to_move() == Color::black
+                                      ? QString(tr("White Wins!"))
+                                      : QString(tr("Black Wins!")));
+        break;
+      }
+
+      case MoveResult::Stalemate:
+        qDebug() << "Stalemate!\n";
+        _data = _game->get_current_board();
+        sound_to_play = _move_sound;
+        emit checkmate(QString("Stalemate!"));
+        break;
+
+      case MoveResult::Draw:
+        Q_ASSERT(false);
+        break;
+    }
+
+
+    endResetModel();
+
+    if (!sound_to_play.isEmpty()) {
+       emit playSound(sound_to_play);
+    }
+  }

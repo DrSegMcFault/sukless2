@@ -15,7 +15,6 @@ Rectangle {
       left: parent.left
       right: parent.right
     }
-
     spacing: 2
   }
 }

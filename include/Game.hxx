@@ -21,6 +21,8 @@ class Game {
 
     Color get_side_to_move() const;
 
+    BoardManager get_board_copy() {return _mgr->get_copy();}
+
     std::array<std::optional<Piece>, 64> get_current_board() const;
     std::tuple<Board, State> get_board_info() const { return _mgr->get_board_info(); }
 

@@ -60,7 +60,7 @@ void MoveGen::generate_moves(const Board& b,
                     const State& s,
                     std::vector<util::bits::HashedMove>& moves)
 {
-   switch(s.side_to_move) {
+   switch (s.side_to_move) {
      case Color::white:
        generate_white_moves(b, s, moves);
        break;

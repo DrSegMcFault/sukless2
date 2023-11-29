@@ -22,25 +22,25 @@ qt_add_qml_module(appchess-qt
     URI chess-qt
     VERSION 1.0
     QML_FILES qml/Main.qml
-    QML_FILES qml/AppContent.qml
-    QML_FILES qml/NavStack.qml
-    QML_FILES qml/Home.qml
-    QML_FILES qml/Board.qml
-    QML_FILES qml/HomeRightPane.qml
-    QML_FILES qml/HomeLeftPane.qml
+              qml/AppContent.qml
+              qml/NavStack.qml
+              qml/Home.qml
+              qml/Board.qml
+              qml/HomeRightPane.qml
+              qml/HomeLeftPane.qml
     SOURCES include/BoardModel.h
-    SOURCES include/Game.hxx
-    SOURCES include/BoardManager.hxx
-    SOURCES include/util.hxx
-    SOURCES include/MoveGen.hxx
-    SOURCES include/BoardConstants.hxx
-    SOURCES include/AI.hxx
-    SOURCES src/BoardModel.cpp
-    SOURCES src/util.cpp
-    SOURCES src/BoardManager.cpp
-    SOURCES src/MoveGen.cpp
-    SOURCES src/AI.cpp
-    SOURCES src/Game.cpp
+            include/Game.hxx
+            include/BoardManager.hxx
+            include/util.hxx
+            include/MoveGen.hxx
+            include/BoardConstants.hxx
+            include/AI.hxx
+            src/BoardModel.cpp
+            src/util.cpp
+            src/BoardManager.cpp
+            src/MoveGen.cpp
+            src/AI.cpp
+            src/Game.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -13,9 +13,11 @@ Rectangle {
       top: parent.top
       left: parent.left
       right: parent.right
+      leftMargin: 4
+      rightMargin: 4
     }
 
-    spacing: 2
+    spacing: 10
     Rectangle {
       color: "#2C2C2C"
       Layout.fillWidth: true
@@ -26,14 +28,29 @@ Rectangle {
         font.pixelSize: 48
         text: qsTr("Sukless2")
         font.bold: true
-        color: "white"
+        color: "#00e5b0"
       }
     }
 
     Rectangle {
       color: "black"
-      Layout.preferredHeight: 4
+      radius: 8
       Layout.fillWidth: true
+      Layout.preferredHeight: 70
+      Rectangle {
+        anchors.fill:parent
+        anchors.margins: 1
+        color: "#00e5b0"
+        radius: 8
+        Text {
+          anchors.centerIn: parent
+          font.family: "helvetica"
+          font.pixelSize: 18
+          text: qsTr("Main Menu")
+          font.bold: true
+          color: "black"
+        }
+      }
     }
   }
 }

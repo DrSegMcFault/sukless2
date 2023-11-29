@@ -29,7 +29,7 @@ Item {
 
       Rectangle {
         color: "black"
-        Layout.preferredWidth: 4
+        Layout.preferredWidth: 2
         Layout.fillHeight: true
       }
 
@@ -37,12 +37,13 @@ Item {
         color: "#2C2C2C"
         Layout.fillHeight: true
         Layout.preferredWidth: 740
+
         Rectangle {
           color: "black"
-          anchors.top: parent.top
+          anchors.bottom: board.top
           anchors.right: parent.right
           anchors.rightMargin: 4
-          anchors.topMargin: 12
+          anchors.bottomMargin: 10
           width: 120
           height: 25
           radius: 8
@@ -74,6 +75,7 @@ Item {
         }
 
         Board {
+          id: board
           height: 740
           anchors {
             top: parent.top
@@ -82,11 +84,12 @@ Item {
             topMargin: (base.height - height) / 2
           }
         }
+
       }
 
       Rectangle {
         color: "black"
-        Layout.preferredWidth: 4
+        Layout.preferredWidth: 2
         Layout.fillHeight: true
       }
 

@@ -1,14 +1,115 @@
 import QtQuick
 import QtQuick.Layouts
 import BoardModel 1.0
+import QtMultimedia
+
 
 Rectangle {
-  id: centerPane
+  id: base
   color: "white"
+
+  property bool checkmate: false
+  property color color1: "white"
+  property color color2: "#4284ed"
 
   // container for a piece that has been picked up
   // by the user
   property Image draggedItem: null
+
+  Connections {
+    target: boardModel
+
+    // this is incredibly stupid,
+    // if i dont have a MediaPlayer per sound,
+    // the sound only plays once and will not play again
+    // this appears to be a common issue online
+
+    function onPlaySound(sound) {
+      if (sound.toString() === move_sound.source.toString()) {
+        move_sound.play();
+      }
+      /*
+      add other MediaPlayers and sounds here
+      else if (sound.toString() === your_new_sound.toString()) {
+        your_new_sound.play()
+      }
+     */
+    }
+  }
+  Connections {
+    target: boardModel
+    function onCheckmate(text) {
+      base.checkmate = true;
+      gameover.gmtxt = text
+    }
+  }
+
+  MediaPlayer {
+    id: move_sound
+    source: "qrc:/resources/move_sound.mp3"
+    audioOutput: AudioOutput {
+      volume: 100
+    }
+  }
+
+
+  Rectangle {
+    id: gameover
+    property string gmtxt
+    color: "black"
+    width: 280
+    height: 85
+    radius: 4
+    anchors.centerIn: parent
+    z: 10000
+    visible: base.checkmate === true
+
+    Rectangle {
+      id: inner
+      color: "#00e5b0"
+      anchors.fill: parent
+      anchors.margins: 2
+      radius: 4
+      Text {
+        color: "black"
+        anchors.centerIn: parent
+        font.family: "helvetica"
+        font.pixelSize: 36
+        font.bold: true
+        text: qsTr(gameover.gmtxt)
+      }
+    }
+
+    Rectangle {
+      width: 120
+      height: 20
+      color: "black"
+      radius: 4
+
+      anchors {
+        bottom: inner.bottom
+        left: parent.left
+        leftMargin: 80
+        bottomMargin: 4
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+
+        }
+      }
+
+      Text {
+        anchors.centerIn: parent
+        color: "#00e5b0"
+        text: qsTr("Main Menu")
+        font.family: "helvetica"
+        font.bold: true
+        font.pixelSize: 18
+      }
+    }
+  }
 
   GridLayout {
     id: grid
@@ -28,13 +129,14 @@ Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        color: ((Math.floor(index / 8) + index) % 2 === 0) ? "white" : "#4284ed"
+        color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color1 : base.color2
 
         property int test: model.index
 
         MouseArea {
           id: click
           anchors.fill: parent
+          drag.target: image
 
           onPressed: {
             draggedItem = image;
@@ -89,30 +191,23 @@ Rectangle {
           anchors.centerIn: draggedItem ? undefined : parent
         }
 
-
-        // pseudo-legal move indicator
         Rectangle {
-          color: "black"
+          color: "gray"
+          opacity: 50
           radius: 180
-          width: parent.width / 3
-          height: parent.height / 3
           visible: model.possible
+          height: parent.height / 3
+          width: parent.width / 3
           anchors.centerIn: parent
-          Rectangle {
-            color: "grey"
-            radius: 180
-            anchors.fill: parent
-            anchors.margins: 1
-
-          }
         }
+
 
         // file label
         Text {
           text: model.fileLabel
           font.family: "helvetica"
           font.pixelSize: 18
-          color: "black"
+          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
           font.bold: true
           anchors.bottom: parent.bottom
           anchors.right: parent.right
@@ -124,7 +219,7 @@ Rectangle {
         Text {
           text: model.rankLabel
           font.family: "helvetica"
-          color: "black"
+          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
           font.pixelSize: 18
           font.bold: true
           anchors.top: parent.top

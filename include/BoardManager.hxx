@@ -14,11 +14,22 @@ class BoardManager
   public:
     BoardManager(std::shared_ptr<MoveGen> g);
     BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen);
+
+    BoardManager(std::shared_ptr<MoveGen> g,
+                 Board b,
+                 State s,
+                 std::vector<std::string> history);
+
     BoardManager(const BoardManager&) noexcept = default;
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
 
-    MoveResult make_move(util::bits::HashedMove move);
+    // for external use
+    MoveResult try_move(const util::bits::HashedMove& move);
+
+    // for AI and internal use
+    MoveResult make_move(const util::bits::HashedMove& move, BoardManager& mgr);
+
     std::optional<Piece> square_to_piece(uint8_t square) const;
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
     std::optional<util::bits::HashedMove> find_move(uint8_t source, uint8_t target) const;
@@ -27,6 +38,8 @@ class BoardManager
     std::tuple<Board,State> get_board_info() const {
       return { _board, _state };
     }
+
+    BoardManager get_copy() { return *this; };
 
     Color side_to_move() const { return _state.side_to_move; }
 
@@ -53,11 +66,14 @@ class BoardManager
 
     std::vector<util::bits::HashedMove> _move_list;
     std::shared_ptr<MoveGen> _generator;
+    std::vector<std::string> _history;
 
     // flags for the game state
     chess::State _state;
 
+
     void init_from_fen(const std::string& fen);
+    std::string generate_fen();
 
     // after move update functions
     inline static Bitboard calc_white_occupancy(Board& board) {
@@ -73,5 +89,6 @@ class BoardManager
     inline static Bitboard calc_global_occupancy(Board& board) {
       return (calc_white_occupancy(board) | calc_black_occupancy(board));
     }
+    friend class AI;
 };
 } // namespace chess

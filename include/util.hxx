@@ -20,7 +20,6 @@ namespace chess {
   enum class MoveResult {
     Success,
     Illegal,
-    Check,
     Checkmate,
     Stalemate,
     Draw
@@ -54,6 +53,8 @@ namespace chess {
   struct State {
     uint8_t castling_rights = 0b00001111;
     Color side_to_move = Color::white;
+    uint8_t full_move_count = 0;
+    uint8_t half_move_count = 1;
     // target enpassant square
     uint8_t en_passant_target = chess::NoSquare;
   };
@@ -70,7 +71,7 @@ namespace chess {
     Color controlling;
   };
 
-  const std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  const static std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   void print_board(const Bitboard& b);
 
@@ -87,7 +88,7 @@ namespace chess {
     }
 
     template <typename T>
-    concept EnumClass = std::is_enum_v<T> && !std::is_same_v<T, std::underlying_type_t<T>>;
+    concept EnumClass = std::is_enum_v<T>;
 
     template<EnumClass T>
     inline auto toul(T enum_value) {
@@ -156,7 +157,6 @@ namespace chess {
     namespace fen {
 
       std::optional<uint8_t> algebraic_to_index(const std::string& alg);
-
       Piece piece_from_char(char c);
       char char_from_piece(Piece p);
 
