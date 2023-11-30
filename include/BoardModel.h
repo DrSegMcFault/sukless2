@@ -124,6 +124,8 @@ private:
   };
 
   const QUrl _move_sound = QUrl("qrc:/resources/move_sound.mp3");
+  const QUrl _game_end_sound = QUrl("qrc:/resources/game_end.mp3");
+  const QUrl _illegal_sound = QUrl("qrc:/resources/illegal_move.mp3");
 
 public:
   explicit BoardModel(QObject *parent = nullptr);

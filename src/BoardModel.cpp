@@ -139,6 +139,7 @@ void BoardModel::move(int from, int to) {
       case MoveResult::Illegal:
       {
         qDebug() << "Illegal Move!\n";
+        sound_to_play = _illegal_sound;
         break;
       }
 
@@ -146,17 +147,18 @@ void BoardModel::move(int from, int to) {
       {
         qDebug() << "Checkmate!\n";
         _data = _game->get_current_board();
-        sound_to_play = _move_sound;
+        sound_to_play = _game_end_sound;
         emit checkmate(_game->get_side_to_move() == Color::black
                                       ? QString(tr("White Wins!"))
                                       : QString(tr("Black Wins!")));
+
         break;
       }
 
       case MoveResult::Stalemate:
         qDebug() << "Stalemate!\n";
         _data = _game->get_current_board();
-        sound_to_play = _move_sound;
+        sound_to_play = _game_end_sound;
         emit checkmate(QString("Stalemate!"));
         break;
 

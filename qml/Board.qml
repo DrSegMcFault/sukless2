@@ -28,14 +28,15 @@ Rectangle {
       if (sound.toString() === move_sound.source.toString()) {
         move_sound.play();
       }
-      /*
-      add other MediaPlayers and sounds here
-      else if (sound.toString() === your_new_sound.toString()) {
-        your_new_sound.play()
+      else if (sound.toString() === gameEndSound.source.toString()) {
+        gameEndSound.play()
       }
-     */
+      else if (sound.toString() === illegalMoveSound.source.toString()) {
+        illegalMoveSound.play()
+      }
     }
   }
+
   Connections {
     target: boardModel
     function onCheckmate(text) {
@@ -49,6 +50,21 @@ Rectangle {
     source: "qrc:/resources/move_sound.mp3"
     audioOutput: AudioOutput {
       volume: 100
+    }
+  }
+  MediaPlayer {
+    id: gameEndSound
+    source: "qrc:/resources/game_end.mp3"
+    audioOutput: AudioOutput {
+      volume: 100
+    }
+  }
+  MediaPlayer {
+    id: illegalMoveSound
+    source: "qrc:/resources/illegal_move.mp3"
+    audioOutput: AudioOutput {
+      volume: 100
+
     }
   }
 

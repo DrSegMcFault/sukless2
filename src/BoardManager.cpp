@@ -166,7 +166,7 @@ MoveResult BoardManager::try_move(const util::bits::HashedMove& move)
     // if there aren't any legal moves, check if its checkmate or stalemate
     if (no_moves) {
       // is in check
-      if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? w_king : b_king),
+      if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? _board[w_king] : _board[b_king]),
                                          _state.side_to_move == Color::white ? Color::black : Color::white,
                                          _board))
       {

@@ -14,5 +14,7 @@
         <file>resources/rook_black.png</file>
         <file>resources/rook_white.png</file>
         <file>resources/move_sound.mp3</file>
+        <file>resources/game_end.mp3</file>
+        <file>resources/illegal_move.mp3</file>
     </qresource>
 </RCC>
