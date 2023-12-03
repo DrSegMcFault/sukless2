@@ -28,6 +28,7 @@ qt_add_qml_module(appchess-qt
               qml/Board.qml
               qml/HomeRightPane.qml
               qml/HomeLeftPane.qml
+              qml/MainMenu.qml
     SOURCES include/BoardModel.h
             include/Game.hxx
             include/BoardManager.hxx

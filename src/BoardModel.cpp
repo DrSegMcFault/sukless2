@@ -120,57 +120,107 @@ QVariant BoardModel::data(const QModelIndex &index, int role) const
  *
  *****************************************************************************/
 void BoardModel::move(int from, int to) {
-    beginResetModel();
+  beginResetModel();
 
-    QUrl sound_to_play;
+  QUrl sound_to_play;
 
-    auto source = static_cast<uint8_t>(toInternalIndex(from));
-    auto target = static_cast<uint8_t>(toInternalIndex(to));
+  auto source = static_cast<uint8_t>(toInternalIndex(from));
+  auto target = static_cast<uint8_t>(toInternalIndex(to));
 
-    switch (_game->try_move( {source, target} )) {
-      case MoveResult::Success:
-      {
-        qDebug() << "Successful move\n";
-        _data = _game->get_current_board();
-        sound_to_play = _move_sound;
-        break;
-      }
-
-      case MoveResult::Illegal:
-      {
-        qDebug() << "Illegal Move!\n";
-        sound_to_play = _illegal_sound;
-        break;
-      }
-
-      case MoveResult::Checkmate:
-      {
-        qDebug() << "Checkmate!\n";
-        _data = _game->get_current_board();
-        sound_to_play = _game_end_sound;
-        emit checkmate(_game->get_side_to_move() == Color::black
-                                      ? QString(tr("White Wins!"))
-                                      : QString(tr("Black Wins!")));
-
-        break;
-      }
-
-      case MoveResult::Stalemate:
-        qDebug() << "Stalemate!\n";
-        _data = _game->get_current_board();
-        sound_to_play = _game_end_sound;
-        emit checkmate(QString("Stalemate!"));
-        break;
-
-      case MoveResult::Draw:
-        Q_ASSERT(false);
-        break;
+  switch (_game->try_move( {source, target} )) {
+    case MoveResult::Success:
+    {
+      qDebug() << "Successful move\n";
+      _data = _game->get_current_board();
+      sound_to_play = _move_sound;
+      break;
     }
 
-
-    endResetModel();
-
-    if (!sound_to_play.isEmpty()) {
-       emit playSound(sound_to_play);
+    case MoveResult::Illegal:
+    {
+      qDebug() << "Illegal Move!\n";
+      sound_to_play = _illegal_sound;
+      break;
     }
+
+    case MoveResult::Checkmate:
+    {
+      qDebug() << "Checkmate!\n";
+      _data = _game->get_current_board();
+      sound_to_play = _game_end_sound;
+      emit checkmate(_game->get_side_to_move() == Color::black
+                                    ? QString(tr("White Wins!"))
+                                    : QString(tr("Black Wins!")));
+
+      break;
+    }
+
+    case MoveResult::Stalemate:
+      qDebug() << "Stalemate!\n";
+      _data = _game->get_current_board();
+      sound_to_play = _game_end_sound;
+      emit checkmate(QString("Stalemate!"));
+      break;
+
+    case MoveResult::Draw:
+      Q_ASSERT(false);
+      break;
   }
+
+
+  endResetModel();
+
+  if (!sound_to_play.isEmpty()) {
+     emit playSound(sound_to_play);
+  }
+}
+
+/******************************************************************************
+ *
+ * Method: setUserColor(ControlColor c)
+ *
+ *****************************************************************************/
+void BoardModel::setUserColor(ControlColor c) {
+  if (_user_color != c) {
+     _user_color = c;
+     emit userColorChanged();
+  }
+}
+
+
+/******************************************************************************
+ *
+ * Method: setUserColor(ControlColor c)
+ *
+ *****************************************************************************/
+void BoardModel::setAiAssist(bool b) {
+  if (_ai_assist_enabled != b) {
+     _ai_assist_enabled = b;
+     emit aiAssistChanged();
+  }
+}
+
+
+/******************************************************************************
+ *
+ * Method: setUserColor(ControlColor c)
+ *
+ *****************************************************************************/
+void BoardModel::setAiDifficulty(AIStrength a) {
+  if (_ai_strength != a) {
+     _ai_strength = a;
+     emit aiDifficultyChanged();
+  }
+}
+
+/******************************************************************************
+ *
+ * Method: setUserColor(ControlColor c)
+ *
+ *****************************************************************************/
+void BoardModel::setAiEnabled(bool b) {
+  if (_ai_enabled != b) {
+     _ai_enabled = b;
+     emit aiEnabledChanged();
+  }
+}

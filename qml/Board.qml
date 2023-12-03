@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import BoardModel 1.0
 import QtMultimedia
 
-
 Rectangle {
   id: base
   color: "white"
@@ -112,14 +111,15 @@ Rectangle {
       MouseArea {
         anchors.fill: parent
         onClicked: {
-
+          base.checkmate = false;
+          boardModel.reset();
         }
       }
 
       Text {
         anchors.centerIn: parent
         color: "#00e5b0"
-        text: qsTr("Main Menu")
+        text: qsTr("Reset Board")
         font.family: "helvetica"
         font.bold: true
         font.pixelSize: 18

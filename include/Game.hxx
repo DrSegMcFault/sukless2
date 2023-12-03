@@ -28,6 +28,7 @@ class Game {
 
     // for gui purposes. returns the squares the piece can go to
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
+    void reset();
 
   private:
     std::shared_ptr<MoveGen> _generator;

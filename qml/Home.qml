@@ -1,12 +1,15 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import "../"
 import BoardModel 1.0
 
 Item {
   id: base
   anchors.fill: parent
+  property alias userColor: boardModel.userColor
+  property alias aiAssistEnabled: boardModel.aiAssist
+  property alias aiEnabled: boardModel.aiEnabled
+  property alias aiDifficulty: boardModel.aiDifficulty
 
   BoardModel {
     id: boardModel

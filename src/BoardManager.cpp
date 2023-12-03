@@ -46,6 +46,7 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g,
   _history = history;
 
 }
+
 /*******************************************************************************
  *
  * Method: init_from_fen(Bitboard b)

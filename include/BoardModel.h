@@ -11,18 +11,34 @@
 #include <vector>
 #include <QString>
 #include <QColor>
-#include <QMediaPlayer>
-#include <QAudioOutput>
 
 #include "util.hxx"
 #include "Game.hxx"
 
 using namespace chess;
+
 class BoardModel : public QAbstractListModel
 {
   Q_OBJECT
+  Q_PROPERTY(ControlColor userColor READ userColor WRITE setUserColor NOTIFY userColorChanged)
+  Q_PROPERTY(bool aiAssist READ aiAssist WRITE setAiAssist NOTIFY aiAssistChanged)
+  Q_PROPERTY(AIStrength aiDifficulty READ aiDifficulty WRITE setAiDifficulty NOTIFY aiDifficultyChanged)
+  Q_PROPERTY(bool aiEnabled READ aiEnabled WRITE setAiEnabled NOTIFY aiEnabledChanged)
 
 public:
+
+  enum class ControlColor {
+    White,
+    Black
+  };
+  Q_ENUM(ControlColor)
+
+  enum class AIStrength {
+    Easy,
+    Medium,
+    Hard
+  };
+  Q_ENUM(AIStrength);
 
   enum Role {
     RolePiece = Qt::UserRole + 1,
@@ -38,9 +54,25 @@ public:
     ViewFromBlack
   };
 
+  void setUserColor(ControlColor c);
+  void setAiEnabled(bool b);
+  void setAiAssist(bool b);
+  void setAiDifficulty(AIStrength s);
+
+  ControlColor userColor() { return _user_color; }
+  bool aiEnabled() { return _ai_enabled; }
+  bool aiAssist() { return _ai_assist_enabled; }
+  AIStrength aiDifficulty() { return _ai_strength; }
+
+
 signals:
+
   void playSound(QUrl sound);
   void checkmate(QString winner);
+  void userColorChanged();
+  void aiAssistChanged();
+  void aiEnabledChanged();
+  void aiDifficultyChanged();
 
 protected:
     virtual QHash<int, QByteArray> roleNames() const override;
@@ -51,6 +83,10 @@ private:
   std::vector<uint8_t> _possible_moves = {};
   Rotation _visual_rotation = Rotation::ViewFromWhite;
   std::shared_ptr<Game> _game;
+  ControlColor _user_color = ControlColor::White;
+  AIStrength _ai_strength = AIStrength::Easy;
+  bool _ai_enabled = false;
+  bool _ai_assist_enabled = false;
 
   [[nodiscard]] inline int toInternalIndex(int index) const {
     int row = index / 8;
@@ -63,6 +99,7 @@ private:
         return  row * 8 + (7 - column);
     }
   }
+
   const std::unordered_map<int, QString> _white_rank_map = {
     { 0,   QString("1") },
     { 8,   QString("2") },
@@ -155,6 +192,14 @@ public:
     auto i = toInternalIndex(index);
     _possible_moves = _game->get_pseudo_legal_moves(i);
 
+    endResetModel();
+  }
+
+  Q_INVOKABLE void reset() {
+    beginResetModel();
+    _game.reset();
+    _game = std::make_shared<Game>();
+    _data = _game->get_current_board();
     endResetModel();
   }
 };

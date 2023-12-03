@@ -18,10 +18,12 @@ Rectangle {
     }
 
     spacing: 10
+
     Rectangle {
       color: "#2C2C2C"
       Layout.fillWidth: true
       Layout.preferredHeight: 70
+
       Text {
         anchors.centerIn: parent
         font.family: "helvetica"
@@ -37,11 +39,20 @@ Rectangle {
       radius: 8
       Layout.fillWidth: true
       Layout.preferredHeight: 70
+
       Rectangle {
         anchors.fill:parent
         anchors.margins: 1
         color: "#00e5b0"
         radius: 8
+
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            navigate("MainMenu.qml")
+          }
+        }
+
         Text {
           anchors.centerIn: parent
           font.family: "helvetica"
