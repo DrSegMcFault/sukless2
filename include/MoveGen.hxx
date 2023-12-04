@@ -3,6 +3,8 @@
 #include "util.hxx"
 #include "BoardConstants.hxx"
 
+#include <vector>
+
 namespace chess {
 
 class MoveGen {

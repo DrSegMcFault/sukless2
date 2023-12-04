@@ -13,6 +13,7 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
   : _generator(g)
 {
   _move_list.reserve(256);
+  _history.reserve(150);
   init_from_fen(starting_position);
 }
 
@@ -25,7 +26,25 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen)
   : _generator(g)
 {
   _move_list.reserve(256);
+  _history.reserve(150);
   init_from_fen(fen);
+}
+
+/*******************************************************************************
+ *
+ * Method: BoardManager(const std::string& fen)
+ *
+ *******************************************************************************/
+BoardManager::BoardManager(std::shared_ptr<MoveGen> g,
+                           Board b,
+                           State s,
+                           std::vector<std::string> history)
+{
+  _generator = g;
+  _board = b;
+  _state = s;
+  _history = history;
+
 }
 
 /*******************************************************************************
@@ -130,14 +149,55 @@ std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
-MoveResult BoardManager::make_move(util::bits::HashedMove move) {
+MoveResult BoardManager::try_move(const util::bits::HashedMove& move)
+{
+  bool no_moves = true;
+  MoveResult result = MoveResult::Illegal;
+  if (result = make_move(move, *this);
+      result != MoveResult::Illegal)
+  {
+    // now check if its checkmate
+    for (auto m : _move_list) {
+      BoardManager temp(_generator, _board, _state, _history);
+      if (temp.make_move(m, temp) != MoveResult::Illegal) {
+        no_moves = false;
+      }
+    }
+
+    // if there aren't any legal moves, check if its checkmate or stalemate
+    if (no_moves) {
+      // is in check
+      if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? _board[w_king] : _board[b_king]),
+                                         _state.side_to_move == Color::white ? Color::black : Color::white,
+                                         _board))
+      {
+        result = MoveResult::Checkmate;
+      }
+      else {
+        result = MoveResult::Stalemate;
+      }
+    }
+  }
+
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: make_move(uint32_t move)
+ *
+ *******************************************************************************/
+MoveResult BoardManager::make_move(
+    const util::bits::HashedMove& move,
+    BoardManager& mgr)
+{
   using namespace util;
 
   MoveResult result = MoveResult::Illegal;
 
   // copy the board and state in case of illegal move
-  std::array<Bitboard, 15> board_copy = _board;
-  State state_copy = _state;
+  std::array<Bitboard, 15> board_copy = mgr._board;
+  State state_copy = mgr._state;
 
   // parse the move
   const auto&& [ source_square, target_square,
@@ -153,7 +213,7 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
     Piece start_piece;
     Piece end_piece;
 
-    switch(state_copy.side_to_move) {
+    switch (state_copy.side_to_move) {
       case Color::white:
       {
         start_piece = Piece::b_pawn;
@@ -285,15 +345,36 @@ MoveResult BoardManager::make_move(util::bits::HashedMove move) {
   else 
   {
     result = MoveResult::Success;
-    state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
+    state_copy.side_to_move =
+        (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
 
-    _board = board_copy;
-    _state = state_copy;
-    _move_list.clear();
-    _generator->generate_moves(_board, _state, _move_list);
+    // successful move from black means full move cnt++
+    if (state_copy.side_to_move == Color::white) {
+      state_copy.full_move_count++;
+    }
+
+    // always increment half move count
+    state_copy.half_move_count++;
+
+    mgr._board = board_copy;
+    mgr._state = state_copy;
+    mgr._history.push_back(generate_fen());
+
+    mgr._move_list.clear();
+    mgr._generator->generate_moves(mgr._board, mgr._state, mgr._move_list);
   }
 
   return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: generate_fen()
+ *
+ *******************************************************************************/
+std::string BoardManager::generate_fen()
+{
+  return "";
 }
 
 /*******************************************************************************

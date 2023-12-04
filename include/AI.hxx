@@ -9,6 +9,7 @@
 
 namespace chess {
   class Game;
+
   class AI
   {
     public:
@@ -20,9 +21,11 @@ namespace chess {
       AI(AI&&) = delete;
       ~AI() = default;
 
+      int evaluate(const Board& b, const State& s);
+
       int get_white_eval() const { return _white_eval; };
       int get_black_eval() const { return _black_eval; };
-      Move get_best_move() const;
+      std::optional<util::bits::HashedMove> get_best_move();
 
     private:
       Game* _game;

@@ -1,4 +1,6 @@
 #include "AI.hxx"
+#include <QDebug>
+
 using namespace chess;
 
 /******************************************************************************
@@ -31,18 +33,40 @@ AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
 
 /******************************************************************************
  *
+ * Method: AI::evaluate(const Board&, const State&)
+ *
+ *****************************************************************************/
+int AI::evaluate(const Board& b, const State& s)
+{
+  return 0;
+}
+
+/******************************************************************************
+ *
  * Method: AI::get_best_move()
  *
  *****************************************************************************/
-Move AI::get_best_move() const
+std::optional<util::bits::HashedMove> AI::get_best_move()
 {
-  auto&& [ board_copy, state_copy ] = _game->get_board_info();
-  std::vector<util::bits::HashedMove> moves;
-  moves.reserve(256);
-  _generator->generate_moves(board_copy, state_copy, moves);
-  for (auto& m : moves) {
-    (void)m;
+  BoardManager b_copy = _game->get_board_copy();
+
+  std::vector<util::bits::HashedMove> legal_moves = {};
+  for (auto m : b_copy._move_list) {
+    BoardManager temp(b_copy._generator,
+                      b_copy._board,
+                      b_copy._state,
+                      b_copy._history);
+
+    if (temp.try_move(m) != MoveResult::Illegal) {
+      legal_moves.push_back(m);
+    }
   }
 
-  return {0,0};
+  if (legal_moves.size()) {
+    return legal_moves[rand() % legal_moves.size()];
+  }
+  else {
+    // was checkmate or stalemate
+    return std::nullopt;
+  }
 }

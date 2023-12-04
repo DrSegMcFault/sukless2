@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/bishop_black.png</file>
+        <file>resources/bishop_white.png</file>
+        <file>resources/circle.png</file>
+        <file>resources/king_black.png</file>
+        <file>resources/king_white.png</file>
+        <file>resources/knight_black.png</file>
+        <file>resources/knight_white.png</file>
+        <file>resources/pawn_black.png</file>
+        <file>resources/pawn_white.png</file>
+        <file>resources/queen_black.png</file>
+        <file>resources/queen_white.png</file>
+        <file>resources/rook_black.png</file>
+        <file>resources/rook_white.png</file>
+        <file>resources/move_sound.mp3</file>
+        <file>resources/game_end.mp3</file>
+        <file>resources/illegal_move.mp3</file>
+    </qresource>
+</RCC>

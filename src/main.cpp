@@ -1,12 +1,21 @@
-#include <iostream>
-#include "App.hxx"
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include "BoardModel.h"
 
-using namespace chess;
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
 
-int main() {
-  std::cout << "Starting chess engine...\n";
-  App app;
-  app.run();
+    QQmlApplicationEngine engine;
 
-  return 0;
+    // Register the CustomListModel with QML
+    qmlRegisterType<BoardModel>("BoardModel", 1, 0, "BoardModel");
+
+    const QUrl url(u"qrc:/chess-qt/qml/Main.qml"_qs);
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
+        &app, []() { QCoreApplication::exit(-1); },
+        Qt::QueuedConnection);
+    engine.load(url);
+
+    return app.exec();
 }

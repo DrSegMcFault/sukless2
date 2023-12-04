@@ -17,29 +17,6 @@ The hope is that sukless2 will eventually be seperated into client and server
 applications
 
 ### Building sukless2
-1. find a place that you would like to put vcpkg, i like ~/vcpkg
-2. ```git clone git@github.com:microsoft/vcpkg.git```
-3. ```cd vcpkg```
-4. ```./vcpkg install sdl2 sdl2-image sdl2-mixer --triplet <your-triplet>```
-5. ```./bootstrap_vcpkg```
-6. ```./vcpkg integrate install```
-7. if using cmake from the command line :
-  from ~/sukless2 directory
-  ```cmake -S . -B .build -DCMAKE_TOOLCHAIN_FILE=~/<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake -DVCPKG_ROOT=~/<path-to-vcpkg>;```
-  ```cd <build-directory>; make```
-  if using cmake tools extenstion in vscode:
-  in settings.json under the .vscode folder in the repository:
-  ```json 
-    {
-      "cmake.buildDirectory": "${workspaceFolder}/.build",
-      "cmake.configureSettings": {
-        "VCPKG_ROOT": "/<path-to-vcpkg>",
-        "CMAKE_TOOLCHAIN_FILE": "<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake"
-    },
-
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
-    }
-  ```
-  ### Running Sukless2
-  ```./<path-to-build-folder>/chess```
+1. install Qt and QtCreator
+2. figure it out
  

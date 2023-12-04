@@ -1,7 +1,9 @@
 #include "Game.hxx"
 #include <iostream>
+#include <QtAssert>
 
 using namespace chess;
+
 /*******************************************************************************
  *
  * Method: Game::Game()
@@ -16,13 +18,36 @@ Game::Game() {
 
 /*******************************************************************************
  *
+ * Method: Game::Game(AIConfig cfg)
+ *
+ *******************************************************************************/
+Game::Game(AIConfig cfg) {
+  _generator = std::make_shared<MoveGen>();
+  _mgr = std::make_shared<BoardManager>(_generator);
+  _ai = std::make_shared<AI>(this, _generator, cfg);
+}
+
+/*******************************************************************************
+ *
  * Method: try_move(const Move& move)
  *
  *******************************************************************************/
 MoveResult Game::try_move(const Move& m)
 {
+  MoveResult res;
   if (auto move = _mgr->find_move(m.from, m.to)) {
-    return _mgr->make_move(move.value());
+    if (auto r = _mgr->try_move(move.value());
+       r != MoveResult::Illegal)
+    {
+      // do the AI move
+      auto ai_m = _ai->get_best_move();
+      if (ai_m) {
+        auto r = _mgr->try_move(ai_m.value());
+          Q_ASSERT(r != MoveResult::Illegal);
+      }
+
+      return r;
+    }
   }
 
   return MoveResult::Illegal;
@@ -61,7 +86,7 @@ std::array<std::optional<Piece>, 64> Game::get_current_board() const
 /*******************************************************************************
  *
  * Method: get_side_to_move()
- * 
+ *
  *******************************************************************************/
 Color Game::get_side_to_move() const
 {
