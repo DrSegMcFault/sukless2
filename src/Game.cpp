@@ -3,6 +3,7 @@
 #include <QtAssert>
 
 using namespace chess;
+
 /*******************************************************************************
  *
  * Method: Game::Game()
@@ -13,6 +14,17 @@ Game::Game() {
   _mgr = std::make_shared<BoardManager>(_generator);
   _ai = std::make_shared<AI>(this, _generator,
            AIConfig { AIDifficulty::Medium, 10, Color::black } );
+}
+
+/*******************************************************************************
+ *
+ * Method: Game::Game(AIConfig cfg)
+ *
+ *******************************************************************************/
+Game::Game(AIConfig cfg) {
+  _generator = std::make_shared<MoveGen>();
+  _mgr = std::make_shared<BoardManager>(_generator);
+  _ai = std::make_shared<AI>(this, _generator, cfg);
 }
 
 /*******************************************************************************

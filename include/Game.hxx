@@ -13,6 +13,7 @@ namespace chess {
 class Game {
   public:
     Game();
+    Game(AIConfig);
     Game(std::string position, AIConfig ai_cfg);
 
     MoveResult try_move(const Move& m);
