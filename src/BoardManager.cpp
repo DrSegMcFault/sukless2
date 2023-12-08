@@ -44,7 +44,6 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g,
   _board = b;
   _state = s;
   _history = history;
-
 }
 
 /*******************************************************************************
@@ -153,14 +152,15 @@ MoveResult BoardManager::try_move(const util::bits::HashedMove& move)
 {
   bool no_moves = true;
   MoveResult result = MoveResult::Illegal;
-  if (result = make_move(move, *this);
+  if (result = make_move(move);
       result != MoveResult::Illegal)
   {
     // now check if its checkmate
     for (auto m : _move_list) {
       BoardManager temp(_generator, _board, _state, _history);
-      if (temp.make_move(m, temp) != MoveResult::Illegal) {
+      if (temp.make_move(m) != MoveResult::Illegal) {
         no_moves = false;
+        break;
       }
     }
 
@@ -188,16 +188,15 @@ MoveResult BoardManager::try_move(const util::bits::HashedMove& move)
  *
  *******************************************************************************/
 MoveResult BoardManager::make_move(
-    const util::bits::HashedMove& move,
-    BoardManager& mgr)
+    const util::bits::HashedMove& move)
 {
   using namespace util;
 
   MoveResult result = MoveResult::Illegal;
 
   // copy the board and state in case of illegal move
-  std::array<Bitboard, 15> board_copy = mgr._board;
-  State state_copy = mgr._state;
+  Board board_copy = _board;
+  State state_copy = _state;
 
   // parse the move
   const auto&& [ source_square, target_square,
@@ -356,12 +355,12 @@ MoveResult BoardManager::make_move(
     // always increment half move count
     state_copy.half_move_count++;
 
-    mgr._board = board_copy;
-    mgr._state = state_copy;
-    mgr._history.push_back(generate_fen());
+    _board = board_copy;
+    _state = state_copy;
+    _history.push_back(generate_fen());
 
-    mgr._move_list.clear();
-    mgr._generator->generate_moves(mgr._board, mgr._state, mgr._move_list);
+    _move_list.clear();
+    _generator->generate_moves(_board, _state, _move_list);
   }
 
   return result;

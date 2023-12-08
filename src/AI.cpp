@@ -29,6 +29,7 @@ AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
   }
 
   _controlling_color = cfg.controlling;
+  _cfg = cfg;
 }
 
 /******************************************************************************

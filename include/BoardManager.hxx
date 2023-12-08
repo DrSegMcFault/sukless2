@@ -27,8 +27,6 @@ class BoardManager
     // for external use
     MoveResult try_move(const util::bits::HashedMove& move);
 
-    // for AI and internal use
-    MoveResult make_move(const util::bits::HashedMove& move, BoardManager& mgr);
 
     std::optional<Piece> square_to_piece(uint8_t square) const;
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
@@ -71,6 +69,9 @@ class BoardManager
     // flags for the game state
     chess::State _state;
 
+
+    // for AI and internal use
+    MoveResult make_move(const util::bits::HashedMove& move);
 
     void init_from_fen(const std::string& fen);
     std::string generate_fen();

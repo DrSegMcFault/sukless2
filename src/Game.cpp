@@ -25,6 +25,10 @@ Game::Game(AIConfig cfg) {
   _generator = std::make_shared<MoveGen>();
   _mgr = std::make_shared<BoardManager>(_generator);
   _ai = std::make_shared<AI>(this, _generator, cfg);
+  // handle case where ai must go first
+  if (_mgr->side_to_move() == _ai->get_controlling_color()) {
+     _mgr->try_move(_ai->get_best_move().value());
+  }
 }
 
 /*******************************************************************************
@@ -91,4 +95,9 @@ std::array<std::optional<Piece>, 64> Game::get_current_board() const
 Color Game::get_side_to_move() const
 {
   return _mgr->side_to_move();
+}
+
+AIConfig Game::get_ai_cfg() const
+{
+  return _ai ? _ai->get_cfg() : AIConfig{};
 }

@@ -9,10 +9,6 @@
 BoardModel::BoardModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-  _game = std::make_shared<Game>();
-  _data = _game->get_current_board();
-
-  _possible_moves.reserve(55);
 }
 
 /******************************************************************************
@@ -130,7 +126,6 @@ void BoardModel::move(int from, int to) {
   switch (_game->try_move( {source, target} )) {
     case MoveResult::Success:
     {
-      qDebug() << "Successful move\n";
       _data = _game->get_current_board();
       sound_to_play = _move_sound;
       break;
@@ -138,14 +133,12 @@ void BoardModel::move(int from, int to) {
 
     case MoveResult::Illegal:
     {
-      qDebug() << "Illegal Move!\n";
       sound_to_play = _illegal_sound;
       break;
     }
 
     case MoveResult::Checkmate:
     {
-      qDebug() << "Checkmate!\n";
       _data = _game->get_current_board();
       sound_to_play = _game_end_sound;
       emit checkmate(_game->get_side_to_move() == Color::black
@@ -156,17 +149,17 @@ void BoardModel::move(int from, int to) {
     }
 
     case MoveResult::Stalemate:
-      qDebug() << "Stalemate!\n";
+    {
       _data = _game->get_current_board();
       sound_to_play = _game_end_sound;
       emit checkmate(QString("Stalemate!"));
       break;
+    }
 
     case MoveResult::Draw:
       Q_ASSERT(false);
       break;
   }
-
 
   endResetModel();
 

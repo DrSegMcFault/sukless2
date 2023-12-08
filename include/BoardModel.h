@@ -197,9 +197,30 @@ public:
 
   Q_INVOKABLE void reset() {
     beginResetModel();
+    auto cfg = _game->get_ai_cfg();
     _game.reset();
-    _game = std::make_shared<Game>();
+    _game = std::make_shared<Game>(cfg);
     _data = _game->get_current_board();
+    endResetModel();
+  }
+
+  Q_INVOKABLE void init(ControlColor user, bool engine_assist, bool ai_enable, AIStrength diff)
+  {
+    beginResetModel();
+    _user_color = user;
+    _ai_assist_enabled = engine_assist;
+    _ai_enabled = ai_enable;
+    _ai_strength = diff;
+    _visual_rotation =
+        _user_color == ControlColor::White ? Rotation::ViewFromWhite : Rotation::ViewFromBlack;
+    AIConfig cfg;
+    cfg.controlling = user == ControlColor::White ? Color::black : Color::white;
+    cfg.max_depth = 10;
+    cfg.difficulty = static_cast<AIDifficulty>(diff);
+
+    _game = std::make_shared<Game>(cfg);
+    _data = _game->get_current_board();
+    _possible_moves.reserve(55);
     endResetModel();
   }
 };

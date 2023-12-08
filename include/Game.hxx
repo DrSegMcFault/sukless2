@@ -22,6 +22,8 @@ class Game {
 
     Color get_side_to_move() const;
 
+    AIConfig get_ai_cfg() const;
+
     BoardManager get_board_copy() {return _mgr->get_copy();}
 
     std::array<std::optional<Piece>, 64> get_current_board() const;
@@ -29,7 +31,6 @@ class Game {
 
     // for gui purposes. returns the squares the piece can go to
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
-    void reset();
 
   private:
     std::shared_ptr<MoveGen> _generator;

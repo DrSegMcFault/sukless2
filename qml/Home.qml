@@ -6,13 +6,17 @@ import BoardModel 1.0
 Item {
   id: base
   anchors.fill: parent
-  property alias userColor: boardModel.userColor
-  property alias aiAssistEnabled: boardModel.aiAssist
-  property alias aiEnabled: boardModel.aiEnabled
-  property alias aiDifficulty: boardModel.aiDifficulty
+  required property int userColor
+  required property bool aiAssistEnabled
+  required property bool aiEnabled
+  required property int aiDifficulty
 
   BoardModel {
     id: boardModel
+    Component.onCompleted: {
+      boardModel.init(base.userColor, base.aiAssistEnabled,
+                      base.aiEnabled, base.aiDifficulty)
+    }
   }
 
   Rectangle {
@@ -87,7 +91,6 @@ Item {
             topMargin: (base.height - height) / 2
           }
         }
-
       }
 
       Rectangle {
@@ -103,5 +106,4 @@ Item {
       }
     }
   }
-
 }
