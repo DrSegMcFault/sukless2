@@ -63,7 +63,6 @@ Rectangle {
     source: "qrc:/resources/illegal_move.mp3"
     audioOutput: AudioOutput {
       volume: 100
-
     }
   }
 
