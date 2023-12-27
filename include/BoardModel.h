@@ -3,7 +3,6 @@
 #include <QAbstractListModel>
 #include <QList>
 #include <array>
-#include <iostream>
 #include <optional>
 #include <memory>
 #include <unordered_map>
@@ -12,33 +11,19 @@
 #include <QString>
 #include <QColor>
 
+#include "BoardManager.hxx"
 #include "util.hxx"
-#include "Game.hxx"
 
 using namespace chess;
 
 class BoardModel : public QAbstractListModel
 {
   Q_OBJECT
-  Q_PROPERTY(ControlColor userColor READ userColor WRITE setUserColor NOTIFY userColorChanged)
-  Q_PROPERTY(bool aiAssist READ aiAssist WRITE setAiAssist NOTIFY aiAssistChanged)
-  Q_PROPERTY(AIStrength aiDifficulty READ aiDifficulty WRITE setAiDifficulty NOTIFY aiDifficultyChanged)
-  Q_PROPERTY(bool aiEnabled READ aiEnabled WRITE setAiEnabled NOTIFY aiEnabledChanged)
 
 public:
 
-  enum class ControlColor {
-    White,
-    Black
-  };
-  Q_ENUM(ControlColor)
-
-  enum class AIStrength {
-    Easy,
-    Medium,
-    Hard
-  };
-  Q_ENUM(AIStrength);
+  Q_ENUM(Color)
+  Q_ENUM(AIDifficulty);
 
   enum Role {
     RolePiece = Qt::UserRole + 1,
@@ -54,37 +39,27 @@ public:
     ViewFromBlack
   };
 
-  void setUserColor(ControlColor c);
-  void setAiEnabled(bool b);
-  void setAiAssist(bool b);
-  void setAiDifficulty(AIStrength s);
-
-  ControlColor userColor() { return _user_color; }
-  bool aiEnabled() { return _ai_enabled; }
-  bool aiAssist() { return _ai_assist_enabled; }
-  AIStrength aiDifficulty() { return _ai_strength; }
-
-
 signals:
 
   void playSound(QUrl sound);
   void checkmate(QString winner);
-  void userColorChanged();
-  void aiAssistChanged();
-  void aiEnabledChanged();
-  void aiDifficultyChanged();
 
 protected:
-    virtual QHash<int, QByteArray> roleNames() const override;
+
+  virtual QHash<int, QByteArray> roleNames() const override;
 
 private:
 
   std::array<std::optional<Piece>, 64> _data = {};
   std::vector<uint8_t> _possible_moves = {};
+
+  std::shared_ptr<BoardManager> _game;
+  std::shared_ptr<MoveGen> _generator;
+
   Rotation _visual_rotation = Rotation::ViewFromWhite;
-  std::shared_ptr<Game> _game;
-  ControlColor _user_color = ControlColor::White;
-  AIStrength _ai_strength = AIStrength::Easy;
+  Color _user_color = Color::white;
+  AIDifficulty _ai_strength = AIDifficulty::Easy;
+
   bool _ai_enabled = false;
   bool _ai_assist_enabled = false;
 
@@ -165,6 +140,7 @@ private:
   const QUrl _illegal_sound = QUrl("qrc:/resources/illegal_move.mp3");
 
 public:
+
   explicit BoardModel(QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -173,54 +149,12 @@ public:
 
   Q_INVOKABLE void move(int from, int to);
 
-  Q_INVOKABLE void toggleRotation() {
-    beginResetModel();
-    switch (_visual_rotation) {
-      case Rotation::ViewFromWhite:
-        _visual_rotation = Rotation::ViewFromBlack;
-        break;
-      case Rotation::ViewFromBlack:
-        _visual_rotation = Rotation::ViewFromWhite;
-        break;
-    }
-    endResetModel();
-  }
+  Q_INVOKABLE void toggleRotation();
 
-  Q_INVOKABLE void boardClicked(int index) {
-    beginResetModel();
+  Q_INVOKABLE void boardClicked(int index);
 
-    auto i = toInternalIndex(index);
-    _possible_moves = _game->get_pseudo_legal_moves(i);
+  Q_INVOKABLE void reset();
 
-    endResetModel();
-  }
+  Q_INVOKABLE void init(Color user, bool engine_assist, bool ai_enable, AIDifficulty diff);
 
-  Q_INVOKABLE void reset() {
-    beginResetModel();
-    auto cfg = _game->get_ai_cfg();
-    _game.reset();
-    _game = std::make_shared<Game>(cfg);
-    _data = _game->get_current_board();
-    endResetModel();
-  }
-
-  Q_INVOKABLE void init(ControlColor user, bool engine_assist, bool ai_enable, AIStrength diff)
-  {
-    beginResetModel();
-    _user_color = user;
-    _ai_assist_enabled = engine_assist;
-    _ai_enabled = ai_enable;
-    _ai_strength = diff;
-    _visual_rotation =
-        _user_color == ControlColor::White ? Rotation::ViewFromWhite : Rotation::ViewFromBlack;
-    AIConfig cfg;
-    cfg.controlling = user == ControlColor::White ? Color::black : Color::white;
-    cfg.max_depth = 10;
-    cfg.difficulty = static_cast<AIDifficulty>(diff);
-
-    _game = std::make_shared<Game>(cfg);
-    _data = _game->get_current_board();
-    _possible_moves.reserve(55);
-    endResetModel();
-  }
 };

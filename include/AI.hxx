@@ -1,27 +1,25 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
-#include <tuple>
 
+#include "MoveGen.hxx"
+#include "BoardManager.hxx"
 #include "util.hxx"
-#include "Game.hxx"
 
 namespace chess {
-  class Game;
 
   class AI
   {
     public:
       AI() = delete;
 
-      AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg);
+      AI(std::shared_ptr<MoveGen> g, AIConfig cfg);
 
       AI(const AI&) = delete;
       AI(AI&&) = delete;
       ~AI() = default;
 
-      int evaluate(const Board& b, const State& s);
+      int evaluate(const BoardManager& b);
 
       Color get_controlling_color() { return _controlling_color; }
 
@@ -31,10 +29,9 @@ namespace chess {
 
       int get_black_eval() const { return _black_eval; };
 
-      std::optional<util::bits::HashedMove> get_best_move();
+      std::optional<util::bits::HashedMove> get_best_move(const BoardManager&);
 
     private:
-      Game* _game;
       std::shared_ptr<MoveGen> _generator;
       AIConfig _cfg;
       int _depth;

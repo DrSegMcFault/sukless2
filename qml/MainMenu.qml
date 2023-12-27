@@ -480,7 +480,7 @@ Item {
           anchors.fill: parent
           onClicked: { navigate(
                          "Home.qml", {
-                           "userColor": leftOption.selected ? BoardModel.White : BoardModel.Black,
+                           "userColor": leftOption.selected ? 0 : 1,
                            "aiAssistEnabled": enabledAiAssist.value,
                            "aiEnabled": aiEnabled.value,
                            "aiDifficulty": aiDifficulty.value

@@ -1,5 +1,4 @@
 #include "AI.hxx"
-#include <QDebug>
 
 using namespace chess;
 
@@ -8,8 +7,8 @@ using namespace chess;
  * Method: AI::AI()
  *
  *****************************************************************************/
-AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
-  : _game(game), _generator(g)
+AI::AI(std::shared_ptr<MoveGen> g, AIConfig cfg)
+  : _generator(g)
 {
   _white_eval = 0;
   _black_eval = 0;
@@ -34,10 +33,10 @@ AI::AI(Game* game, std::shared_ptr<MoveGen> g, AIConfig cfg)
 
 /******************************************************************************
  *
- * Method: AI::evaluate(const Board&, const State&)
+ * Method: AI::evaluate(const BoardManager&)
  *
  *****************************************************************************/
-int AI::evaluate(const Board& b, const State& s)
+int AI::evaluate(const BoardManager& b)
 {
   return 0;
 }
@@ -47,18 +46,14 @@ int AI::evaluate(const Board& b, const State& s)
  * Method: AI::get_best_move()
  *
  *****************************************************************************/
-std::optional<util::bits::HashedMove> AI::get_best_move()
+std::optional<util::bits::HashedMove> AI::get_best_move(const BoardManager& cpy)
 {
-  BoardManager b_copy = _game->get_board_copy();
-
   std::vector<util::bits::HashedMove> legal_moves = {};
-  for (auto m : b_copy._move_list) {
-    BoardManager temp(b_copy._generator,
-                      b_copy._board,
-                      b_copy._state,
-                      b_copy._history);
 
-    if (temp.try_move(m) != MoveResult::Illegal) {
+  for (auto m : cpy._move_list) {
+    BoardManager temp = cpy;
+
+    if (temp.try_move({static_cast<uint8_t>(m.source),static_cast<uint8_t>(m.target)}) != MoveResult::Illegal) {
       legal_moves.push_back(m);
     }
   }

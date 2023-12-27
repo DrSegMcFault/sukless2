@@ -12,37 +12,35 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Multimedia Qml Widgets Positionin
 qt_standard_project_setup()
 
 qt_add_executable(chess
-    src/main.cpp
-    images.qrc
+  src/main.cpp
+  images.qrc
 )
 
 target_include_directories(chess PRIVATE include)
 
 qt_add_qml_module(chess
-    URI chess2
-    VERSION 1.0
-    QML_FILES qml/Main.qml
-              qml/AppContent.qml
-              qml/NavStack.qml
-              qml/Home.qml
-              qml/Board.qml
-              qml/HomeRightPane.qml
-              qml/HomeLeftPane.qml
-              qml/MainMenu.qml
+  URI chess2
+  VERSION 1.0
+  QML_FILES qml/Main.qml
+            qml/AppContent.qml
+            qml/NavStack.qml
+            qml/Home.qml
+            qml/Board.qml
+            qml/HomeRightPane.qml
+            qml/HomeLeftPane.qml
+            qml/MainMenu.qml
 
-    SOURCES include/BoardModel.h
-            include/Game.hxx
-            include/BoardManager.hxx
-            include/util.hxx
-            include/MoveGen.hxx
-            include/BoardConstants.hxx
-            include/AI.hxx
-            src/BoardModel.cpp
-            src/util.cpp
-            src/BoardManager.cpp
-            src/MoveGen.cpp
-            src/AI.cpp
-            src/Game.cpp
+  SOURCES include/BoardModel.h
+          include/BoardManager.hxx
+          include/util.hxx
+          include/MoveGen.hxx
+          include/BoardConstants.hxx
+          include/AI.hxx
+          src/BoardModel.cpp
+          src/util.cpp
+          src/BoardManager.cpp
+          src/MoveGen.cpp
+          src/AI.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -57,12 +55,13 @@ set_target_properties(chess PROPERTIES
 )
 
 target_link_libraries(chess
-    PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Positioning Qt6::Qml Qt6::Widgets
+  PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Positioning Qt6::Qml Qt6::Widgets
 )
 
 include(GNUInstallDirs)
+
 install(TARGETS chess
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  BUNDLE DESTINATION .
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

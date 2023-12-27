@@ -1,12 +1,10 @@
 #include "BoardManager.hxx"
-#include "MoveGen.hxx"
-#include <cassert>
 
 using namespace chess;
 
 /*******************************************************************************
  *
- * Method: BoardManager()
+ * Method: BoardManager(std::shared_ptr<MoveGen>)
  *
  *******************************************************************************/
 BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
@@ -19,7 +17,7 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
 
 /*******************************************************************************
  *
- * Method: BoardManager(const std::string& fen)
+ * Method: BoardManager(std::shared_ptr<MoveGen>, const string& fen)
  *
  *******************************************************************************/
 BoardManager::BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen)
@@ -28,22 +26,6 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen)
   _move_list.reserve(256);
   _history.reserve(150);
   init_from_fen(fen);
-}
-
-/*******************************************************************************
- *
- * Method: BoardManager(const std::string& fen)
- *
- *******************************************************************************/
-BoardManager::BoardManager(std::shared_ptr<MoveGen> g,
-                           Board b,
-                           State s,
-                           std::vector<std::string> history)
-{
-  _generator = g;
-  _board = b;
-  _state = s;
-  _history = history;
 }
 
 /*******************************************************************************
@@ -148,33 +130,37 @@ std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
-MoveResult BoardManager::try_move(const util::bits::HashedMove& move)
+MoveResult BoardManager::try_move(const chess::Move& proposed)
 {
-  bool no_moves = true;
   MoveResult result = MoveResult::Illegal;
-  if (result = make_move(move);
-      result != MoveResult::Illegal)
-  {
-    // now check if its checkmate
-    for (auto m : _move_list) {
-      BoardManager temp(_generator, _board, _state, _history);
-      if (temp.make_move(m) != MoveResult::Illegal) {
-        no_moves = false;
-        break;
-      }
-    }
+  bool no_moves = true;
 
-    // if there aren't any legal moves, check if its checkmate or stalemate
-    if (no_moves) {
-      // is in check
-      if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? _board[w_king] : _board[b_king]),
-                                         _state.side_to_move == Color::white ? Color::black : Color::white,
-                                         _board))
-      {
-        result = MoveResult::Checkmate;
+  if (auto move = find_move(proposed.from, proposed.to))
+  {
+    if (result = make_move(move.value());
+        result != MoveResult::Illegal)
+    {
+      // now check if its checkmate
+      for (auto m : _move_list) {
+        BoardManager temp = *this;
+        if (temp.make_move(m) != MoveResult::Illegal) {
+          no_moves = false;
+          break;
+        }
       }
-      else {
-        result = MoveResult::Stalemate;
+
+      // if there aren't any legal moves, check if its checkmate or stalemate
+      if (no_moves) {
+        // is in check
+        if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? _board[w_king] : _board[b_king]),
+                                           _state.side_to_move == Color::white ? Color::black : Color::white,
+                                           _board))
+        {
+          result = MoveResult::Checkmate;
+        }
+        else {
+          result = MoveResult::Stalemate;
+        }
       }
     }
   }
@@ -343,7 +329,7 @@ MoveResult BoardManager::make_move(
   }
   else 
   {
-    result = MoveResult::Success;
+    result = MoveResult::Valid;
     state_copy.side_to_move =
         (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
 

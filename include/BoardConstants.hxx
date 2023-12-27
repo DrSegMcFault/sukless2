@@ -1,8 +1,11 @@
 #pragma once
-#include "util.hxx"
+
+#include <cstdint>
+#include <array>
 
 namespace chess {
-  const std::array<Bitboard, 64> bishop_magics = {
+
+  const std::array<uint64_t, 64> bishop_magics = {
     0x40040844404084ULL,  0x2004208a004208ULL,
     0x10190041080202ULL,  0x108060845042010ULL,
     0x581104180800210ULL, 0x2112080446200010ULL,
@@ -37,7 +40,7 @@ namespace chess {
     0x8918844842082200ULL,0x4010011029020020ULL
   };
 
-  const std::array<Bitboard, 64> rook_magics {
+  const std::array<uint64_t, 64> rook_magics {
     0x8a80104000800020ULL, 0x140002000100040ULL,
     0x2801880a0017001ULL,  0x100081001000420ULL,
     0x200020010080420ULL,  0x3001c0002010008ULL,
@@ -71,6 +74,7 @@ namespace chess {
     0x20030a0244872ULL,    0x12001008414402ULL,
     0x2006104900a0804ULL,  0x1004081002402ULL
   };
+
   // bitcounts for each mask
   const std::array<uint8_t, 64> bishop_bits =
   { 6, 5, 5, 5, 5, 5, 5, 6,
