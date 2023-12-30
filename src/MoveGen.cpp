@@ -7,31 +7,6 @@ using namespace chess;
 
 /*******************************************************************************
  *
- * Method: MoveGen()
- *
- *******************************************************************************/
-MoveGen::MoveGen()
-{
-  init_attack_tables();
-  init_slider_attacks();
-}
-
-/*******************************************************************************
- *
- * Method: init_attack_tables()
- *
- *******************************************************************************/
-constexpr void MoveGen::init_attack_tables()
-{
-  init_pawn_attacks();
-  init_knight_attacks();
-  init_king_attacks();
-  init_bishop_masks();
-  init_rook_masks();
-}
-
-/*******************************************************************************
- *
  * Method: add_move()
  *
  *******************************************************************************/
@@ -39,7 +14,7 @@ inline void MoveGen::add_move(std::vector<util::bits::HashedMove>& moves,
                               uint32_t source, uint32_t target,
                               uint32_t piece, uint32_t promotion,
                               uint32_t capture, uint32_t double_push,
-                              uint32_t enpassant, uint32_t castling)
+                              uint32_t enpassant, uint32_t castling) const
 {
   moves.push_back({.source = source,
                    .target= target,
@@ -57,8 +32,8 @@ inline void MoveGen::add_move(std::vector<util::bits::HashedMove>& moves,
  *
  *******************************************************************************/
 void MoveGen::generate_moves(const Board& b,
-                    const State& s,
-                    std::vector<util::bits::HashedMove>& moves)
+                             const State& s,
+                             std::vector<util::bits::HashedMove>& moves) const
 {
    switch (s.side_to_move) {
      case Color::white:
@@ -70,297 +45,6 @@ void MoveGen::generate_moves(const Board& b,
    }
 }
 
-
-/*******************************************************************************
- *
- * Method: init_slider_attacks()
- *
- *******************************************************************************/
-void MoveGen::init_slider_attacks()
-{
-  const auto populate_attack_tables = [this](bool is_bishop) {
-    // generates the ith permutation of the attack mask
-    const auto ith_permutation =
-      [](uint64_t index, uint8_t bits_in_mask, Bitboard attack_mask)
-    {
-      Bitboard occupancy = 0ULL;
-
-      for (auto count : util::range(bits_in_mask))
-      {
-        uint8_t square = util::bits::get_lsb_index(attack_mask);
-        clear_bit(square, attack_mask);
-
-        if (is_set(count, index)) {
-          set_bit(square, occupancy);
-        }
-      }
-
-      return occupancy;
-    };
-
-    for (auto square : util::range(NoSquare)) {
-
-      Bitboard attack_mask = (is_bishop ? bishop_masks[square] : rook_masks[square]);
-      uint8_t bit_count = (is_bishop ? bishop_bits[square] : rook_bits[square]);
-      uint64_t permutations = (1ULL << bit_count);
-
-      for (auto index : util::range(permutations))
-      {
-        Bitboard occupancy = ith_permutation(index, bit_count, attack_mask);
-        auto magic = (is_bishop ? bishop_magics[square] : rook_magics[square]);
-
-        uint16_t magic_index = (occupancy * magic) >> (64ULL - bit_count);
-
-        if (is_bishop) {
-          bishop_attacks[square][magic_index] = calc_bishop_attacks(square, occupancy);
-        }
-        else {
-          rook_attacks[square][magic_index] = calc_rook_attacks(square, occupancy);
-        }
-      }
-    }
-  };
-
-  populate_attack_tables(true); // bishop
-  populate_attack_tables(false); // rook
-}
-
-/*******************************************************************************
- *
- * Method: init_pawn_attacks()
- *
- *******************************************************************************/
-constexpr void MoveGen::init_pawn_attacks()
-{
-  constexpr auto get_mask = [](Color side, uint8_t square) {
-    Bitboard attacks {0ULL};
-    Bitboard b {0ULL};
-
-    set_bit(square, b);
-
-    // white
-    if (side == Color::white) {
-      if ((b << 7) & not_h_file)
-        attacks |= (b << 7);
-
-      if ((b << 9) & not_a_file)
-        attacks |= (b << 9);
-
-    } else {
-      if ((b >> 7) & not_a_file)
-        attacks |= (b >> 7);
-
-      if ((b >> 9) & not_h_file)
-        attacks |= (b >> 9);
-    }
-    return attacks;
-  };
-
-  for (auto i : util::range(NoSquare)) {
-    pawn_attacks[white][i] = get_mask(white, i);
-    pawn_attacks[black][i] = get_mask(black, i);
-  }
-}
-
-/*******************************************************************************
- *
- * Method: init_knight_attacks()
- *
- *******************************************************************************/
-constexpr void MoveGen::init_knight_attacks()
-{
-  for (auto square : util::range(NoSquare)) {
-    Bitboard attacks {0ULL};
-    Bitboard b {0ULL};
-
-    set_bit(square, b);
-
-    if ((b << 17) & not_a_file)
-      attacks |= b << 17;
-    if ((b << 15) & not_h_file)
-      attacks |= b << 15;
-    if ((b << 10) & not_ab_file)
-      attacks |= b << 10;
-    if ((b << 6) & not_hg_file)
-      attacks |= b << 6;
-    if ((b >> 17) & not_h_file)
-      attacks |= b >> 17;
-    if ((b >> 15) & not_a_file)
-      attacks |= b >> 15;
-    if ((b >> 10) & not_hg_file)
-      attacks |= b >> 10;
-    if ((b >> 6) & not_ab_file)
-      attacks |= b >> 6;
-
-    knight_attacks[square] = attacks;
-  }
-}
-
-/*******************************************************************************
- *
- * Method: init_king_attacks()
- * 
- *******************************************************************************/
-constexpr void MoveGen::init_king_attacks()
-{
-  for (auto square : util::range(NoSquare)) {
-    Bitboard attacks {0ULL};
-    Bitboard b {0ULL};
-
-    set_bit(square, b);
-
-    if ((b << 8))
-      attacks |= b << 8;
-    if ((b << 9) & not_a_file)
-      attacks |= b << 9;
-    if ((b << 7) & not_h_file)
-      attacks |= b << 7;
-    if ((b << 1) & not_a_file)
-      attacks |= b << 1;
-
-    if ((b >> 8))
-      attacks |= b >> 8;
-    if ((b >> 9) & not_h_file)
-      attacks |= b >> 9;
-    if ((b >> 7) & not_a_file)
-      attacks |= b >> 7;
-    if ((b >> 1) & not_h_file)
-      attacks |= b >> 1;
-
-    king_attacks[square] = attacks;
-  }
-}
-
-/*******************************************************************************
- *
- * Method: init_bishop_masks()
- *
- *******************************************************************************/
-constexpr void MoveGen::init_bishop_masks()
-{
-  for (auto square : util::range(NoSquare)) {
-    Bitboard attacks {0ULL};
-
-    int r = 0;
-    int f = 0;
-    int tr = square / 8;
-    int tf = square % 8;
-
-    for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
-      set_bit(r * 8 + f, attacks);
-    }
-    for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
-      set_bit(r * 8 + f, attacks);
-    }
-    for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
-      set_bit(r * 8 + f, attacks);
-    }
-    for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
-      set_bit(r * 8 + f, attacks);
-    }
-
-    bishop_masks[square] = attacks;
-  }
-}
-
-/*******************************************************************************
- *
- * Method: init_rook_masks()
- *
- *******************************************************************************/
-constexpr void MoveGen::init_rook_masks()
-{
-  for (auto square : util::range(NoSquare)) {
-    Bitboard attacks {0ULL};
-
-    int r = 0;
-    int f = 0;
-    int tr = square / 8;
-    int tf = square % 8;
-
-    for (r = tr + 1; r <= 6; r++) {
-      set_bit(r * 8 + tf, attacks);
-    }
-    for (r = tr - 1; r >= 1; r--) {
-      set_bit(r * 8 + tf, attacks);
-    }
-    for (f = tf + 1; f <= 6; f++) {
-      set_bit(tr * 8 + f, attacks);
-    }
-    for (f = tf - 1; f >= 1; f--) {
-      set_bit(tr * 8 + f, attacks);
-    }
-
-    rook_masks[square] = attacks;
-  }
-}
-
-/*******************************************************************************
- *
- * Method: calc_bishop_attacks(uint8_t square, Bitboard occ)
- *
- *******************************************************************************/
-constexpr Bitboard MoveGen::calc_bishop_attacks(uint8_t square, Bitboard occ) const
-{
-  Bitboard attacks {0ULL};
-
-  int r, f;
-  int tr = square / 8;
-  int tf = square % 8;
-
-  for (r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++) {
-    set_bit(r * 8 + f, attacks);
-    if (is_set(r * 8 + f, occ)) break;
-  }
-  for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
-    set_bit(r * 8 + f, attacks);
-    if (is_set(r * 8 + f, occ)) break;
-  }
-  for (r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--) {
-    set_bit(r * 8 + f, attacks);
-    if (is_set(r * 8 + f, occ)) break;
-  }
-  for (r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--) {
-    set_bit(r * 8 + f, attacks);
-    if (is_set(r * 8 + f, occ)) break;
-  }
-
-  return attacks;
-}
-
-/*******************************************************************************
- *
- * Method: calc_rook_attacks(uint8_t square, Bitboard occ)
- *
- *******************************************************************************/
-constexpr Bitboard MoveGen::calc_rook_attacks(uint8_t square, Bitboard occ) const
-{
-  Bitboard attacks {0ULL};
-
-  int r = 0;
-  int f = 0;
-  int tr = square / 8;
-  int tf = square % 8;
-
-  for (r = tr + 1; r <= 7; r++) {
-    set_bit(r * 8 + tf, attacks);
-    if (is_set(r * 8 + tf, occ)) break;
-  }
-  for (r = tr - 1; r >= 0; r--) {
-    set_bit(r * 8 + tf, attacks);
-    if (is_set(r * 8 + tf, occ)) break;
-  }
-  for (f = tf + 1; f <= 7; f++) {
-    set_bit(tr * 8 + f, attacks);
-    if (is_set(tr * 8 + f, occ)) break;
-  }
-  for (f = tf - 1; f >= 0; f--) {
-    set_bit(tr * 8 + f, attacks);
-    if (is_set(tr * 8 + f, occ)) break;
-  }
-
-  return attacks;
-}
 
 /*******************************************************************************
  *
@@ -451,7 +135,7 @@ bool MoveGen::is_square_attacked(uint8_t square,
  *******************************************************************************/
 void MoveGen::generate_white_moves(const Board& b,
                                    const State& s,
-                                   std::vector<util::bits::HashedMove>& moves)
+                                   std::vector<util::bits::HashedMove>& moves) const
 {
   generate_white_pawn_moves(b, s, moves);
   generate_white_castling_moves(b, s, moves);
@@ -469,7 +153,7 @@ void MoveGen::generate_white_moves(const Board& b,
  *******************************************************************************/
 void MoveGen::generate_black_moves(const Board& b,
                                    const State& s,
-                                   std::vector<util::bits::HashedMove>& moves)
+                                   std::vector<util::bits::HashedMove>& moves) const
 {
   generate_black_pawn_moves(b, s, moves);
   generate_black_castling_moves(b, s, moves);
@@ -486,7 +170,7 @@ void MoveGen::generate_black_moves(const Board& b,
  *
  *******************************************************************************/
 void MoveGen::generate_white_pawn_moves(const Board& board_, const State& state,
-                                        std::vector<util::bits::HashedMove>& moves)
+                                        std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[w_pawn];
   uint8_t source_square = 0;
@@ -557,7 +241,7 @@ void MoveGen::generate_white_pawn_moves(const Board& board_, const State& state,
  *
  *******************************************************************************/
 void MoveGen::generate_black_pawn_moves(const Board& board_, const State& state,
-                                        std::vector<util::bits::HashedMove>& moves)
+                                        std::vector<util::bits::HashedMove>& moves) const
 {
    Bitboard board = board_[b_pawn];
    uint8_t source_square = 0;
@@ -624,7 +308,7 @@ void MoveGen::generate_black_pawn_moves(const Board& board_, const State& state,
  *
  *******************************************************************************/
 void MoveGen::generate_white_castling_moves(const Board& board_, const State& state,
-                                            std::vector<util::bits::HashedMove>& moves)
+                                            std::vector<util::bits::HashedMove>& moves) const
 {
   using namespace util;
   if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
@@ -661,7 +345,7 @@ void MoveGen::generate_white_castling_moves(const Board& board_, const State& st
  *
  *******************************************************************************/
 void MoveGen::generate_black_castling_moves(const Board& board_, const State& state,
-                                            std::vector<util::bits::HashedMove>& moves)
+                                            std::vector<util::bits::HashedMove>& moves) const
 {
    using namespace util;
    if (state.castling_rights & toul(CastlingRights::BlackKingSide))
@@ -698,7 +382,7 @@ void MoveGen::generate_black_castling_moves(const Board& board_, const State& st
  *
  *******************************************************************************/
 void MoveGen::generate_knight_moves(const Board& board_, Color side_to_move,
-                                    std::vector<util::bits::HashedMove>& moves)
+                                    std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[(side_to_move == Color::white) ? w_knight : b_knight];
   Bitboard attacks = 0ULL;
@@ -731,7 +415,7 @@ void MoveGen::generate_knight_moves(const Board& board_, Color side_to_move,
  *
  *******************************************************************************/
 void MoveGen::generate_bishop_moves(const Board& board_, Color side_to_move,
-                                    std::vector<util::bits::HashedMove>& moves) 
+                                    std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[(side_to_move == Color::white) ? w_bishop : b_bishop];
   Bitboard attacks = 0ULL;
@@ -765,7 +449,7 @@ void MoveGen::generate_bishop_moves(const Board& board_, Color side_to_move,
  *
  *******************************************************************************/
 void MoveGen::generate_rook_moves(const Board& board_, Color side_to_move,
-                                  std::vector<util::bits::HashedMove>& moves)
+                                  std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[(side_to_move == Color::white) ? w_rook : b_rook];
   Bitboard attacks = 0ULL;
@@ -799,7 +483,7 @@ void MoveGen::generate_rook_moves(const Board& board_, Color side_to_move,
  *
  *******************************************************************************/
 void MoveGen::generate_queen_moves(const Board& board_, Color side_to_move,
-                                   std::vector<util::bits::HashedMove>& moves) 
+                                   std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[(side_to_move == Color::white) ? w_queen : b_queen];
   Bitboard attacks = 0ULL;
@@ -833,7 +517,7 @@ void MoveGen::generate_queen_moves(const Board& board_, Color side_to_move,
  *
  *******************************************************************************/
 void MoveGen::generate_king_moves(const Board& board_, Color side_to_move,
-                                  std::vector<util::bits::HashedMove>& moves)
+                                  std::vector<util::bits::HashedMove>& moves) const
 {
   Bitboard board = board_[(side_to_move == Color::white) ? w_king : b_king];
   Bitboard attacks = 0ULL;
@@ -859,6 +543,7 @@ void MoveGen::generate_king_moves(const Board& board_, Color side_to_move,
     clear_bit(source_square, board);
   }
 }
+
 /*******************************************************************************
  *
  * Method: test_attack_lookup()
@@ -874,7 +559,7 @@ void MoveGen::test_attack_lookup()
       std::numeric_limits<std::uint64_t>::min(),
       std::numeric_limits<std::uint64_t>::max());
 
-    Bitboard occ = {dis(gen)}; 
+    Bitboard occ = {dis(gen)};
     uint8_t r_square = (rand() % 64);
 
     Bitboard bishop_actual = get_bishop_attacks(r_square, occ);

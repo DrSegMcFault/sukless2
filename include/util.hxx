@@ -135,8 +135,6 @@ namespace chess {
 
     namespace bits {
 
-      // index of least significant bit
-      uint8_t get_lsb_index(Bitboard b);
 
       #define set_bit(i, b) ((b) |= (1ULL << (i)))
       #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
@@ -177,7 +175,7 @@ namespace chess {
       };
 
       // count the number of set bits
-      inline int count(Bitboard b) {
+      constexpr int count(Bitboard b) {
         #if defined (__GNUC__) || defined (__clang__)
           return __builtin_popcountll(b);
         #else
@@ -188,6 +186,12 @@ namespace chess {
           }
           return count;
         #endif
+      }
+
+      // index of least significant bit, must be called under precondition
+      // that b has at least 1 set bit
+      constexpr uint8_t get_lsb_index(Bitboard b) {
+        return count((b & -b) -1);
       }
 
     } // namespace util::bits

@@ -1,5 +1,7 @@
 #include "AI.hxx"
 
+#include <ranges>
+
 using namespace chess;
 
 /******************************************************************************
@@ -7,7 +9,7 @@ using namespace chess;
  * Method: AI::AI()
  *
  *****************************************************************************/
-AI::AI(std::shared_ptr<MoveGen> g, AIConfig cfg)
+AI::AI(const MoveGen* g, AIConfig cfg)
   : _generator(g)
 {
   _white_eval = 0;
@@ -16,12 +18,15 @@ AI::AI(std::shared_ptr<MoveGen> g, AIConfig cfg)
   _black_material_score = 0;
 
   switch (cfg.difficulty) {
+
     case AIDifficulty::Easy:
       _depth = 1;
       break;
+
     case AIDifficulty::Medium:
       _depth = 3;
       break;
+
     case AIDifficulty::Hard:
       _depth = 5;
       break;
@@ -33,12 +38,35 @@ AI::AI(std::shared_ptr<MoveGen> g, AIConfig cfg)
 
 /******************************************************************************
  *
- * Method: AI::evaluate(const BoardManager&)
+ * Method: AI::calc_material_score(const BoardManager&, Color c)
  *
  *****************************************************************************/
-int AI::evaluate(const BoardManager& b)
+int AI::calc_material_score(const BoardManager& b, Color eval_for) const
 {
-  return 0;
+  int white_eval = 0;
+  int black_eval = 0;
+
+  for (auto p = static_cast<int>(Piece::w_pawn);
+       p <= static_cast<int>(Piece::w_king); p++)
+  {
+    white_eval +=
+        piece_values.at(p) * b.piece_count(static_cast<Piece>(p));
+  }
+
+  for (auto p = static_cast<int>(Piece::b_pawn);
+       p <= static_cast<int>(Piece::b_king); p++)
+  {
+    black_eval +=
+          piece_values.at(p) * b.piece_count(static_cast<Piece>(p));
+  }
+
+  switch (eval_for) {
+    case Color::white:
+      return white_eval - black_eval;
+
+    case Color::black:
+      return black_eval - white_eval;
+  }
 }
 
 /******************************************************************************
@@ -48,18 +76,25 @@ int AI::evaluate(const BoardManager& b)
  *****************************************************************************/
 std::optional<util::bits::HashedMove> AI::get_best_move(const BoardManager& cpy)
 {
-  std::vector<util::bits::HashedMove> legal_moves = {};
+  std::vector<std::pair<util::bits::HashedMove, int>> legal_moves = {};
 
-  for (auto m : cpy._move_list) {
+  for (const auto m : cpy._move_list) {
+
     BoardManager temp = cpy;
+    Move to_try = {static_cast<uint8_t>(m.source), static_cast<uint8_t>(m.target)};
 
-    if (temp.try_move({static_cast<uint8_t>(m.source),static_cast<uint8_t>(m.target)}) != MoveResult::Illegal) {
-      legal_moves.push_back(m);
+    if (temp.try_move(to_try) != MoveResult::Illegal)
+    {
+      legal_moves.push_back(std::make_pair(m, calc_material_score(temp, _controlling_color)));
     }
   }
 
+  std::ranges::sort(legal_moves, [](const auto& m1, const auto& m2) {
+    return m1.second > m2.second;
+  });
+
   if (legal_moves.size()) {
-    return legal_moves[rand() % legal_moves.size()];
+    return legal_moves.front().first;
   }
   else {
     // was checkmate or stalemate

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <unordered_map>
 
 #include "MoveGen.hxx"
 #include "BoardManager.hxx"
@@ -13,13 +13,11 @@ namespace chess {
     public:
       AI() = delete;
 
-      AI(std::shared_ptr<MoveGen> g, AIConfig cfg);
+      AI(const MoveGen* g, AIConfig cfg);
 
       AI(const AI&) = delete;
       AI(AI&&) = delete;
       ~AI() = default;
-
-      int evaluate(const BoardManager& b);
 
       Color get_controlling_color() { return _controlling_color; }
 
@@ -32,13 +30,34 @@ namespace chess {
       std::optional<util::bits::HashedMove> get_best_move(const BoardManager&);
 
     private:
-      std::shared_ptr<MoveGen> _generator;
+      const MoveGen* _generator;
       AIConfig _cfg;
+
       int _depth;
       int _white_eval;
       int _black_eval;
       int _white_material_score;
       int _black_material_score;
+
       Color _controlling_color;
+
+      // calc material diff score
+      int calc_material_score(const BoardManager& b, Color c) const;
+
+      const std::unordered_map<int, int> piece_values = {
+        { util::toul(Piece::w_pawn),    100    },
+        { util::toul(Piece::w_knight),  300    },
+        { util::toul(Piece::w_bishop),  325    },
+        { util::toul(Piece::w_rook),    500    },
+        { util::toul(Piece::w_queen),   900    },
+        { util::toul(Piece::w_king),    10'000 },
+
+        { util::toul(Piece::b_pawn),    100    },
+        { util::toul(Piece::b_knight),  300    },
+        { util::toul(Piece::b_bishop),  325    },
+        { util::toul(Piece::b_rook),    500    },
+        { util::toul(Piece::b_queen),   900    },
+        { util::toul(Piece::b_king),    10'000 }
+      };
   };
 }

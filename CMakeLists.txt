@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project(chess VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+add_compile_options(-fconstexpr-steps=99999999)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -34,7 +36,6 @@ qt_add_qml_module(chess
           include/BoardManager.hxx
           include/util.hxx
           include/MoveGen.hxx
-          include/BoardConstants.hxx
           include/AI.hxx
           src/BoardModel.cpp
           src/util.cpp
@@ -42,6 +43,7 @@ qt_add_qml_module(chess
           src/MoveGen.cpp
           src/AI.cpp
 )
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

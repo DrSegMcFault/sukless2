@@ -8,7 +8,6 @@
 BoardModel::BoardModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-  _generator = std::make_shared<MoveGen>();
 }
 
 /******************************************************************************
@@ -63,7 +62,7 @@ void BoardModel::init(Color user, bool engine_assist, bool ai_enable, AIDifficul
   cfg.controlling = user == Color::white ? Color::black : Color::white;
   cfg.difficulty = diff;
 
-  _game = std::make_shared<BoardManager>(_generator);
+  _game = std::make_shared<BoardManager>(&_generator);
   _data = _game->get_current_board();
 
   _possible_moves.reserve(55);
@@ -175,7 +174,7 @@ void BoardModel::reset()
   beginResetModel();
 
   _game.reset();
-  _game = std::make_shared<BoardManager>(_generator);
+  _game = std::make_shared<BoardManager>(&_generator);
   _data = _game->get_current_board();
 
   endResetModel();

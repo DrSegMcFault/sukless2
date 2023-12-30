@@ -54,7 +54,8 @@ private:
   std::vector<uint8_t> _possible_moves = {};
 
   std::shared_ptr<BoardManager> _game;
-  std::shared_ptr<MoveGen> _generator;
+
+  static constexpr MoveGen _generator;
 
   Rotation _visual_rotation = Rotation::ViewFromWhite;
   Color _user_color = Color::white;

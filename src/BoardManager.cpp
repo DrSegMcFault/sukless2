@@ -7,7 +7,7 @@ using namespace chess;
  * Method: BoardManager(std::shared_ptr<MoveGen>)
  *
  *******************************************************************************/
-BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
+BoardManager::BoardManager(const MoveGen* g)
   : _generator(g)
 {
   _move_list.reserve(256);
@@ -20,7 +20,7 @@ BoardManager::BoardManager(std::shared_ptr<MoveGen> g)
  * Method: BoardManager(std::shared_ptr<MoveGen>, const string& fen)
  *
  *******************************************************************************/
-BoardManager::BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen)
+BoardManager::BoardManager(const MoveGen* g, const std::string& fen)
   : _generator(g)
 {
   _move_list.reserve(256);

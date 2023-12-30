@@ -3,7 +3,6 @@
 #include <array>
 #include <optional>
 #include <vector>
-#include <memory>
 
 #include "util.hxx"
 #include "MoveGen.hxx"
@@ -13,8 +12,8 @@ namespace chess {
 class BoardManager
 {
   public:
-    BoardManager(std::shared_ptr<MoveGen> g);
-    BoardManager(std::shared_ptr<MoveGen> g, const std::string& fen);
+    BoardManager(const MoveGen* g);
+    BoardManager(const MoveGen* g, const std::string& fen);
     BoardManager(const BoardManager&) noexcept = default;
     BoardManager(BoardManager&&) = delete;
     ~BoardManager() = default;
@@ -51,7 +50,7 @@ class BoardManager
 
     // print a string representation of the specified piece's bitboard
     void print(Piece p = Piece::All) const {
-      chess::print_board(_board[p]);
+      print_board(_board[p]);
     }
 
   private:
@@ -62,7 +61,7 @@ class BoardManager
     std::vector<util::bits::HashedMove> _move_list;
 
     // move generator
-    std::shared_ptr<MoveGen> _generator;
+    const MoveGen* _generator;
 
     // FEN history of the current game being played
     std::vector<std::string> _history;
@@ -80,19 +79,19 @@ class BoardManager
     std::string generate_fen();
 
     // update the white occupancy bitboard
-    inline static Bitboard calc_white_occupancy(Board& board) {
+    inline Bitboard calc_white_occupancy(Board& board) {
       return (board[w_pawn] | board[w_knight] | board[w_bishop] |
               board[w_rook] | board[w_queen] | board[w_king]);
     }
 
     // update the black occupancy bitboard
-    inline static Bitboard calc_black_occupancy(Board& board) {
+    inline Bitboard calc_black_occupancy(Board& board) {
       return (board[b_pawn] | board[b_knight] | board[b_bishop] |
               board[b_rook] | board[b_queen] | board[b_king]);
     }
 
     // update the global occupancy bitboard
-    inline static Bitboard calc_global_occupancy(Board& board) {
+    inline Bitboard calc_global_occupancy(Board& board) {
       return (calc_white_occupancy(board) | calc_black_occupancy(board));
     }
 
