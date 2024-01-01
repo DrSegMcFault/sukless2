@@ -135,10 +135,12 @@ namespace chess {
 
     namespace bits {
 
-
       #define set_bit(i, b) ((b) |= (1ULL << (i)))
+
       #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
+
       #define is_set(i, b) ((b) & (1ULL << (i)))
+
       #define move_bit(from, to, b) do { clear_bit(from, b); set_bit(to, b); } while(0)
 
       union HashedMove {
@@ -160,11 +162,6 @@ namespace chess {
           return move == other.move;
         }
 
-       /*******************************************************************************
-        *
-        * Method: explode()
-        * returns a tuple of the anonymous struct in order of declaration
-        *******************************************************************************/
         auto explode() const {
           return
               std::make_tuple(static_cast<uint8_t>(source), static_cast<uint8_t>(target),

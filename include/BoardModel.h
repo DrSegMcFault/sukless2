@@ -110,30 +110,29 @@ private:
   };
 
   const std::unordered_map<int, QString> _black_rank_map = {
-    { 63,   QString("8") },
-    { 55,   QString("7") },
-    { 47,   QString("6") },
-    { 39,   QString("5") },
-    { 31,   QString("4") },
-    { 23,   QString("3") },
-    { 15,   QString("2") },
-    { 7,    QString("1") }
+    { 63,  QString("8") },
+    { 55,  QString("7") },
+    { 47,  QString("6") },
+    { 39,  QString("5") },
+    { 31,  QString("4") },
+    { 23,  QString("3") },
+    { 15,  QString("2") },
+    { 7,   QString("1") }
   };
 
-
   const std::unordered_map<chess::Piece, QUrl> _icons = {
-    { Piece::w_pawn, QUrl("qrc:/resources/pawn_white.png") },
+    { Piece::w_pawn,   QUrl("qrc:/resources/pawn_white.png")   },
     { Piece::w_knight, QUrl("qrc:/resources/knight_white.png") },
     { Piece::w_bishop, QUrl("qrc:/resources/bishop_white.png") },
-    { Piece::w_rook, QUrl("qrc:/resources/rook_white.png") },
-    { Piece::w_queen, QUrl("qrc:/resources/queen_white.png") },
-    { Piece::w_king, QUrl("qrc:/resources/king_white.png") },
-    { Piece::b_pawn, QUrl("qrc:/resources/pawn_black.png") },
+    { Piece::w_rook,   QUrl("qrc:/resources/rook_white.png")   },
+    { Piece::w_queen,  QUrl("qrc:/resources/queen_white.png")  },
+    { Piece::w_king,   QUrl("qrc:/resources/king_white.png")   },
+    { Piece::b_pawn,   QUrl("qrc:/resources/pawn_black.png")   },
     { Piece::b_knight, QUrl("qrc:/resources/knight_black.png") },
     { Piece::b_bishop, QUrl("qrc:/resources/bishop_black.png") },
-    { Piece::b_rook, QUrl("qrc:/resources/rook_black.png") },
-    { Piece::b_queen, QUrl("qrc:/resources/queen_black.png") },
-    { Piece::b_king, QUrl("qrc:/resources/king_black.png")}
+    { Piece::b_rook,   QUrl("qrc:/resources/rook_black.png")   },
+    { Piece::b_queen,  QUrl("qrc:/resources/queen_black.png")  },
+    { Piece::b_king,   QUrl("qrc:/resources/king_black.png")   }
   };
 
   const QUrl _move_sound = QUrl("qrc:/resources/move_sound.mp3");

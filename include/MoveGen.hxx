@@ -44,21 +44,21 @@ class MoveGen {
 
         set_bit(square, b);
 
-        // white
         if (side == Color::white) {
-            if ((b << 7) & not_h_file)
-                attacks |= (b << 7);
+          if ((b << 7) & not_h_file)
+            attacks |= (b << 7);
 
-            if ((b << 9) & not_a_file)
-                attacks |= (b << 9);
+          if ((b << 9) & not_a_file)
+            attacks |= (b << 9);
 
         } else {
-            if ((b >> 7) & not_a_file)
-                attacks |= (b >> 7);
+          if ((b >> 7) & not_a_file)
+            attacks |= (b >> 7);
 
-            if ((b >> 9) & not_h_file)
-                attacks |= (b >> 9);
+          if ((b >> 9) & not_h_file)
+            attacks |= (b >> 9);
         }
+
         return attacks;
       };
 
@@ -270,7 +270,6 @@ class MoveGen {
                          uint32_t capture, uint32_t double_push,
                          uint32_t enpassant, uint32_t castling) const;
 
-
     void generate_white_moves(const Board& board,
                               const State& state,
                               std::vector<util::bits::HashedMove>& moves) const;
@@ -310,7 +309,6 @@ class MoveGen {
     void generate_queen_moves(const Board& b, Color side_to_move,
                                std::vector<util::bits::HashedMove>& moves) const;
 
-    // tests
     void test_attack_lookup();
 
     static constexpr std::array<Bitboard, 64> bishop_magics = {
@@ -383,19 +381,19 @@ class MoveGen {
       0x2006104900a0804ULL,  0x1004081002402ULL
    };
 
-   // bitcounts for each mask
-   static constexpr std::array<uint8_t, 64> bishop_bits =
-   { 6, 5, 5, 5, 5, 5, 5, 6,
-     5, 5, 5, 5, 5, 5, 5, 5,
-     5, 5, 7, 7, 7, 7, 5, 5,
-     5, 5, 7, 9, 9, 7, 5, 5,
-     5, 5, 7, 9, 9, 7, 5, 5,
-     5, 5, 7, 7, 7, 7, 5, 5,
-     5, 5, 5, 5, 5, 5, 5, 5,
-     6, 5, 5, 5, 5, 5, 5, 6 };
+    // bitcounts for each mask
+    static constexpr std::array<uint8_t, 64> bishop_bits =
+    { 6, 5, 5, 5, 5, 5, 5, 6,
+      5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 7, 7, 7, 7, 5, 5,
+      5, 5, 7, 9, 9, 7, 5, 5,
+      5, 5, 7, 9, 9, 7, 5, 5,
+      5, 5, 7, 7, 7, 7, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5,
+      6, 5, 5, 5, 5, 5, 5, 6 };
 
-   // bitcounts for each mask
-   static constexpr std::array<uint8_t, 64> rook_bits =
+    // bitcounts for each mask
+    static constexpr std::array<uint8_t, 64> rook_bits =
    { 12, 11, 11, 11, 11, 11, 11, 12,
      11, 10, 10, 10, 10, 10, 10, 11,
      11, 10, 10, 10, 10, 10, 10, 11,
@@ -405,65 +403,63 @@ class MoveGen {
      11, 10, 10, 10, 10, 10, 10, 11,
      12, 11, 11, 11, 11, 11, 11, 12 };
 
-  // useful constants
-  static constexpr Bitboard not_a_file = 18374403900871474942ULL;
-  static constexpr Bitboard not_h_file = 9187201950435737471ULL;
-  static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
-  static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
+    // useful constants
+    static constexpr Bitboard not_a_file = 18374403900871474942ULL;
+    static constexpr Bitboard not_h_file = 9187201950435737471ULL;
+    static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
+    static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
 
-  // template to initialize a big array of attacks at compile time,
-  // used for rook and bishops attack tables
-  template <typename T>
-  constexpr T init_special_attacks(const std::array<Bitboard, 64> masks,
-                                   const std::array<Bitboard, 64> magics,
-                                   const std::array<uint8_t, 64> bits,
-                                   bool is_bishop)
-  {
-    T result = {};
-
-    // generates the ith permutation of the attack mask
-    constexpr auto ith_permutation =
-      [](uint64_t index, uint8_t bits_in_mask, Bitboard attack_mask)
+    // template to initialize a big array of attacks at compile time,
+    // used for rook and bishops attack tables
+    template <size_t T, bool is_bishop>
+    constexpr auto init_slider_attacks(const std::array<Bitboard, 64> masks,
+                                       const std::array<Bitboard, 64> magics,
+                                       const std::array<uint8_t, 64> bits)
     {
-       Bitboard occupancy = 0ULL;
+      std::array<std::array<Bitboard, T>, 64> result = {};
 
-       for (auto count : util::range(bits_in_mask))
-       {
-         uint8_t square = util::bits::get_lsb_index(attack_mask);
-         clear_bit(square, attack_mask);
-
-         if (is_set(count, index)) {
-           set_bit(square, occupancy);
-         }
-      }
-
-      return occupancy;
-    };
-
-    for (auto square : util::range(NoSquare)) {
-
-      Bitboard attack_mask = masks[square];
-      uint8_t bit_count = bits[square];
-      uint64_t permutations = (1ULL << bit_count);
-
-      for (auto index : util::range(permutations))
+      // generates the ith permutation of the attack mask
+      constexpr auto ith_permutation =
+        [](uint64_t index, uint8_t bits_in_mask, Bitboard attack_mask)
       {
-        Bitboard occupancy = ith_permutation(index, bit_count, attack_mask);
-        auto magic = magics[square];
+         Bitboard occupancy = 0ULL;
 
-        uint16_t magic_index = (occupancy * magic) >> (64ULL - bit_count);
+         for (const auto count : util::range(bits_in_mask))
+         {
+           uint8_t square = util::bits::get_lsb_index(attack_mask);
+           clear_bit(square, attack_mask);
 
-        if (is_bishop) {
-          result[square][magic_index] = calc_bishop_attacks(square, occupancy);
+           if (is_set(count, index)) {
+             set_bit(square, occupancy);
+           }
         }
-        else {
-          result[square][magic_index] = calc_rook_attacks(square, occupancy);
+
+        return occupancy;
+      };
+
+      for (const auto square : util::range(NoSquare)) {
+
+        Bitboard attack_mask = masks[square];
+        uint8_t bit_count = bits[square];
+        uint64_t permutations = (1ULL << bit_count);
+
+        for (const auto index : util::range(permutations))
+        {
+          Bitboard occupancy = ith_permutation(index, bit_count, attack_mask);
+
+          uint16_t magic_index = (occupancy * magics[square]) >> (64ULL - bit_count);
+
+          if constexpr (is_bishop) {
+            result[square][magic_index] = calc_bishop_attacks(square, occupancy);
+          }
+          else {
+            result[square][magic_index] = calc_rook_attacks(square, occupancy);
+          }
         }
       }
-    }
 
-    return result;
-  }
+      return result;
+    }
 
   public:
     constexpr MoveGen()
@@ -472,10 +468,9 @@ class MoveGen {
       , king_attacks(init_king_attacks())
       , bishop_masks(init_bishop_masks())
       , rook_masks(init_rook_masks())
-      , bishop_attacks(init_special_attacks<std::array<std::array<Bitboard, 512>, 64>>(bishop_masks, bishop_magics, bishop_bits, true))
-      , rook_attacks(init_special_attacks<std::array<std::array<Bitboard, 4096>, 64>>(rook_masks, rook_magics, rook_bits, false))
+      , bishop_attacks(init_slider_attacks<512, true>(bishop_masks, bishop_magics, bishop_bits))
+      , rook_attacks(init_slider_attacks<4096, false>(rook_masks, rook_magics, rook_bits))
     {
     }
-
 };
 }
