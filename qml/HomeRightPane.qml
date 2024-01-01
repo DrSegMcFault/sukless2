@@ -21,13 +21,11 @@ Rectangle {
     Item {
       Layout.fillWidth: true
       Layout.preferredHeight: 60
-      Text {
+      DefaultText {
         anchors.centerIn: parent
         text: qsTr("Moves")
         color: "#00e5b0"
-        font.family: "helvetica"
         font.pixelSize: 44
-        font.bold: true
       }
     }
   }

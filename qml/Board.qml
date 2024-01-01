@@ -78,27 +78,22 @@ Rectangle {
     z: 10000
     visible: base.checkmate === true
 
-    Rectangle {
+    PillButton {
       id: inner
-      color: "#00e5b0"
       anchors.fill: parent
       anchors.margins: 2
       radius: 4
-      Text {
-        color: "black"
-        anchors.centerIn: parent
-        font.family: "helvetica"
-        font.pixelSize: 36
-        font.bold: true
-        text: qsTr(gameover.gmtxt)
-      }
+      text: qsTr(parent.gmtxt)
+      pixelSize: 36
     }
 
-    Rectangle {
+    PillButton {
       width: 120
       height: 20
       color: "black"
       radius: 4
+      text: qsTr("Reset Board")
+      textColor: "#00e5b0"
 
       anchors {
         bottom: inner.bottom
@@ -107,21 +102,9 @@ Rectangle {
         bottomMargin: 4
       }
 
-      MouseArea {
-        anchors.fill: parent
-        onClicked: {
-          base.checkmate = false;
-          boardModel.reset();
-        }
-      }
-
-      Text {
-        anchors.centerIn: parent
-        color: "#00e5b0"
-        text: qsTr("Reset Board")
-        font.family: "helvetica"
-        font.bold: true
-        font.pixelSize: 18
+      onClicked: {
+        base.checkmate = false;
+        boardModel.reset();
       }
     }
   }
@@ -218,12 +201,9 @@ Rectangle {
 
 
         // file label
-        Text {
+        DefaultText {
           text: model.fileLabel
-          font.family: "helvetica"
-          font.pixelSize: 18
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
-          font.bold: true
           anchors.bottom: parent.bottom
           anchors.right: parent.right
           anchors.rightMargin: 2
@@ -231,12 +211,9 @@ Rectangle {
         }
 
         // rank label
-        Text {
+        DefaultText {
           text: model.rankLabel
-          font.family: "helvetica"
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
-          font.pixelSize: 18
-          font.bold: true
           anchors.top: parent.top
           anchors.left: parent.left
           anchors.topMargin: 2

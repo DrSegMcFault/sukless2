@@ -55,29 +55,11 @@ Item {
           height: 25
           radius: 8
 
-          Rectangle {
-            radius: 8
-            anchors.fill:parent
+          PillButton {
+            anchors.fill: parent
             anchors.margins: 1
-            color: "#00e5b0"
-
-            MouseArea {
-              anchors.fill:parent
-              onClicked: {
-                boardModel.toggleRotation()
-              }
-            }
-
-            Text {
-              anchors.centerIn: parent
-              text: qsTr("Flip Board")
-              font {
-                family: "helvetica"
-                bold: true
-                pixelSize: 18
-              }
-              color: "black"
-            }
+            onClicked: boardModel.toggleRotation()
+            text: qsTr("Flip Board")
           }
         }
 

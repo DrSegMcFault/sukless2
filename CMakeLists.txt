@@ -32,6 +32,8 @@ qt_add_qml_module(chess
             qml/HomeRightPane.qml
             qml/HomeLeftPane.qml
             qml/MainMenu.qml
+            qml/DefaultText.qml
+            qml/PillButton.qml
 
   SOURCES include/BoardModel.h
           include/BoardManager.hxx

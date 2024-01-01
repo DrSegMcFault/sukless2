@@ -35,14 +35,10 @@ Item {
           Layout.fillWidth: true
           Layout.alignment: Qt.AlignCenter
 
-          Text {
+          DefaultText {
             text: qsTr("Sukless2")
             anchors.centerIn: parent
-            font {
-              family: "helvetica"
-              pixelSize: 48
-              bold: true
-            }
+            font.pixelSize: 48
             color: "#00e5b0"
           }
         }
@@ -56,80 +52,61 @@ Item {
             Layout.preferredWidth: 80
             Layout.alignment: Qt.AlignVCenter
 
-            Text {
+            DefaultText {
               text: qsTr("Play as")
               anchors.centerIn: parent
-              font {
-                family: "helvetica"
-                pixelSize: 24
-                bold: true
-              }
+              font.pixelSize: 24
               color: "#00e5b0"
             }
           }
 
-          Rectangle {
+          PillButton {
             id: leftOption
             Layout.preferredWidth: 80
-            Layout.preferredHeight: 40
-            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: 35
             color: "#2C2C2C"
-            radius: 8
+
             property bool selected: true
+
+            text: qsTr("White")
+            textColor: "white"
+            pixelSize: 22
+
             border {
               color: selected ? "#00e5b0" : "black"
               width: 2
             }
 
-            MouseArea {
-              anchors.fill: parent
-              onClicked: {
-                if (rightOption.selected) {
-                  rightOption.selected = false
-                }
-                parent.selected = true
+            onClicked: {
+              if (rightOption.selected) {
+                rightOption.selected = false
               }
-            }
-
-            Text {
-              text: qsTr("White")
-              color: "white"
-              anchors.centerIn: parent
-              font.pixelSize: 22
-              font.bold: true
-              font.family: "helvetica"
+              selected = true
             }
           }
 
-          Rectangle {
+          PillButton {
             id: rightOption
             Layout.preferredWidth: 80
-            Layout.preferredHeight: 40
+            Layout.preferredHeight: 35
+
             color: "#2C2C2C"
-            radius: 8
+            text: qsTr("Black")
+            textColor: "white"
+            pixelSize: 22
+
             property bool selected: false
+
             border {
               color: selected ? "#00e5b0" : "black"
               width: 2
             }
 
-            MouseArea {
-              anchors.fill: parent
-              onClicked: {
-                if (leftOption.selected) {
-                  leftOption.selected = false
-                }
-                parent.selected = true
+            onClicked: {
+              if (leftOption.selected) {
+                leftOption.selected = false
               }
-            }
-
-            Text {
-              text: qsTr("Black")
-              color: "white"
-              anchors.centerIn: parent
-              font.pixelSize: 22
-              font.bold: true
-              font.family: "helvetica"
+              selected = true
             }
           }
         }
@@ -139,15 +116,10 @@ Item {
           Layout.fillWidth: true
           Layout.alignment: Qt.AlignLeft
 
-          Text {
+          DefaultText {
             text: qsTr("AI Settings")
             anchors.left: parent.left
-
-            font {
-              family: "helvetica"
-              pixelSize: 24
-              bold: true
-            }
+            font.pixelSize: 24
             color: "#00e5b0"
           }
         }
@@ -163,79 +135,60 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 12
             height: parent.height
-            Text {
+            DefaultText {
               text: qsTr("Enabled")
               color: "#00e5b0"
-              font {
-                family: "helvetica"
-                pixelSize: 20
-                bold: true
-              }
+              font.pixelSize: 20
             }
-            Rectangle {
+
+            PillButton {
               id: aiFalse
+              Layout.fillHeight: true
+              Layout.preferredWidth: 50
+
               color: "#2C2C2C"
               property bool selected: true
-              Layout.fillHeight: true
-              Layout.preferredWidth: 50
-              radius: 8
+
+              text: qsTr("No")
+              textColor: "white"
+              pixelSize: 20
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    aiTrue.selected = false
-                    aiEnabled.value = false
-                  }
-                }
-              }
 
-              Text {
-                text: qsTr("No")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  aiTrue.selected = false
+                  aiEnabled.value = false
                 }
               }
             }
 
-            Rectangle {
+            PillButton {
               id: aiTrue
-              color: "#2C2C2C"
-              property bool selected: false
               Layout.fillHeight: true
               Layout.preferredWidth: 50
-              radius: 8
+
+              color: "#2C2C2C"
+              property bool selected: false
+
+              text: qsTr("Yes")
+              textColor: "white"
+              pixelSize: 20
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
 
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    aiFalse.selected = false
-                    aiEnabled.value = true
-                  }
-                }
-              }
-              Text {
-                text: qsTr("Yes")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  aiFalse.selected = false
+                  aiEnabled.value = true
                 }
               }
             }
@@ -254,81 +207,62 @@ Item {
             anchors.leftMargin: 12
             height: parent.height
 
-            Text {
+            DefaultText {
               text: qsTr("Engine Assistance")
               color: "#00e5b0"
-              font {
-                family: "helvetica"
-                pixelSize: 20
-                bold: true
-              }
+              font.pixelSize: 20
             }
 
-            Rectangle {
+            PillButton {
               id: engineFalse
-              color: "#2C2C2C"
-              property bool selected: true
+
               Layout.fillHeight: true
               Layout.preferredWidth: 50
-              radius: 8
+              color: "#2C2C2C"
+              text: qsTr("No")
+              textColor: "white"
+              pixelSize: 20
+
+              property bool selected: true
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
 
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    engineTrue.selected = false
-                    enabledAiAssist.value = false
-                  }
-                }
-              }
-
-              Text {
-                text: qsTr("No")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  engineTrue.selected = false
+                  enabledAiAssist.value = false
                 }
               }
             }
 
-            Rectangle {
+
+            PillButton {
               id: engineTrue
-              color: "#2C2C2C"
-              property bool selected: false
+
               Layout.fillHeight: true
               Layout.preferredWidth: 50
-              radius: 8
+              color: "#2C2C2C"
+
+              text: qsTr("Yes")
+              textColor: "white"
+              pixelSize: 20
+
+              property bool selected: false
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
 
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    engineFalse.selected = false
-                    enabledAiAssist.value = true
-                  }
-                }
-              }
-              Text {
-                text: qsTr("Yes")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  engineFalse.selected = false
+                  enabledAiAssist.value = true
                 }
               }
             }
@@ -340,122 +274,96 @@ Item {
           Layout.fillWidth: true
           Layout.preferredHeight: 30
           property int value: BoardModel.Easy
+
           visible: aiEnabled.value === true
+
           RowLayout {
             spacing: 4
             anchors.left: parent.left
             anchors.leftMargin: 12
             height: 30
             property bool value: false
-            Text {
+
+            DefaultText {
               text: qsTr("Difficulty")
               color: "#00e5b0"
-              font {
-                family: "helvetica"
-                pixelSize: 20
-                bold: true
-              }
+              font.pixelSize: 20
             }
-            Rectangle {
+
+            PillButton {
               id: aiEasy
-              property bool selected: true
               Layout.fillHeight: true
               Layout.preferredWidth: 75
-              radius: 8
+
               color: "#2C2C2C"
+              property bool selected: true
+              text: qsTr("Easy")
+              textColor: "white"
+              pixelSize: 20
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    aiMedium.selected = false
-                    aiHard.selected = false
-                    aiDifficulty.value = BoardModel.Easy
-                  }
-                }
-              }
 
-              Text {
-                text: qsTr("Easy")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  aiMedium.selected = false
+                  aiHard.selected = false
+                  aiDifficulty.value = BoardModel.Easy
                 }
               }
             }
-            Rectangle {
+
+            PillButton {
               id: aiMedium
-              property bool selected: false
               Layout.fillHeight: true
               Layout.preferredWidth: 100
+
               color: "#2C2C2C"
-              radius: 8
+              property bool selected: false
+              text: qsTr("Medium")
+              textColor: "white"
+              pixelSize: 20
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    aiEasy.selected = false
-                    aiHard.selected = false
-                    aiDifficulty.value = BoardModel.Medium
-                  }
-                }
-              }
 
-              Text {
-                text: qsTr("Medium")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  aiEasy.selected = false
+                  aiHard.selected = false
+                  aiDifficulty.value = BoardModel.Medium
                 }
               }
             }
 
-            Rectangle {
+            PillButton {
               id: aiHard
-              property bool selected: false
               Layout.fillHeight: true
               Layout.preferredWidth: 75
-              radius: 8
+
               color: "#2C2C2C"
+              property bool selected: false
+              text: qsTr("Hard")
+              textColor: "white"
+              pixelSize: 20
+
               border {
                 width: 2
                 color: selected ? "#00e5b0" : "black"
               }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  if (!parent.selected) {
-                    parent.selected = true
-                    aiEasy.selected = false
-                    aiMedium.selected = false
-                    aiDifficulty.value = BoardModel.Hard
-                  }
-                }
-              }
 
-              Text {
-                text: qsTr("Hard")
-                color: "white"
-                anchors.centerIn: parent
-                font {
-                  family: "helvetica"
-                  pixelSize: 20
-                  bold: true
+              onClicked: {
+                if (!selected) {
+                  selected = true
+                  aiEasy.selected = false
+                  aiMedium.selected = false
+                  aiDifficulty.value = BoardModel.Hard
                 }
               }
             }
@@ -463,10 +371,9 @@ Item {
         }
       }
 
-      Rectangle {
-        color: "#00e5b0"
+      PillButton {
         height: 40
-        radius: 8
+
         anchors {
           left: parent.left
           right: parent.right
@@ -476,29 +383,16 @@ Item {
           bottomMargin: 8
         }
 
-        MouseArea {
-          anchors.fill: parent
-          onClicked: { navigate(
-                         "Home.qml", {
-                           "userColor": leftOption.selected ? 0 : 1,
-                           "aiAssistEnabled": enabledAiAssist.value,
-                           "aiEnabled": aiEnabled.value,
-                           "aiDifficulty": aiDifficulty.value
-                         })
-          }
-        }
+        text: qsTr("Go")
+        pixelSize: 24
 
-        Text {
-          id: textInfo
-          text: qsTr("Go")
-          anchors.centerIn: parent
-
-          font {
-            family: "helvetica"
-            pixelSize: 24
-            bold: true
-          }
-          color: "black"
+        onClicked: { navigate(
+                       "Home.qml", {
+                         "userColor": leftOption.selected ? 0 : 1,
+                         "aiAssistEnabled": enabledAiAssist.value,
+                         "aiEnabled": aiEnabled.value,
+                         "aiDifficulty": aiDifficulty.value
+                       })
         }
       }
     }

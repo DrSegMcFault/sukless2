@@ -19,48 +19,21 @@ Rectangle {
 
     spacing: 10
 
-    Rectangle {
+    PillButton {
       color: "#2C2C2C"
       Layout.fillWidth: true
       Layout.preferredHeight: 70
-
-      Text {
-        anchors.centerIn: parent
-        font.family: "helvetica"
-        font.pixelSize: 48
-        text: qsTr("Sukless2")
-        font.bold: true
-        color: "#00e5b0"
-      }
+      text: qsTr("Sukless2")
+      textColor: "#00e5b0"
+      pixelSize: 48
     }
 
-    Rectangle {
-      color: "black"
-      radius: 8
+    PillButton {
       Layout.fillWidth: true
-      Layout.preferredHeight: 70
-
-      Rectangle {
-        anchors.fill:parent
-        anchors.margins: 1
-        color: "#00e5b0"
-        radius: 8
-
-        MouseArea {
-          anchors.fill: parent
-          onClicked: {
-            navigate("MainMenu.qml")
-          }
-        }
-
-        Text {
-          anchors.centerIn: parent
-          font.family: "helvetica"
-          font.pixelSize: 18
-          text: qsTr("Main Menu")
-          font.bold: true
-          color: "black"
-        }
+      Layout.preferredHeight: 60
+      text: qsTr("Main Menu")
+      onClicked: {
+        navigate("MainMenu.qml")
       }
     }
   }
