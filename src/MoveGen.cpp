@@ -384,7 +384,8 @@ void MoveGen::generate_black_castling_moves(const Board& board_, const State& st
 void MoveGen::generate_knight_moves(const Board& board_, Color side_to_move,
                                     std::vector<util::bits::HashedMove>& moves) const
 {
-  Bitboard board = board_[(side_to_move == Color::white) ? w_knight : b_knight];
+  auto piece_t = (side_to_move == Color::white) ? w_knight : b_knight;
+  Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
   uint8_t source_square = 0;
   uint8_t target_square = 0;
@@ -396,12 +397,18 @@ void MoveGen::generate_knight_moves(const Board& board_, Color side_to_move,
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-       // if the move is not a capture
-       if (!is_set(target_square, board_[(side_to_move == Color::white) ? b_all : w_all])) {
-         add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 0,0,0,0);
-       } else {
-         add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_knight : b_knight, 0, 1,0,0,0);
-       }
+      uint32_t is_capture =
+          static_cast<uint32_t>(is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all]));
+
+      add_move(moves,
+               source_square,
+               target_square,
+               piece_t,
+               /* promotion */ 0,
+               is_capture,
+               /* double_push */ 0,
+               /* en_passant */ 0,
+               /* castling */ 0);
 
       clear_bit(target_square, attacks);
     }
@@ -417,7 +424,8 @@ void MoveGen::generate_knight_moves(const Board& board_, Color side_to_move,
 void MoveGen::generate_bishop_moves(const Board& board_, Color side_to_move,
                                     std::vector<util::bits::HashedMove>& moves) const
 {
-  Bitboard board = board_[(side_to_move == Color::white) ? w_bishop : b_bishop];
+  auto piece_t = (side_to_move == Color::white) ? w_bishop : b_bishop;
+  Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
   uint8_t source_square = 0;
   uint8_t target_square = 0;
@@ -429,12 +437,18 @@ void MoveGen::generate_bishop_moves(const Board& board_, Color side_to_move,
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-      // if the move is not a capture 
-      if (!is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all])) {
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_bishop : b_bishop, 0, 0,0,0,0);
-      } else { 
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_bishop : b_bishop, 0, 1,0,0,0);
-      }
+      uint32_t is_capture =
+          static_cast<uint32_t>(is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all]));
+
+      add_move(moves,
+               source_square,
+               target_square,
+               piece_t,
+               /* promotion */ 0,
+               is_capture,
+               /* double_push */ 0,
+               /* en_passant */ 0,
+               /* castling */ 0);
 
       clear_bit(target_square, attacks);
     }
@@ -451,7 +465,8 @@ void MoveGen::generate_bishop_moves(const Board& board_, Color side_to_move,
 void MoveGen::generate_rook_moves(const Board& board_, Color side_to_move,
                                   std::vector<util::bits::HashedMove>& moves) const
 {
-  Bitboard board = board_[(side_to_move == Color::white) ? w_rook : b_rook];
+  auto piece_t = (side_to_move == Color::white) ? w_rook : b_rook;
+  Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
   uint8_t source_square = 0;
   uint8_t target_square = 0;
@@ -463,12 +478,18 @@ void MoveGen::generate_rook_moves(const Board& board_, Color side_to_move,
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-      // if the move is not a capture
-      if (!is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all])) {
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_rook : b_rook, 0, 0,0,0,0);
-      } else { 
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_rook : b_rook, 0, 1,0,0,0);
-      }
+      uint32_t is_capture =
+          static_cast<uint32_t>(is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all]));
+
+      add_move(moves,
+               source_square,
+               target_square,
+               piece_t,
+               /* promotion */ 0,
+               is_capture,
+               /* double_push */ 0,
+               /* en_passant */ 0,
+               /* castling */ 0);
 
       clear_bit(target_square, attacks);
     }
@@ -485,8 +506,11 @@ void MoveGen::generate_rook_moves(const Board& board_, Color side_to_move,
 void MoveGen::generate_queen_moves(const Board& board_, Color side_to_move,
                                    std::vector<util::bits::HashedMove>& moves) const
 {
-  Bitboard board = board_[(side_to_move == Color::white) ? w_queen : b_queen];
+  auto piece_t = (side_to_move == Color::white) ? w_queen : b_queen;
+
+  Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
+
   uint8_t source_square = 0;
   uint8_t target_square = 0;
 
@@ -497,12 +521,19 @@ void MoveGen::generate_queen_moves(const Board& board_, Color side_to_move,
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-      // if the move is not a capture 
-      if (!is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all])) {
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_queen : b_queen, 0, 0,0,0,0);
-      } else { 
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_queen : b_queen, 0, 1,0,0,0);
-      }
+      uint32_t is_capture =
+          static_cast<uint32_t>(is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all]));
+
+      add_move(moves,
+               source_square,
+               target_square,
+               piece_t,
+               /* promotion */ 0,
+               is_capture,
+               /* double_push */ 0,
+               /* en_passant */ 0,
+               /* castling */ 0);
+
 
       clear_bit(target_square, attacks);
     }
@@ -519,7 +550,8 @@ void MoveGen::generate_queen_moves(const Board& board_, Color side_to_move,
 void MoveGen::generate_king_moves(const Board& board_, Color side_to_move,
                                   std::vector<util::bits::HashedMove>& moves) const
 {
-  Bitboard board = board_[(side_to_move == Color::white) ? w_king : b_king];
+  auto piece_t = (side_to_move == Color::white) ? w_king : b_king;
+  Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
   uint8_t source_square = 0;
   uint8_t target_square = 0;
@@ -531,12 +563,18 @@ void MoveGen::generate_king_moves(const Board& board_, Color side_to_move,
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
-      // if the move is not a capture 
-      if (!is_set(target_square, board_[side_to_move == Color::white ? b_all : w_all])) {
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_king : b_king, 0, 0,0,0,0);
-      } else { 
-        add_move(moves, source_square, target_square, (side_to_move == Color::white) ? w_king : b_king, 0, 1,0,0,0);
-      }
+      uint32_t is_capture =
+          static_cast<uint32_t>(is_set(target_square, board_[(side_to_move == Color::white) ? b_all : w_all]));
+
+      add_move(moves,
+               source_square,
+               target_square,
+               piece_t,
+               /* promotion */ 0,
+               is_capture,
+               /* double_push */ 0,
+               /* en_passant */ 0,
+               /* castling */ 0);
 
       clear_bit(target_square, attacks);
     }
@@ -554,7 +592,7 @@ void MoveGen::test_attack_lookup()
   std::random_device rd;
   std::mt19937 gen(rd());
 
-  for (auto i = 0; i < 100000000; i ++) {
+  for (auto i = 0; i < 100'000'000; i ++) {
     std::uniform_int_distribution<uint64_t> dis(
       std::numeric_limits<std::uint64_t>::min(),
       std::numeric_limits<std::uint64_t>::max());
@@ -567,6 +605,7 @@ void MoveGen::test_attack_lookup()
 
     Bitboard rook_actual = get_rook_attacks(r_square, occ);
     Bitboard rook_calculated = calc_rook_attacks(r_square, occ);
+
     Bitboard queen_actual = get_queen_attacks(r_square, occ);
     Bitboard queen_calculated =
       (calc_rook_attacks(r_square, occ)) | calc_bishop_attacks(r_square, occ);
