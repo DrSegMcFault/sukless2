@@ -47,10 +47,28 @@ std::optional<uint8_t> chess::util::fen::algebraic_to_index(const std::string& a
 
 /*******************************************************************************
  *
+ * Function: algebraic_to_index(const std::string& alg)
+ * converts algebraic notation to the associated index
+ *******************************************************************************/
+std::optional<std::string> chess::util::fen::index_to_algebraic(uint8_t index)
+{
+  if (index < chess::A1 || index > chess::H8) {
+    return std::nullopt;
+  }
+
+  std::string ret;
+  ret += (index / 8) + '1';
+  ret += (index % 8) + 'a';
+
+  return ret;
+}
+
+/*******************************************************************************
+ *
  * Function: piece_from_char(const std::string& alg)
  *
  *******************************************************************************/
-chess::Piece chess::util::fen::piece_from_char(char c) {
+chess::Piece chess::util::fen::char_to_piece(char c) {
   using enum Piece;
   switch (c) {
     case 'P': return w_pawn;
@@ -75,7 +93,7 @@ chess::Piece chess::util::fen::piece_from_char(char c) {
  * Function: char_from_piece(Piece p)
  *
  *******************************************************************************/
-char chess::util::fen::char_from_piece(Piece p)
+char chess::util::fen::piece_to_char(Piece p)
 {
   switch (p) {
     case w_pawn: return 'P';

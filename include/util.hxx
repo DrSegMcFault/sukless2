@@ -52,11 +52,11 @@ namespace chess {
   // flags for the game state
   struct State {
     uint8_t castling_rights = 0b00001111;
-    Color side_to_move = Color::white;
-    uint8_t full_move_count = 0;
-    uint8_t half_move_count = 1;
+    uint8_t half_move_clock = 0;
+    uint8_t full_move_count = 1;
     // target enpassant square
     uint8_t en_passant_target = chess::NoSquare;
+    Color side_to_move = Color::white;
   };
 
   enum class AIDifficulty {
@@ -196,8 +196,9 @@ namespace chess {
     namespace fen {
 
       std::optional<uint8_t> algebraic_to_index(const std::string& alg);
-      Piece piece_from_char(char c);
-      char char_from_piece(Piece p);
+      std::optional<std::string> index_to_algebraic(uint8_t index);
+      Piece char_to_piece(char c);
+      char piece_to_char(Piece p);
 
     } // namespace util::fen
 

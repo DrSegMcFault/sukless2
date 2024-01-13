@@ -410,13 +410,13 @@ class MoveGen {
     static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
 
     // template to initialize a big array of attacks at compile time,
-    // used for rook and bishops attack tables
-    template <size_t T, bool is_bishop>
+    // used for rook and bishop attack tables
+    template <size_t N, bool is_bishop>
     constexpr auto init_slider_attacks(const std::array<Bitboard, 64> masks,
                                        const std::array<Bitboard, 64> magics,
                                        const std::array<uint8_t, 64> bits)
     {
-      std::array<std::array<Bitboard, T>, 64> result = {};
+      std::array<std::array<Bitboard, N>, 64> result = {};
 
       // generates the ith permutation of the attack mask
       constexpr auto ith_permutation =

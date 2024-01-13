@@ -12,7 +12,7 @@ BoardManager::BoardManager(const MoveGen* g)
 {
   _move_list.reserve(256);
   _history.reserve(150);
-  init_from_fen(starting_position);
+  init_from_fen(chess::starting_position);
 }
 
 /*******************************************************************************
@@ -31,7 +31,7 @@ BoardManager::BoardManager(const MoveGen* g, const std::string& fen)
 /*******************************************************************************
  *
  * Method: init_from_fen(Bitboard b)
- * TODO: this is incredibly naive
+ * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
  *******************************************************************************/
 void BoardManager::init_from_fen(const std::string &fen)
 {
@@ -54,7 +54,7 @@ void BoardManager::init_from_fen(const std::string &fen)
     } else if (c == ' ') {
       break;
     } else {
-      auto piece = util::fen::piece_from_char(c);
+      auto piece = util::fen::char_to_piece(c);
       uint8_t square = rank * 8 + file;
       set_bit(square, _board[piece]);
       file++;
@@ -338,8 +338,12 @@ MoveResult BoardManager::make_move(
       state_copy.full_move_count++;
     }
 
-    // always increment half move count
-    state_copy.half_move_count++;
+    // the half move clock is the number of
+    // half moves since the last pawn move or any capture
+    if (!capture && ( piece != w_pawn || piece != b_pawn))
+    {
+      state_copy.half_move_clock++;
+    }
 
     _board = board_copy;
     _state = state_copy;
@@ -355,11 +359,90 @@ MoveResult BoardManager::make_move(
 /*******************************************************************************
  *
  * Method: generate_fen()
- *
+ * - return a fen string represenation of the current board
+ * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
  *******************************************************************************/
 std::string BoardManager::generate_fen()
 {
-  return "";
+  std::string fen = "";
+
+  uint8_t cur_missing_count = 0;
+  static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
+
+  for (int start : ranges) {
+    for (int square : std::views::iota(start, start + 8)) {
+
+      std::optional<Piece> piece_at_sq;
+
+      // see if there is a piece at this square
+      for (auto p = util::toul(w_pawn); p <= util::toul(b_king); p++) {
+        if (is_set(square, _board[p])) {
+          piece_at_sq = square_to_piece(square);
+          break;
+        }
+      }
+
+      if (piece_at_sq) {
+        std::string temp = "";
+        if (cur_missing_count) {
+          temp += std::to_string(cur_missing_count);
+        }
+        temp += util::fen::piece_to_char(*piece_at_sq);
+        fen += temp;
+        cur_missing_count = 0;
+
+      } else {
+        cur_missing_count++;
+      }
+    }
+
+    if (cur_missing_count) {
+      fen += std::to_string(cur_missing_count);
+      cur_missing_count = 0;
+    }
+
+    if (start != *(ranges.end() - 1)) {
+      fen += "/";
+    }
+  }
+
+  fen += " ";
+
+  fen += _state.side_to_move == Color::white ? 'w' : 'b';
+
+  fen += " ";
+
+  if (!_state.castling_rights) {
+    fen += '-';
+  } else {
+    if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide)) {
+      fen += "K";
+    }
+    if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide)) {
+      fen += "Q";
+    }
+    if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide)) {
+      fen += "k";
+    }
+    if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide)) {
+      fen += "q";
+    }
+  }
+
+  fen += " ";
+
+  if (_state.en_passant_target == chess::NoSquare) {
+    fen += "-";
+  } else if (auto str = util::fen::index_to_algebraic(_state.en_passant_target)) {
+    fen += *str;
+  }
+
+  fen += " ";
+
+  fen += (std::to_string(_state.half_move_clock)) + " " +
+          std::to_string(_state.full_move_count);
+
+  return fen;
 }
 
 /*******************************************************************************
