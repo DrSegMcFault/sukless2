@@ -46,18 +46,16 @@ int AI::calc_material_score(const BoardManager& b, Color eval_for) const
   int white_eval = 0;
   int black_eval = 0;
 
-  for (auto p = static_cast<int>(Piece::w_pawn);
-       p <= static_cast<int>(Piece::w_king); p++)
+  for (auto p : chess::WhitePieces)
   {
     white_eval +=
-        piece_values.at(p) * b.piece_count(static_cast<Piece>(p));
+        piece_values.at(p) * b.piece_count(p);
   }
 
-  for (auto p = static_cast<int>(Piece::b_pawn);
-       p <= static_cast<int>(Piece::b_king); p++)
+  for (auto p : chess::BlackPieces)
   {
     black_eval +=
-          piece_values.at(p) * b.piece_count(static_cast<Piece>(p));
+          piece_values.at(p) * b.piece_count(p);
   }
 
   switch (eval_for) {

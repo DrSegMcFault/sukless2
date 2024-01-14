@@ -49,12 +49,11 @@ namespace chess {
 
   static constexpr uint8_t NoSquare = 64;
 
-  // flags for the game state
+  // Board State
   struct State {
-    uint8_t castling_rights = 0b00001111;
+    uint8_t castling_rights = 15; //0b00001111;
     uint8_t half_move_clock = 0;
     uint8_t full_move_count = 1;
-    // target enpassant square
     uint8_t en_passant_target = chess::NoSquare;
     Color side_to_move = Color::white;
   };
@@ -112,6 +111,39 @@ namespace chess {
   static constexpr Bitboard not_h_file = 9187201950435737471ULL;
   static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
   static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
+
+  static constexpr std::array<Piece, 6> WhitePieces = {
+    Piece::w_pawn,
+    Piece::w_knight,
+    Piece::w_bishop,
+    Piece::w_rook,
+    Piece::w_queen,
+    Piece::w_king
+  };
+
+  static constexpr std::array<Piece, 6> BlackPieces = {
+    Piece::b_pawn,
+    Piece::b_knight,
+    Piece::b_bishop,
+    Piece::b_rook,
+    Piece::b_queen,
+    Piece::b_king
+  };
+
+  static constexpr std::array<Piece, 12> AllPieces = {
+    Piece::w_pawn,
+    Piece::w_knight,
+    Piece::w_bishop,
+    Piece::w_rook,
+    Piece::w_queen,
+    Piece::w_king,
+    Piece::b_pawn,
+    Piece::b_knight,
+    Piece::b_bishop,
+    Piece::b_rook,
+    Piece::b_queen,
+    Piece::b_king
+  };
 
   namespace util {
 

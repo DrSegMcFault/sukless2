@@ -1,4 +1,5 @@
 #include "BoardManager.hxx"
+#include <cassert>
 
 using namespace chess;
 
@@ -41,11 +42,26 @@ void BoardManager::init_from_fen(const std::string &fen)
     b = 0ULL;
   }
 
-  // parse the FEN string
-  uint32_t rank = 7; // start from the 8th rank
+  auto view = fen | std::views::split(' ') | std::views::transform([](auto&& range) {
+                    return std::string(range.begin(), range.end());
+                   });
+
+  std::vector<std::string> tokens(view.begin(), view.end());
+
+  assert(tokens.size() == 6);
+
+  auto& fen_board_layout = tokens[0];
+  auto& fen_turn = tokens[1];
+  auto& fen_castling = tokens[2];
+  auto& fen_en_passant = tokens[3];
+  auto& fen_half_clock = tokens[4];
+  auto& fen_move_cnt = tokens[5];
+
+  // parse the board layout portion of the string
+  uint32_t rank = 7;
   uint32_t file = 0;
   
-  for (auto c : fen) {
+  for (auto c : fen_board_layout) {
     if (isdigit(c)) {
       file += (c - '0');
     } else if (c == '/') {
@@ -65,12 +81,42 @@ void BoardManager::init_from_fen(const std::string &fen)
   _board[b_all] = calc_black_occupancy(_board);
   _board[All] = calc_global_occupancy(_board);
 
-  _state.side_to_move = (fen.find("w") != std::string::npos) ? Color::white : Color::black;
+  // get the turn info
+  _state.side_to_move = fen_turn == "w" ? Color::white : Color::black;
 
-  // TODO: castling rights, en_passant
-  _state.en_passant_target = chess::NoSquare;
-  _state.castling_rights = util::toul(CastlingRights::WhiteCastlingRights) |
-                           util::toul(CastlingRights::BlackCastlingRights);
+  // castling rights
+  if (fen_castling == "-") {
+    _state.castling_rights = ~(util::toul(CastlingRights::WhiteCastlingRights) |
+                               util::toul(CastlingRights::BlackCastlingRights));
+  } else {
+    if (util::contains(fen_castling, 'K')) {
+      _state.castling_rights |= util::toul(CastlingRights::WhiteKingSide);
+    }
+    if (util::contains(fen_castling, 'Q')) {
+      _state.castling_rights |= util::toul(CastlingRights::WhiteQueenSide);
+    }
+    if (util::contains(fen_castling, 'k')) {
+      _state.castling_rights |= util::toul(CastlingRights::BlackKingSide);
+    }
+    if (util::contains(fen_castling, 'q')) {
+      _state.castling_rights |= util::toul(CastlingRights::BlackQueenSide);
+    }
+  }
+
+  // en passant information
+  if (fen_en_passant == "-") {
+    _state.en_passant_target = chess::NoSquare;
+  }
+  else if (auto index = util::fen::algebraic_to_index(fen_en_passant))
+  {
+    _state.en_passant_target = index.value();
+  }
+
+  // half move clock
+  _state.half_move_clock = std::stoul(fen_half_clock);
+
+  // full move count
+  _state.full_move_count = std::stoul(fen_move_cnt);
 
   _generator->generate_moves(_board, _state, _move_list);
 }
@@ -83,9 +129,9 @@ void BoardManager::init_from_fen(const std::string &fen)
 std::optional<Piece> BoardManager::square_to_piece(uint8_t square) const
 {
   std::optional<Piece> ret;
-  for (uint8_t p = static_cast<uint8_t>(w_pawn); p <= static_cast<uint8_t>(b_king); p++) {
+  for (auto p : chess::AllPieces) {
     if (is_set(square, _board[p])) {
-      ret.emplace(static_cast<Piece>(p));
+      ret.emplace(p);
       return ret;
     }
   }
@@ -127,40 +173,46 @@ std::array<std::optional<Piece>, 64> BoardManager::get_current_board() const
 
 /*******************************************************************************
  *
+ * Method: is_check(const Board&, const State&)
+ *
+ *******************************************************************************/
+bool BoardManager::is_check(const Board& board_, const State& state_)
+{
+  return
+    _generator->is_square_attacked(util::bits::get_lsb_index(state_.side_to_move == Color::white ? board_[w_king] : board_[b_king]),
+                                   (state_.side_to_move == Color::white) ? Color::black : Color::white,
+                                   board_);
+}
+
+/*******************************************************************************
+ *
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
 MoveResult BoardManager::try_move(const chess::Move& proposed)
 {
   MoveResult result = MoveResult::Illegal;
-  bool no_moves = true;
 
   if (auto move = find_move(proposed.from, proposed.to))
   {
     if (result = make_move(move.value());
         result != MoveResult::Illegal)
     {
-      // now check if its checkmate
+      bool no_legal_moves = true;
+
+      // now check if there are no legal moves
       for (auto m : _move_list) {
         BoardManager temp = *this;
+
         if (temp.make_move(m) != MoveResult::Illegal) {
-          no_moves = false;
+          no_legal_moves = false;
           break;
         }
       }
 
-      // if there aren't any legal moves, check if its checkmate or stalemate
-      if (no_moves) {
-        // is in check
-        if (_generator->is_square_attacked(util::bits::get_lsb_index(_state.side_to_move == Color::white ? _board[w_king] : _board[b_king]),
-                                           _state.side_to_move == Color::white ? Color::black : Color::white,
-                                           _board))
-        {
-          result = MoveResult::Checkmate;
-        }
-        else {
-          result = MoveResult::Stalemate;
-        }
+      if (no_legal_moves) {
+        result = is_check(_board, _state) ? MoveResult::Checkmate
+                                          : MoveResult::Stalemate;
       }
     }
   }
@@ -195,27 +247,13 @@ MoveResult BoardManager::make_move(
 
   // if the move was a capture move, remove the captured piece
   if (capture) {
-    Piece start_piece;
-    Piece end_piece;
 
-    switch (state_copy.side_to_move) {
-      case Color::white:
-      {
-        start_piece = Piece::b_pawn;
-        end_piece = Piece::b_king;
-        break;
-      }
-      case Color::black:
-      {
-        start_piece = Piece::w_pawn;
-        end_piece = Piece::w_king;
-        break;
-      }
-    }
+    const auto& pieces =
+          (state_copy.side_to_move == Color::white) ? chess::BlackPieces
+                                                    : chess::WhitePieces;
 
     // loop over possible capture pieces
-    for (uint8_t p = static_cast<uint8_t>(start_piece);
-        p <= static_cast<uint8_t>(end_piece); p++)
+    for (auto p : pieces)
     {
       if (is_set(target_square, board_copy[p])) {
         clear_bit(target_square, board_copy[p]);
@@ -318,20 +356,15 @@ MoveResult BoardManager::make_move(
   board_copy[b_all] = calc_black_occupancy(board_copy);
   board_copy[All] = calc_global_occupancy(board_copy);
 
-  // if the king is under attack after the move, the move is illegal
-  if (_generator->is_square_attacked(((state_copy.side_to_move == Color::white)
-                          ? util::bits::get_lsb_index(board_copy[w_king])
-                          : util::bits::get_lsb_index(board_copy[b_king])),
-                          ((state_copy.side_to_move == Color::white) ? Color::black : Color::white),
-                          board_copy))
-  {
+  // if the move puts themselves in check -> Illegal
+  if (is_check(board_copy, state_copy)) {
     return MoveResult::Illegal;
   }
   else 
   {
     result = MoveResult::Valid;
-    state_copy.side_to_move =
-        (state_copy.side_to_move == Color::white) ? Color::black : Color::white;
+    state_copy.side_to_move = (state_copy.side_to_move == Color::white) ? Color::black
+                                                                        : Color::white;
 
     // successful move from black means full move cnt++
     if (state_copy.side_to_move == Color::white) {
@@ -375,7 +408,7 @@ std::string BoardManager::generate_fen()
       std::optional<Piece> piece_at_sq;
 
       // see if there is a piece at this square
-      for (auto p = util::toul(w_pawn); p <= util::toul(b_king); p++) {
+      for (auto p : chess::AllPieces) {
         if (is_set(square, _board[p])) {
           piece_at_sq = square_to_piece(square);
           break;

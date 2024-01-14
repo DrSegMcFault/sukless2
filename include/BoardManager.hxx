@@ -78,6 +78,9 @@ class BoardManager
     // generate FEN representation of current board
     std::string generate_fen();
 
+    // is the board in check
+    bool is_check(const Board&, const State&);
+
     // update the white occupancy bitboard
     inline Bitboard calc_white_occupancy(Board& board) {
       return (board[w_pawn] | board[w_knight] | board[w_bishop] |
