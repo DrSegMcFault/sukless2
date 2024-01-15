@@ -270,14 +270,6 @@ class MoveGen {
                          uint32_t capture, uint32_t double_push,
                          uint32_t enpassant, uint32_t castling) const;
 
-    void generate_white_moves(const Board& board,
-                              const State& state,
-                              std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_black_moves(const Board& board,
-                              const State& state,
-                              std::vector<util::bits::HashedMove>& moves) const;
-
     void generate_white_pawn_moves(const Board& board,
                                    const State& state,
                                    std::vector<util::bits::HashedMove>& moves) const;
@@ -286,13 +278,9 @@ class MoveGen {
                                    const State& state,
                                    std::vector<util::bits::HashedMove>& moves) const;
 
-    void generate_white_castling_moves(const Board& board,
-                                       const State& state,
-                                       std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_black_castling_moves(const Board& board,
-                                       const State& state,
-                                       std::vector<util::bits::HashedMove>& moves) const;
+    void generate_castling_moves(const Board& board,
+                                 const State& state,
+                                 std::vector<util::bits::HashedMove>& moves) const;
 
     void generate_king_moves(const Board& b, Color side_to_move,
                              std::vector<util::bits::HashedMove>& moves) const;
@@ -379,7 +367,7 @@ class MoveGen {
       0x80c0084100102001ULL, 0x4024081001000421ULL,
       0x20030a0244872ULL,    0x12001008414402ULL,
       0x2006104900a0804ULL,  0x1004081002402ULL
-   };
+    };
 
     // bitcounts for each mask
     static constexpr std::array<uint8_t, 64> bishop_bits =
@@ -394,23 +382,17 @@ class MoveGen {
 
     // bitcounts for each mask
     static constexpr std::array<uint8_t, 64> rook_bits =
-   { 12, 11, 11, 11, 11, 11, 11, 12,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     11, 10, 10, 10, 10, 10, 10, 11,
-     12, 11, 11, 11, 11, 11, 11, 12 };
+    { 12, 11, 11, 11, 11, 11, 11, 12,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      11, 10, 10, 10, 10, 10, 10, 11,
+      12, 11, 11, 11, 11, 11, 11, 12 };
 
-    // useful constants
-    static constexpr Bitboard not_a_file = 18374403900871474942ULL;
-    static constexpr Bitboard not_h_file = 9187201950435737471ULL;
-    static constexpr Bitboard not_hg_file = 4557430888798830399ULL;
-    static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
-
-    // template to initialize a big array of attacks at compile time,
-    // used for rook and bishop attack tables
+    // used to initialize a big array of attacks at compile time,
+    // currently for rook and bishop attack tables
     template <size_t N, bool is_bishop>
     constexpr auto init_slider_attacks(const std::array<Bitboard, 64> masks,
                                        const std::array<Bitboard, 64> magics,

@@ -242,7 +242,7 @@ MoveResult BoardManager::make_move(
                  capture, double_push,
                  was_en_passant, castling ] = move.explode();
 
-  // do the move, update the bitboard of the piece that moved
+  // do the move on the pieces bitboard
   move_bit(source_square, target_square, board_copy[piece]);
 
   // if the move was a capture move, remove the captured piece
@@ -251,8 +251,6 @@ MoveResult BoardManager::make_move(
     const auto& pieces =
           (state_copy.side_to_move == Color::white) ? chess::BlackPieces
                                                     : chess::WhitePieces;
-
-    // loop over possible capture pieces
     for (auto p : pieces)
     {
       if (is_set(target_square, board_copy[p])) {
@@ -314,7 +312,6 @@ MoveResult BoardManager::make_move(
   }
   else if (castling) {
     switch (target_square) {
-      // white castling king side
       case chess::G1:
       {
         move_bit(chess::H1, chess::F1, board_copy[w_rook]);
@@ -392,12 +389,13 @@ MoveResult BoardManager::make_move(
 /*******************************************************************************
  *
  * Method: generate_fen()
- * - return a fen string represenation of the current board
+ * - return the fen string representation of the current board
  * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
  *******************************************************************************/
 std::string BoardManager::generate_fen()
 {
   std::string fen = "";
+  fen.reserve(40);
 
   uint8_t cur_missing_count = 0;
   static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
@@ -405,26 +403,19 @@ std::string BoardManager::generate_fen()
   for (int start : ranges) {
     for (int square : std::views::iota(start, start + 8)) {
 
-      std::optional<Piece> piece_at_sq;
+      if (auto piece_at_sq = square_to_piece(square)) {
 
-      // see if there is a piece at this square
-      for (auto p : chess::AllPieces) {
-        if (is_set(square, _board[p])) {
-          piece_at_sq = square_to_piece(square);
-          break;
-        }
-      }
-
-      if (piece_at_sq) {
         std::string temp = "";
         if (cur_missing_count) {
           temp += std::to_string(cur_missing_count);
         }
+
         temp += util::fen::piece_to_char(*piece_at_sq);
         fen += temp;
-        cur_missing_count = 0;
 
-      } else {
+        cur_missing_count = 0;
+      }
+      else {
         cur_missing_count++;
       }
     }
@@ -435,45 +426,49 @@ std::string BoardManager::generate_fen()
     }
 
     if (start != *(ranges.end() - 1)) {
-      fen += "/";
+      fen.append("/");
     }
   }
 
-  fen += " ";
+  fen.append(" ");
 
   fen += _state.side_to_move == Color::white ? 'w' : 'b';
 
-  fen += " ";
+  fen.append(" ");
 
   if (!_state.castling_rights) {
-    fen += '-';
+    fen.append("-");
   } else {
-    if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide)) {
-      fen += "K";
+    if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide))
+    {
+      fen.append("K");
     }
-    if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide)) {
-      fen += "Q";
+    if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide))
+    {
+      fen.append("Q");
     }
-    if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide)) {
-      fen += "k";
+    if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide))
+    {
+      fen.append("k");
     }
-    if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide)) {
-      fen += "q";
+    if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide))
+    {
+      fen.append("q");
     }
   }
 
-  fen += " ";
+  fen.append(" ");
 
   if (_state.en_passant_target == chess::NoSquare) {
-    fen += "-";
+    fen.append("-");
   } else if (auto str = util::fen::index_to_algebraic(_state.en_passant_target)) {
-    fen += *str;
+    fen.append(*str);
   }
 
-  fen += " ";
+  fen.append(" ");
 
-  fen += (std::to_string(_state.half_move_clock)) + " " +
-          std::to_string(_state.full_move_count);
+  fen.append(std::to_string(_state.half_move_clock) + " " +
+             std::to_string(_state.full_move_count));
 
   return fen;
 }

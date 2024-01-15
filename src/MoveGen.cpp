@@ -37,12 +37,18 @@ void MoveGen::generate_moves(const Board& b,
 {
    switch (s.side_to_move) {
      case Color::white:
-       generate_white_moves(b, s, moves);
+       generate_white_pawn_moves(b, s, moves);
        break;
      case Color::black:
-       generate_black_moves(b, s, moves);
+       generate_black_pawn_moves(b, s, moves);
        break;
    }
+   generate_castling_moves(b, s, moves);
+   generate_knight_moves(b, s.side_to_move, moves);
+   generate_bishop_moves(b, s.side_to_move, moves);
+   generate_rook_moves(b, s.side_to_move, moves);
+   generate_queen_moves(b, s.side_to_move, moves);
+   generate_king_moves(b, s.side_to_move, moves);
 }
 
 
@@ -126,42 +132,6 @@ bool MoveGen::is_square_attacked(uint8_t square,
   }
 
   return false;
-}
-
-/*******************************************************************************
- *
- * Method: generate_white_moves()
- *
- *******************************************************************************/
-void MoveGen::generate_white_moves(const Board& b,
-                                   const State& s,
-                                   std::vector<util::bits::HashedMove>& moves) const
-{
-  generate_white_pawn_moves(b, s, moves);
-  generate_white_castling_moves(b, s, moves);
-  generate_knight_moves(b, Color::white, moves);
-  generate_bishop_moves(b, Color::white, moves);
-  generate_rook_moves(b, Color::white, moves);
-  generate_queen_moves(b, Color::white, moves);
-  generate_king_moves(b, Color::white, moves);
-}
-
-/*******************************************************************************
- *
- * Method: generate_black_moves()
- *
- *******************************************************************************/
-void MoveGen::generate_black_moves(const Board& b,
-                                   const State& s,
-                                   std::vector<util::bits::HashedMove>& moves) const
-{
-  generate_black_pawn_moves(b, s, moves);
-  generate_black_castling_moves(b, s, moves);
-  generate_knight_moves(b, Color::black, moves);
-  generate_bishop_moves(b, Color::black, moves);
-  generate_rook_moves(b, Color::black, moves);
-  generate_queen_moves(b, Color::black, moves);
-  generate_king_moves(b, Color::black, moves);
 }
 
 /*******************************************************************************
@@ -304,74 +274,75 @@ void MoveGen::generate_black_pawn_moves(const Board& board_, const State& state,
 
 /*******************************************************************************
  *
- * Method: generate_white_castling_moves()
+ * Method: generate_castling_moves()
  *
  *******************************************************************************/
-void MoveGen::generate_white_castling_moves(const Board& board_, const State& state,
-                                            std::vector<util::bits::HashedMove>& moves) const
-{
-  using namespace util;
-  if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
-  {
-    if (!is_set(chess::F1, board_[All]) &&
-        !is_set(chess::G1, board_[All]))
-    {
-      if (!is_square_attacked(chess::E1, Color::black, board_) &&
-          !is_square_attacked(chess::F1, Color::black, board_))
-      {
-        add_move(moves, chess::E1, chess::G1, Piece::w_king, 0,0,0,0,1);
-       }
-     }
-   }
-
-   if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
-   {
-     if (!(is_set(chess::D1, board_[All])) &&
-         !(is_set(chess::C1, board_[All])) &&
-         !(is_set(chess::B1, board_[All])))
-     {
-       if (!is_square_attacked(chess::E1, Color::black, board_) &&
-           !is_square_attacked(chess::D1, Color::black, board_))
-       {
-         add_move(moves, chess::E1, chess::C1, Piece::w_king, 0,0,0,0,1);
-       }
-     }
-   }
-}
-
-/*******************************************************************************
- *
- * Method: generate_black_castling_moves()
- *
- *******************************************************************************/
-void MoveGen::generate_black_castling_moves(const Board& board_, const State& state,
-                                            std::vector<util::bits::HashedMove>& moves) const
+void MoveGen::generate_castling_moves(const Board& board_, const State& state,
+                                      std::vector<util::bits::HashedMove>& moves) const
 {
    using namespace util;
-   if (state.castling_rights & toul(CastlingRights::BlackKingSide))
-   {
-     if (!is_set(chess::F8, board_[All]) &&
-         !is_set(chess::G8, board_[All]))
+   switch (state.side_to_move) {
+     case Color::white:
      {
-       if (!is_square_attacked(chess::E8, Color::white, board_) &&
-           !is_square_attacked(chess::F8, Color::white, board_))
+       if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
        {
-         add_move(moves, chess::E8, chess::G8, Piece::b_king, 0,0,0,0,1);
+         if (!is_set(chess::F1, board_[All]) &&
+             !is_set(chess::G1, board_[All]))
+         {
+           if (!is_square_attacked(chess::E1, Color::black, board_) &&
+               !is_square_attacked(chess::F1, Color::black, board_))
+           {
+             add_move(moves, chess::E1, chess::G1, Piece::w_king, 0,0,0,0,1);
+           }
+         }
        }
-     }
-   }
 
-   if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
-   {
-     if (!is_set(chess::D8, board_[All]) &&
-         !is_set(chess::C8, board_[All]) &&
-         !is_set(chess::B8, board_[All]))
-     {
-       if (!is_square_attacked(chess::E8, Color::white, board_) &&
-           !is_square_attacked(chess::D8, Color::white, board_))
+       if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
        {
-         add_move(moves, chess::E8, chess::C8, Piece::b_king, 0,0,0,0,1);
+         if (!(is_set(chess::D1, board_[All])) &&
+             !(is_set(chess::C1, board_[All])) &&
+             !(is_set(chess::B1, board_[All])))
+          {
+            if (!is_square_attacked(chess::E1, Color::black, board_) &&
+                !is_square_attacked(chess::D1, Color::black, board_))
+            {
+              add_move(moves, chess::E1, chess::C1, Piece::w_king, 0,0,0,0,1);
+            }
+          }
        }
+       break;
+     }
+
+     case Color::black:
+     {
+       if (state.castling_rights & toul(CastlingRights::BlackKingSide))
+       {
+         if (!is_set(chess::F8, board_[All]) &&
+             !is_set(chess::G8, board_[All]))
+         {
+           if (!is_square_attacked(chess::E8, Color::white, board_) &&
+               !is_square_attacked(chess::F8, Color::white, board_))
+           {
+             add_move(moves, chess::E8, chess::G8, Piece::b_king, 0,0,0,0,1);
+           }
+         }
+       }
+
+       if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
+       {
+         if (!is_set(chess::D8, board_[All]) &&
+             !is_set(chess::C8, board_[All]) &&
+             !is_set(chess::B8, board_[All]))
+         {
+           if (!is_square_attacked(chess::E8, Color::white, board_) &&
+               !is_square_attacked(chess::D8, Color::white, board_))
+           {
+             add_move(moves, chess::E8, chess::C8, Piece::b_king, 0,0,0,0,1);
+           }
+         }
+       }
+
+       break;
      }
    }
 }
