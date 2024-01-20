@@ -84,7 +84,6 @@ Item {
       HomeRightPane {
         Layout.fillHeight: true
         Layout.fillWidth: true
-        baseModel: boardModel
       }
     }
   }

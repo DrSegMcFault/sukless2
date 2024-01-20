@@ -40,11 +40,13 @@ qt_add_qml_module(chess
           include/util.hxx
           include/MoveGen.hxx
           include/AI.hxx
+          include/MoveModel.h
           src/BoardModel.cpp
           src/util.cpp
           src/BoardManager.cpp
           src/MoveGen.cpp
           src/AI.cpp
+          src/MoveModel.cpp
 )
 
 

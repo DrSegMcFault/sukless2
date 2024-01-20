@@ -14,6 +14,7 @@ BoardManager::BoardManager(const MoveGen* g)
   _move_list.reserve(256);
   _history.reserve(150);
   init_from_fen(chess::starting_position);
+  assert(generate_fen() == chess::starting_position);
 }
 
 /*******************************************************************************
@@ -42,9 +43,10 @@ void BoardManager::init_from_fen(const std::string &fen)
     b = 0ULL;
   }
 
-  auto view = fen | std::views::split(' ') | std::views::transform([](auto&& range) {
-                    return std::string(range.begin(), range.end());
-                   });
+  auto view = fen | std::views::split(' ')
+                  | std::views::transform([](auto&& c) {
+                      return std::string(c.begin(), c.end());
+                    });
 
   std::vector<std::string> tokens(view.begin(), view.end());
 
@@ -61,19 +63,23 @@ void BoardManager::init_from_fen(const std::string &fen)
   uint32_t rank = 7;
   uint32_t file = 0;
   
-  for (auto c : fen_board_layout) {
+  for (auto c : fen_board_layout)
+  {
     if (isdigit(c)) {
       file += (c - '0');
-    } else if (c == '/') {
+    }
+    else if (c == '/') {
       rank--;
       file = 0;
-    } else if (c == ' ') {
-      break;
-    } else {
-      auto piece = util::fen::char_to_piece(c);
+    }
+    else if (auto piece = util::fen::char_to_piece(c)) {
       uint8_t square = rank * 8 + file;
-      set_bit(square, _board[piece]);
+      set_bit(square, _board[*piece]);
       file++;
+    }
+    else {
+      // error, call this function with known fen
+      init_from_fen(chess::starting_position);
     }
   }
 
@@ -199,6 +205,11 @@ MoveResult BoardManager::try_move(const chess::Move& proposed)
         result != MoveResult::Illegal)
     {
       bool no_legal_moves = true;
+      bool was_check = is_check(_board, _state);
+
+      if (was_check) {
+        result = MoveResult::Check;
+      }
 
       // now check if there are no legal moves
       for (auto m : _move_list) {
@@ -211,8 +222,8 @@ MoveResult BoardManager::try_move(const chess::Move& proposed)
       }
 
       if (no_legal_moves) {
-        result = is_check(_board, _state) ? MoveResult::Checkmate
-                                          : MoveResult::Stalemate;
+        result = was_check ? MoveResult::Checkmate
+                           : MoveResult::Stalemate;
       }
     }
   }
@@ -401,7 +412,7 @@ std::string BoardManager::generate_fen()
   static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
 
   for (int start : ranges) {
-    for (int square : std::views::iota(start, start + 8)) {
+    for (uint8_t square : std::views::iota(start, start + 8)) {
 
       if (auto piece_at_sq = square_to_piece(square)) {
 

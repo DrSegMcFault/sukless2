@@ -13,12 +13,17 @@
 
 #include "BoardManager.hxx"
 #include "util.hxx"
+#include "MoveModel.h"
 
 using namespace chess;
 
 class BoardModel : public QAbstractListModel
 {
   Q_OBJECT
+  Q_PROPERTY(MoveModel* moveModel READ moveModel CONSTANT)
+
+public:
+  auto moveModel() { return &_moveModel; }
 
 public:
 
@@ -43,12 +48,14 @@ signals:
 
   void playSound(QUrl sound);
   void checkmate(QString winner);
+  void moveModelChanged();
 
 protected:
 
   virtual QHash<int, QByteArray> roleNames() const override;
 
 private:
+  MoveModel _moveModel;
 
   std::array<std::optional<Piece>, 64> _data = {};
   std::vector<uint8_t> _possible_moves = {};
@@ -144,7 +151,6 @@ public:
   explicit BoardModel(QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
   QVariant data(const QModelIndex &index, int role) const override;
 
   Q_INVOKABLE void move(int from, int to);

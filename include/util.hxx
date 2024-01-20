@@ -20,6 +20,7 @@ namespace chess {
   enum class MoveResult {
     Valid,
     Illegal,
+    Check,
     Checkmate,
     Stalemate,
     Draw
@@ -229,7 +230,7 @@ namespace chess {
 
       std::optional<uint8_t> algebraic_to_index(const std::string& alg);
       std::optional<std::string> index_to_algebraic(uint8_t index);
-      Piece char_to_piece(char c);
+      std::optional<Piece> char_to_piece(char c);
       char piece_to_char(Piece p);
 
     } // namespace util::fen

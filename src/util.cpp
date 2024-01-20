@@ -57,8 +57,8 @@ std::optional<std::string> chess::util::fen::index_to_algebraic(uint8_t index)
   }
 
   std::string ret;
-  ret += (index / 8) + '1';
   ret += (index % 8) + 'a';
+  ret += (index / 8) + '1';
 
   return ret;
 }
@@ -68,7 +68,7 @@ std::optional<std::string> chess::util::fen::index_to_algebraic(uint8_t index)
  * Function: piece_from_char(const std::string& alg)
  *
  *******************************************************************************/
-chess::Piece chess::util::fen::char_to_piece(char c) {
+std::optional<chess::Piece> chess::util::fen::char_to_piece(char c) {
   using enum Piece;
   switch (c) {
     case 'P': return w_pawn;
@@ -84,7 +84,7 @@ chess::Piece chess::util::fen::char_to_piece(char c) {
     case 'q': return b_queen;
     case 'k': return b_king;
     default:
-      throw std::runtime_error("in function: piece_from_char()::invalid FEN string");
+      return std::nullopt;
   }
 }
 
@@ -111,6 +111,6 @@ char chess::util::fen::piece_to_char(Piece p)
     case b_all:
     case w_all:
     case All:
-      throw std::runtime_error("in function: char_from_piece()::invalid piece");
+      return ' ';
   }
 }
