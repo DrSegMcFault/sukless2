@@ -16,14 +16,20 @@ qt_standard_project_setup()
 
 qt_add_executable(chess
   src/main.cpp
-  images.qrc
 )
 
 target_include_directories(chess PRIVATE include)
 
+set_source_files_properties(qml/style/Style.qml PROPERTIES
+  QT_QML_SINGLETON_TYPE TRUE
+)
+
 qt_add_qml_module(chess
   URI chess2
   VERSION 1.0
+  NO_RESOURCE_TARGET_PATH
+  RESOURCE_PREFIX "/"
+
   QML_FILES qml/Main.qml
             qml/AppContent.qml
             qml/NavStack.qml
@@ -34,6 +40,24 @@ qt_add_qml_module(chess
             qml/MainMenu.qml
             qml/DefaultText.qml
             qml/PillButton.qml
+            qml/style/Style.qml
+
+  RESOURCES images/pawn_white.png
+            images/pawn_black.png
+            images/knight_white.png
+            images/knight_black.png
+            images/bishop_white.png
+            images/bishop_black.png
+            images/rook_white.png
+            images/rook_black.png
+            images/queen_white.png
+            images/queen_black.png
+            images/king_white.png
+            images/king_black.png
+            images/circle.png
+            sounds/game_end.mp3
+            sounds/illegal_move.mp3
+            sounds/move.mp3
 
   SOURCES include/BoardModel.h
           include/BoardManager.hxx
@@ -48,7 +72,6 @@ qt_add_qml_module(chess
           src/AI.cpp
           src/MoveModel.cpp
 )
-
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

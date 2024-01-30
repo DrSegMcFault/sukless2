@@ -2,13 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import BoardModel 1.0
+import "../"
 
 Item {
   id: base
   anchors.fill: parent
 
   Rectangle {
-    color: "#2C2C2C"
+    color: Style.background
     anchors.fill: parent
 
     Rectangle {
@@ -39,7 +40,7 @@ Item {
             text: qsTr("Sukless2")
             anchors.centerIn: parent
             font.pixelSize: 48
-            color: "#00e5b0"
+            color: Style.teal
           }
         }
         RowLayout {
@@ -56,7 +57,7 @@ Item {
               text: qsTr("Play as")
               anchors.centerIn: parent
               font.pixelSize: 24
-              color: "#00e5b0"
+              color: Style.teal
             }
           }
 
@@ -64,7 +65,7 @@ Item {
             id: leftOption
             Layout.preferredWidth: 80
             Layout.preferredHeight: 35
-            color: "#2C2C2C"
+            color: Style.background
 
             property bool selected: true
 
@@ -73,7 +74,7 @@ Item {
             pixelSize: 22
 
             border {
-              color: selected ? "#00e5b0" : "black"
+              color: selected ? Style.teal : "black"
               width: 2
             }
 
@@ -90,7 +91,7 @@ Item {
             Layout.preferredWidth: 80
             Layout.preferredHeight: 35
 
-            color: "#2C2C2C"
+            color: Style.background
             text: qsTr("Black")
             textColor: "white"
             pixelSize: 22
@@ -98,7 +99,7 @@ Item {
             property bool selected: false
 
             border {
-              color: selected ? "#00e5b0" : "black"
+              color: selected ? Style.teal : "black"
               width: 2
             }
 
@@ -120,7 +121,7 @@ Item {
             text: qsTr("AI Settings")
             anchors.left: parent.left
             font.pixelSize: 24
-            color: "#00e5b0"
+            color: Style.teal
           }
         }
 
@@ -137,7 +138,7 @@ Item {
             height: parent.height
             DefaultText {
               text: qsTr("Enabled")
-              color: "#00e5b0"
+              color: Style.teal
               font.pixelSize: 20
             }
 
@@ -146,7 +147,7 @@ Item {
               Layout.fillHeight: true
               Layout.preferredWidth: 50
 
-              color: "#2C2C2C"
+              color: Style.background
               property bool selected: true
 
               text: qsTr("No")
@@ -155,7 +156,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -172,7 +173,7 @@ Item {
               Layout.fillHeight: true
               Layout.preferredWidth: 50
 
-              color: "#2C2C2C"
+              color: Style.background
               property bool selected: false
 
               text: qsTr("Yes")
@@ -181,7 +182,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -209,7 +210,7 @@ Item {
 
             DefaultText {
               text: qsTr("Engine Assistance")
-              color: "#00e5b0"
+              color: Style.teal
               font.pixelSize: 20
             }
 
@@ -218,7 +219,7 @@ Item {
 
               Layout.fillHeight: true
               Layout.preferredWidth: 50
-              color: "#2C2C2C"
+              color: Style.background
               text: qsTr("No")
               textColor: "white"
               pixelSize: 20
@@ -227,7 +228,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -245,7 +246,7 @@ Item {
 
               Layout.fillHeight: true
               Layout.preferredWidth: 50
-              color: "#2C2C2C"
+              color: Style.background
 
               text: qsTr("Yes")
               textColor: "white"
@@ -255,7 +256,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -286,7 +287,7 @@ Item {
 
             DefaultText {
               text: qsTr("Difficulty")
-              color: "#00e5b0"
+              color: Style.teal
               font.pixelSize: 20
             }
 
@@ -295,7 +296,7 @@ Item {
               Layout.fillHeight: true
               Layout.preferredWidth: 75
 
-              color: "#2C2C2C"
+              color: Style.background
               property bool selected: true
               text: qsTr("Easy")
               textColor: "white"
@@ -303,7 +304,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -321,7 +322,7 @@ Item {
               Layout.fillHeight: true
               Layout.preferredWidth: 100
 
-              color: "#2C2C2C"
+              color: Style.background
               property bool selected: false
               text: qsTr("Medium")
               textColor: "white"
@@ -329,7 +330,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {
@@ -347,7 +348,7 @@ Item {
               Layout.fillHeight: true
               Layout.preferredWidth: 75
 
-              color: "#2C2C2C"
+              color: Style.background
               property bool selected: false
               text: qsTr("Hard")
               textColor: "white"
@@ -355,7 +356,7 @@ Item {
 
               border {
                 width: 2
-                color: selected ? "#00e5b0" : "black"
+                color: selected ? Style.teal : "black"
               }
 
               onClicked: {

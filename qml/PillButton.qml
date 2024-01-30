@@ -1,9 +1,10 @@
 import QtQuick
+import "../"
 
 Item {
   id: base
 
-  property color color: "#00e5b0"
+  property color color: Style.teal
   property alias border: button.border
   property alias radius: button.radius
   property alias text: txt.text

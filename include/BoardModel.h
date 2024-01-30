@@ -128,23 +128,23 @@ private:
   };
 
   const std::unordered_map<chess::Piece, QUrl> _icons = {
-    { Piece::w_pawn,   QUrl("qrc:/resources/pawn_white.png")   },
-    { Piece::w_knight, QUrl("qrc:/resources/knight_white.png") },
-    { Piece::w_bishop, QUrl("qrc:/resources/bishop_white.png") },
-    { Piece::w_rook,   QUrl("qrc:/resources/rook_white.png")   },
-    { Piece::w_queen,  QUrl("qrc:/resources/queen_white.png")  },
-    { Piece::w_king,   QUrl("qrc:/resources/king_white.png")   },
-    { Piece::b_pawn,   QUrl("qrc:/resources/pawn_black.png")   },
-    { Piece::b_knight, QUrl("qrc:/resources/knight_black.png") },
-    { Piece::b_bishop, QUrl("qrc:/resources/bishop_black.png") },
-    { Piece::b_rook,   QUrl("qrc:/resources/rook_black.png")   },
-    { Piece::b_queen,  QUrl("qrc:/resources/queen_black.png")  },
-    { Piece::b_king,   QUrl("qrc:/resources/king_black.png")   }
+    { Piece::w_pawn,   QUrl("qrc:/images/pawn_white.png")   },
+    { Piece::w_knight, QUrl("qrc:/images/knight_white.png") },
+    { Piece::w_bishop, QUrl("qrc:/images/bishop_white.png") },
+    { Piece::w_rook,   QUrl("qrc:/images/rook_white.png")   },
+    { Piece::w_queen,  QUrl("qrc:/images/queen_white.png")  },
+    { Piece::w_king,   QUrl("qrc:/images/king_white.png")   },
+    { Piece::b_pawn,   QUrl("qrc:/images/pawn_black.png")   },
+    { Piece::b_knight, QUrl("qrc:/images/knight_black.png") },
+    { Piece::b_bishop, QUrl("qrc:/images/bishop_black.png") },
+    { Piece::b_rook,   QUrl("qrc:/images/rook_black.png")   },
+    { Piece::b_queen,  QUrl("qrc:/images/queen_black.png")  },
+    { Piece::b_king,   QUrl("qrc:/images/king_black.png")   }
   };
 
-  const QUrl _move_sound = QUrl("qrc:/resources/move_sound.mp3");
-  const QUrl _game_end_sound = QUrl("qrc:/resources/game_end.mp3");
-  const QUrl _illegal_sound = QUrl("qrc:/resources/illegal_move.mp3");
+  const QUrl _move_sound = QUrl("qrc:/sounds/move_sound.mp3");
+  const QUrl _game_end_sound = QUrl("qrc:/sounds/game_end.mp3");
+  const QUrl _illegal_sound = QUrl("qrc:/sounds/illegal_move.mp3");
 
   const std::unordered_map<MoveResult, QUrl> _move_to_sound = {
     { MoveResult::Valid,     _move_sound },

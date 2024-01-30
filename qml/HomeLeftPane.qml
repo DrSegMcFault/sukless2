@@ -1,10 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
 import BoardModel 1.0
+import "../"
 
 Rectangle {
   id: base
-  color: "#2C2C2C"
+  color: Style.background
   property BoardModel baseModel
 
   ColumnLayout {
@@ -20,11 +21,11 @@ Rectangle {
     spacing: 10
 
     PillButton {
-      color: "#2C2C2C"
+      color: base.color
       Layout.fillWidth: true
       Layout.preferredHeight: 70
       text: qsTr("Sukless2")
-      textColor: "#00e5b0"
+      textColor: Style.teal
       pixelSize: 44
     }
 

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import BoardModel 1.0
 import QtMultimedia
+import "../"
 
 Rectangle {
   id: base
@@ -9,7 +10,7 @@ Rectangle {
 
   property bool gameEnd: false
   property color color1: "white"
-  property color color2: "#4284ed"
+  property color color2: Style.blue
 
   // container for a piece that has been picked up
   // by the user
@@ -46,21 +47,21 @@ Rectangle {
 
   MediaPlayer {
     id: move_sound
-    source: "qrc:/resources/move_sound.mp3"
+    source: "qrc:/sounds/move_sound.mp3"
     audioOutput: AudioOutput {
       volume: 100
     }
   }
   MediaPlayer {
     id: gameEndSound
-    source: "qrc:/resources/game_end.mp3"
+    source: "qrc:/sounds/game_end.mp3"
     audioOutput: AudioOutput {
       volume: 100
     }
   }
   MediaPlayer {
     id: illegalMoveSound
-    source: "qrc:/resources/illegal_move.mp3"
+    source: "qrc:/sounds/illegal_move.mp3"
     audioOutput: AudioOutput {
       volume: 100
     }
@@ -93,7 +94,7 @@ Rectangle {
       color: "black"
       radius: 4
       text: qsTr("Reset Board")
-      textColor: "#00e5b0"
+      textColor: Style.teal
 
       anchors {
         bottom: inner.bottom

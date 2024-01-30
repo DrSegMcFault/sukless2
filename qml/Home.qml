@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import BoardModel 1.0
+import "../"
 
 Item {
   id: base
@@ -20,7 +21,7 @@ Item {
   }
 
   Rectangle {
-    color: "#2C2C2C"
+    color: Style.background
     anchors.fill: parent
 
     RowLayout {
@@ -42,7 +43,7 @@ Item {
 
       Rectangle {
         id: center
-        color: "#2C2C2C"
+        color: Style.background
         Layout.fillHeight: true
         Layout.preferredWidth: base.width * 3/5
 

@@ -2,10 +2,11 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import BoardModel 1.0
+import "../"
 
 Rectangle {
   id: base
-  color: "#2C2C2C"
+  color: Style.background
 
   component RowEntry : Rectangle {
     property alias first: one.text
@@ -26,7 +27,7 @@ Rectangle {
           id: label
           Layout.preferredWidth: 70
           font.pixelSize: 22
-          color: "#00e5b0"
+          color: Style.teal
         }
 
         Item {}
@@ -37,7 +38,7 @@ Rectangle {
             id: one
             font.pixelSize: 22
             anchors.centerIn: parent
-            color: "#00e5b0"
+            color: Style.teal
           }
         }
 
@@ -50,7 +51,7 @@ Rectangle {
             id: two
             font.pixelSize: 22
             anchors.centerIn: parent
-            color: "#00e5b0"
+            color: Style.teal
           }
         }
       }
@@ -73,15 +74,13 @@ Rectangle {
     }
     spacing: 0
 
-    Item {
+    PillButton {
       Layout.fillWidth: true
-      Layout.preferredHeight: 60
-      DefaultText {
-        anchors.centerIn: parent
-        text: qsTr("Moves")
-        color: "#00e5b0"
-        font.pixelSize: 44
-      }
+      Layout.preferredHeight: 70
+      text: qsTr("Moves")
+      color: base.color
+      pixelSize: 44
+      textColor: Style.teal
     }
     Item {
       id: temp
