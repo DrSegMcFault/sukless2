@@ -12,33 +12,53 @@ Rectangle {
     property alias second: two.text
     property alias movenum: label.text
 
-    RowLayout {
-      spacing: 10
+    ColumnLayout {
+      anchors.fill: parent
 
-      DefaultText {
-        id: label
-        Layout.preferredWidth: 70
-        font.pixelSize: 22
-        font.bold: false
-        color: "white"
+      RowLayout {
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+        spacing: 10
+
+        Item {}
+
+        DefaultText {
+          id: label
+          Layout.preferredWidth: 70
+          font.pixelSize: 22
+          color: "#00e5b0"
+        }
+
+        Item {}
+
+        Item {
+          Layout.preferredWidth: 30
+          DefaultText {
+            id: one
+            font.pixelSize: 22
+            anchors.centerIn: parent
+            color: "#00e5b0"
+          }
+        }
+
+        Item { Layout.preferredWidth: 25 }
+        Item { Layout.preferredWidth: 25 }
+
+        Item {
+          Layout.preferredWidth: 30
+          DefaultText {
+            id: two
+            font.pixelSize: 22
+            anchors.centerIn: parent
+            color: "#00e5b0"
+          }
+        }
       }
 
-      Item {}
-
-      DefaultText {
-        id: one
-        font.pixelSize: 22
-        color: "white"
-        Layout.preferredWidth: 30
-      }
-
-      Item { Layout.preferredWidth: 20 }
-      Item { Layout.preferredWidth: 20 }
-
-      DefaultText {
-        id: two
-        font.pixelSize: 22
-        color: "white"
+      Rectangle {
+        color: "black"
+        Layout.preferredHeight: 2
+        Layout.fillWidth: true
       }
     }
   }
@@ -51,7 +71,7 @@ Rectangle {
       right: parent.right
       margins: 4
     }
-    spacing: 8
+    spacing: 0
 
     Item {
       Layout.fillWidth: true
@@ -63,17 +83,39 @@ Rectangle {
         font.pixelSize: 44
       }
     }
+    Item {
+      id: temp
+      Layout.fillWidth: true
+      Layout.preferredHeight: base.height
 
-    Repeater {
-      model: boardModel.moveModel
-      delegate: RowEntry {
-        Layout.alignment: Qt.AlignCenter
-        Layout.fillWidth: true
-        Layout.preferredHeight: 20
-        color: base.color
-        movenum: model.index + 1 + "."
-        first: model.first
-        second: model.second
+      Flickable {
+        id: flick
+        clip: true
+        width: temp.width
+        height: temp.height
+        contentHeight: col.height
+        flickableDirection: Flickable.VerticalFlick
+
+        ColumnLayout {
+          id: col
+          anchors.top: parent.top
+          anchors.left:  parent.left
+          anchors.right: parent.right
+          spacing: 0
+
+          Repeater {
+            model: boardModel.moveModel
+
+            delegate: RowEntry {
+              Layout.preferredHeight: 30
+              Layout.fillWidth: true
+              color: base.color
+              movenum: model.index + 1 + "."
+              first: model.first
+              second: model.second
+            }
+          }
+        }
       }
     }
   }

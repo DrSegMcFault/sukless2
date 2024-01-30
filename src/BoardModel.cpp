@@ -105,72 +105,47 @@ void BoardModel::move(int from, int to) {
   auto target = static_cast<uint8_t>(toInternalIndex(to));
 
   auto h_move = _game->find_move(source, target);
+  auto result = _game->try_move({ source, target });
 
-  switch (_game->try_move( {source, target} )) {
+  sound_to_play = _move_to_sound.at(result);
 
-    case MoveResult::Illegal:
-    {
-      sound_to_play = _illegal_sound;
-      break;
+  if (result != MoveResult::Illegal) {
+
+    _data = _game->get_current_board();
+
+    _moveModel.addEntry({ *h_move,
+                          _game->get_side_to_move() == Color::white ? Color::black : Color::white,
+                          result });
+
+    // end of game conditions
+    switch (result) {
+      case MoveResult::Checkmate:
+      {
+        emit gameOver(_game->get_side_to_move() == Color::black
+                           ? QString(tr("White Wins!"))
+                           : QString(tr("Black Wins!")));
+        break;
+      }
+
+      case MoveResult::Stalemate:
+      {
+        emit gameOver(QString(tr("Stalemate!")));
+        break;
+      }
+
+      case MoveResult::Draw:
+      {
+        Q_ASSERT(false);
+      }
+
+      default:
+        break;
     }
-
-    case MoveResult::Valid:
-    {
-      _data = _game->get_current_board();
-      sound_to_play = _move_sound;
-      _moveModel.addEntry({ *h_move,
-                            _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                            MoveResult::Valid });
-      break;
-    }
-
-    case MoveResult::Check:
-    {
-      _data = _game->get_current_board();
-      sound_to_play = _move_sound;
-      _moveModel.addEntry({ *h_move,
-                            _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                            MoveResult::Check });
-      break;
-    }
-
-    case MoveResult::Checkmate:
-    {
-      _data = _game->get_current_board();
-      sound_to_play = _game_end_sound;
-      _moveModel.addEntry({ *h_move,
-                            _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                            MoveResult::Checkmate });
-
-      emit checkmate(_game->get_side_to_move() == Color::black
-                         ? QString(tr("White Wins!"))
-                         : QString(tr("Black Wins!")));
-
-      break;
-    }
-
-    case MoveResult::Stalemate:
-    {
-      _data = _game->get_current_board();
-      sound_to_play = _game_end_sound;
-      _moveModel.addEntry({ *h_move,
-                            _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                            MoveResult::Stalemate });
-
-      emit checkmate(QString("Stalemate!"));
-      break;
-    }
-
-    case MoveResult::Draw:
-      Q_ASSERT(false);
-      break;
   }
 
   endResetModel();
 
-  if (!sound_to_play.isEmpty()) {
-    emit playSound(sound_to_play);
-  }
+  emit playSound(sound_to_play);
 }
 
 /******************************************************************************

@@ -47,7 +47,7 @@ public:
 signals:
 
   void playSound(QUrl sound);
-  void checkmate(QString winner);
+  void gameOver(QString text);
   void moveModelChanged();
 
 protected:
@@ -145,6 +145,15 @@ private:
   const QUrl _move_sound = QUrl("qrc:/resources/move_sound.mp3");
   const QUrl _game_end_sound = QUrl("qrc:/resources/game_end.mp3");
   const QUrl _illegal_sound = QUrl("qrc:/resources/illegal_move.mp3");
+
+  const std::unordered_map<MoveResult, QUrl> _move_to_sound = {
+    { MoveResult::Valid,     _move_sound },
+    { MoveResult::Illegal,   _illegal_sound },
+    { MoveResult::Check,     _move_sound },
+    { MoveResult::Checkmate, _game_end_sound },
+    { MoveResult::Stalemate, _game_end_sound },
+    { MoveResult::Draw,      _game_end_sound }
+  };
 
 public:
 

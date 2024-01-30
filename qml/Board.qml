@@ -7,7 +7,7 @@ Rectangle {
   id: base
   color: "white"
 
-  property bool checkmate: false
+  property bool gameEnd: false
   property color color1: "white"
   property color color2: "#4284ed"
 
@@ -38,8 +38,8 @@ Rectangle {
 
   Connections {
     target: boardModel
-    function onCheckmate(text) {
-      base.checkmate = true;
+    function onGameOver(text) {
+      base.gameEnd = true;
       gameover.gmtxt = text
     }
   }
@@ -76,7 +76,7 @@ Rectangle {
     radius: 4
     anchors.centerIn: parent
     z: 10000
-    visible: base.checkmate === true
+    visible: base.gameEnd === true
 
     PillButton {
       id: inner
@@ -103,7 +103,7 @@ Rectangle {
       }
 
       onClicked: {
-        base.checkmate = false;
+        base.gameEnd = false;
         boardModel.reset();
       }
     }
