@@ -31,7 +31,7 @@ Item {
       HomeLeftPane {
         id: left
         Layout.fillHeight: true
-        Layout.fillWidth: true
+        Layout.preferredWidth: base.width * 1/5
       }
 
       Rectangle {
@@ -41,37 +41,22 @@ Item {
       }
 
       Rectangle {
+        id: center
         color: "#2C2C2C"
         Layout.fillHeight: true
-        Layout.preferredWidth: 740
-
-        Rectangle {
-          color: "black"
-          anchors.bottom: board.top
-          anchors.right: parent.right
-          anchors.rightMargin: 4
-          anchors.bottomMargin: 10
-          width: 120
-          height: 25
-          radius: 8
-
-          PillButton {
-            anchors.fill: parent
-            anchors.margins: 1
-            onClicked: boardModel.toggleRotation()
-            text: qsTr("Flip Board")
-          }
-        }
+        Layout.preferredWidth: base.width * 3/5
 
         Board {
           id: board
-          height: 740
-          anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            topMargin: (base.height - height) / 2
+          height: {
+            if (parent.height * 9/10 <= parent.width) {
+              return parent.height * 9/10
+            }
+            return parent.width
+
           }
+          width: height
+          anchors.centerIn: parent
         }
       }
 
@@ -82,8 +67,9 @@ Item {
       }
 
       HomeRightPane {
+        id: right
         Layout.fillHeight: true
-        Layout.fillWidth: true
+        Layout.preferredWidth: base.width * 1/5
       }
     }
   }

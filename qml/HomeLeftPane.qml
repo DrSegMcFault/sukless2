@@ -25,12 +25,12 @@ Rectangle {
       Layout.preferredHeight: 70
       text: qsTr("Sukless2")
       textColor: "#00e5b0"
-      pixelSize: 48
+      pixelSize: 44
     }
 
     PillButton {
       Layout.fillWidth: true
-      Layout.preferredHeight: 60
+      Layout.preferredHeight: 50
       text: qsTr("Main Menu")
       onClicked: {
         navigate("MainMenu.qml")

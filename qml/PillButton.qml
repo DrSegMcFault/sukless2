@@ -21,8 +21,8 @@ Item {
 
     DefaultText {
       id: txt
+      anchors.fill: parent
       color: "black"
-      anchors.centerIn: parent
     }
 
     MouseArea {

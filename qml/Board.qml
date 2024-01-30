@@ -108,6 +108,23 @@ Rectangle {
       }
     }
   }
+  Rectangle {
+    color: "black"
+    anchors.bottom: parent.top
+    anchors.right: parent.right
+    anchors.rightMargin: 4
+    anchors.bottomMargin: 10
+    width: parent.width * 1/7
+    height: parent.height * 1/30
+    radius: 8
+
+    PillButton {
+      anchors.fill: parent
+      anchors.margins: 1
+      onClicked: boardModel.toggleRotation()
+      text: qsTr("Flip Board")
+    }
+  }
 
   GridLayout {
     id: grid
@@ -185,20 +202,11 @@ Rectangle {
         Image {
           id: image
           readonly property int i: model.index
+          width: parent.width * 9/10
+          height: width
           source: model.icon
           anchors.centerIn: draggedItem ? undefined : parent
         }
-
-        Rectangle {
-          color: "gray"
-          opacity: 50
-          radius: 180
-          visible: model.possible
-          height: parent.height / 3
-          width: parent.width / 3
-          anchors.centerIn: parent
-        }
-
 
         // file label
         DefaultText {
