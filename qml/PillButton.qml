@@ -20,7 +20,7 @@ Item {
     color: base.color
     border.width: 0
 
-    DefaultText {
+    CenteredText {
       id: txt
       anchors.fill: parent
       color: "black"

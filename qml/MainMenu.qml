@@ -208,7 +208,7 @@ Item {
             anchors.leftMargin: 12
             height: parent.height
 
-            DefaultText {
+            CenteredText {
               text: qsTr("Engine Assistance")
               color: Style.teal
               font.pixelSize: 20

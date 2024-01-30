@@ -210,7 +210,7 @@ Rectangle {
         }
 
         // file label
-        DefaultText {
+        CenteredText {
           text: model.fileLabel
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
           anchors.bottom: parent.bottom
@@ -220,7 +220,7 @@ Rectangle {
         }
 
         // rank label
-        DefaultText {
+        CenteredText {
           text: model.rankLabel
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
           anchors.top: parent.top

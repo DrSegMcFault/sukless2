@@ -38,9 +38,10 @@ qt_add_qml_module(chess
             qml/HomeRightPane.qml
             qml/HomeLeftPane.qml
             qml/MainMenu.qml
-            qml/DefaultText.qml
+            qml/CenteredText.qml
             qml/PillButton.qml
             qml/style/Style.qml
+            qml/DefaultText.qml
 
   RESOURCES images/pawn_white.png
             images/pawn_black.png

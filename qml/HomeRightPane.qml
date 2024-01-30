@@ -21,35 +21,41 @@ Rectangle {
         Layout.fillWidth: true
         spacing: 10
 
-        Item {}
-
-        DefaultText {
-          id: label
-          Layout.preferredWidth: 70
-          font.pixelSize: 22
-          color: Style.teal
+        Item {
+          Layout.preferredWidth: 15
+          Layout.fillHeight: true
+          CenteredText {
+            id: label
+            font.pixelSize: 20
+            color: Style.teal
+          }
         }
 
-        Item {}
+        Item {
+          Layout.fillHeight: true
+          Layout.preferredWidth: 20
+        }
 
         Item {
           Layout.preferredWidth: 30
-          DefaultText {
+          Layout.fillHeight:true
+          CenteredText {
             id: one
-            font.pixelSize: 22
+            font.pixelSize: 20
             anchors.centerIn: parent
             color: Style.teal
           }
         }
 
-        Item { Layout.preferredWidth: 25 }
-        Item { Layout.preferredWidth: 25 }
+        Item { Layout.preferredWidth: 25; Layout.fillHeight: true }
+        Item { Layout.preferredWidth: 25; Layout.fillHeight: true }
 
         Item {
           Layout.preferredWidth: 30
-          DefaultText {
+          Layout.fillHeight:true
+          CenteredText {
             id: two
-            font.pixelSize: 22
+            font.pixelSize: 20
             anchors.centerIn: parent
             color: Style.teal
           }
