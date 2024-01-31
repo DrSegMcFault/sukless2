@@ -28,7 +28,6 @@ qt_add_qml_module(chess
   URI chess2
   VERSION 1.0
   NO_RESOURCE_TARGET_PATH
-  RESOURCE_PREFIX "/"
 
   QML_FILES qml/Main.qml
             qml/AppContent.qml
