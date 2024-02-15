@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import Sukless
 
 QtObject {
   readonly property color teal: "#00e5b0"

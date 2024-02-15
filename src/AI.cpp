@@ -55,7 +55,7 @@ int AI::calc_material_score(const BoardManager& b, Color eval_for) const
   for (auto p : chess::BlackPieces)
   {
     black_eval +=
-          piece_values.at(p) * b.piece_count(p);
+        piece_values.at(p) * b.piece_count(p);
   }
 
   switch (eval_for) {
@@ -81,7 +81,7 @@ std::optional<util::bits::HashedMove> AI::get_best_move(const BoardManager& cpy)
     BoardManager temp = cpy;
     Move to_try = {static_cast<uint8_t>(m.source), static_cast<uint8_t>(m.target)};
 
-    if (temp.try_move(to_try) != MoveResult::Illegal)
+    if (auto&& [result, move] = temp.try_move(to_try); result != MoveResult::Illegal)
     {
       legal_moves.push_back(std::make_pair(m, calc_material_score(temp, _controlling_color)));
     }

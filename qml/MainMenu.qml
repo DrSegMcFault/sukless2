@@ -1,8 +1,11 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import BoardModel 1.0
+
+import Sukless
+
 import "../"
+import "Style"
 
 Item {
   id: base

@@ -1,4 +1,5 @@
 import QtQuick
+import Sukless
 
 DefaultText {
   fontSizeMode: Text.Fit

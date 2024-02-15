@@ -1,114 +1,25 @@
 import QtQuick
 import QtQuick.Layouts
-import BoardModel 1.0
-import QtMultimedia
-import "../"
+
+import Sukless
+
+import ".."
+import "Style"
 
 Rectangle {
   id: base
   color: "white"
 
+  required property BoardModel board
+  signal move(int from, int to)
+
   property bool gameEnd: false
-  property color color1: "white"
-  property color color2: Style.blue
 
   // container for a piece that has been picked up
   // by the user
   property Image draggedItem: null
 
-  Connections {
-    target: boardModel
 
-    // this is incredibly stupid,
-    // if i dont have a MediaPlayer per sound,
-    // the sound only plays once and will not play again
-    // this appears to be a common issue online
-
-    function onPlaySound(sound) {
-      if (sound.toString() === move_sound.source.toString()) {
-        move_sound.play();
-      }
-      else if (sound.toString() === gameEndSound.source.toString()) {
-        gameEndSound.play()
-      }
-      else if (sound.toString() === illegalMoveSound.source.toString()) {
-        illegalMoveSound.play()
-      }
-    }
-  }
-
-  Connections {
-    target: boardModel
-    function onGameOver(text) {
-      base.gameEnd = true;
-      gameover.gmtxt = text
-    }
-  }
-
-  MediaPlayer {
-    id: move_sound
-    source: "qrc:/sounds/move_sound.mp3"
-    audioOutput: AudioOutput {
-      volume: 100
-    }
-  }
-  MediaPlayer {
-    id: gameEndSound
-    source: "qrc:/sounds/game_end.mp3"
-    audioOutput: AudioOutput {
-      volume: 100
-    }
-  }
-  MediaPlayer {
-    id: illegalMoveSound
-    source: "qrc:/sounds/illegal_move.mp3"
-    audioOutput: AudioOutput {
-      volume: 100
-    }
-  }
-
-
-  Rectangle {
-    id: gameover
-    property string gmtxt
-    color: "black"
-    width: 280
-    height: 85
-    radius: 4
-    anchors.centerIn: parent
-    z: 10000
-    visible: base.gameEnd === true
-
-    PillButton {
-      id: inner
-      anchors.fill: parent
-      anchors.margins: 2
-      radius: 4
-      text: qsTr(parent.gmtxt)
-      pixelSize: 36
-    }
-
-    PillButton {
-      width: 120
-      height: 20
-      color: "black"
-      radius: 4
-      text: qsTr("Reset Board")
-      textColor: Style.teal
-
-      anchors {
-        bottom: inner.bottom
-        left: parent.left
-        leftMargin: 80
-        bottomMargin: 4
-      }
-
-      onClicked: {
-        base.gameEnd = false;
-        boardModel.reset();
-      }
-    }
-  }
   Rectangle {
     color: "black"
     anchors.bottom: parent.top
@@ -122,7 +33,7 @@ Rectangle {
     PillButton {
       anchors.fill: parent
       anchors.margins: 1
-      onClicked: boardModel.toggleRotation()
+      onClicked: base.board.toggleRotation()
       text: qsTr("Flip Board")
     }
   }
@@ -137,7 +48,7 @@ Rectangle {
 
     Repeater {
       id: rep
-      model: boardModel
+      model: base.board
 
       delegate: Rectangle {
         id: basedel
@@ -145,7 +56,7 @@ Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color1 : base.color2
+        color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color1 : base.board.color2
 
         property int test: model.index
 
@@ -185,7 +96,7 @@ Rectangle {
                     && Math.abs(relativePos.y - itemY) <= cellHeight / 2)
                 {
                   // display user attempted move source, target
-                  boardModel.move(draggedItem.i, item.test);
+                  base.move(draggedItem.i, item.test);
                   break;
                 }
               }
@@ -212,7 +123,7 @@ Rectangle {
         // file label
         CenteredText {
           text: model.fileLabel
-          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
+          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
           anchors.bottom: parent.bottom
           anchors.right: parent.right
           anchors.rightMargin: 2
@@ -222,7 +133,7 @@ Rectangle {
         // rank label
         CenteredText {
           text: model.rankLabel
-          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.color2 : base.color1
+          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
           anchors.top: parent.top
           anchors.left: parent.left
           anchors.topMargin: 2

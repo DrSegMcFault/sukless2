@@ -19,7 +19,7 @@ class BoardManager
     ~BoardManager() = default;
 
     // attempts to perfrom the provided move on the board
-    MoveResult try_move(const chess::Move& move);
+    std::tuple<MoveResult, util::bits::HashedMove> try_move(const chess::Move& move);
 
     // returns the piece at the provided square, if applicable
     std::optional<Piece> square_to_piece(uint8_t square) const;
@@ -27,10 +27,10 @@ class BoardManager
     // return the squares that the piece can go to, provided a piece is there
     std::vector<uint8_t> get_pseudo_legal_moves(uint8_t square) const;
 
-    // **NOTE** Because only source and target squares are provided,
-    // in the case of promotional moves, the move that is returned
-    // is random
-    std::optional<util::bits::HashedMove> find_move(uint8_t source, uint8_t target) const;
+    // return the move if found in the hashed form
+    std::optional<util::bits::HashedMove> find_move(uint8_t source,
+                                                    uint8_t target,
+                                                    uint32_t promoted_to) const;
 
     // get an array represenation of the current board
     std::array<std::optional<Piece>, 64> get_current_board() const;

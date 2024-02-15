@@ -1,6 +1,5 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include "BoardModel.h"
 
 int main(int argc, char *argv[])
 {
@@ -9,7 +8,8 @@ int main(int argc, char *argv[])
   QQmlApplicationEngine engine;
 
   // Register the CustomListModel with QML
-  qmlRegisterType<BoardModel>("BoardModel", 1, 0, "BoardModel");
+  // qmlRegisterType<BoardModel>("BoardModel", 1, 0, "BoardModel");
+  // qmlRegisterType<Game>("Game", 1, 0, "Game");
 
   const QUrl url(u"qrc:/qml/Main.qml"_qs);
   QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,

@@ -1,12 +1,15 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import BoardModel 1.0
-import "../"
+
+import ".."
+import "Style"
 
 Rectangle {
   id: base
   color: Style.background
+
+  property var mModel
 
   component RowEntry : Rectangle {
     property alias first: one.text
@@ -109,7 +112,7 @@ Rectangle {
           spacing: 0
 
           Repeater {
-            model: boardModel.moveModel
+            model: base.mModel
 
             delegate: RowEntry {
               Layout.preferredHeight: 30

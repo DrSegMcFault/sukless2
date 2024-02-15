@@ -1,12 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
-import BoardModel 1.0
-import "../"
+import Qt.labs.platform
+
+import Sukless
+import ".."
+import "Style"
 
 Rectangle {
   id: base
   color: Style.background
-  property BoardModel baseModel
 
   ColumnLayout {
     id: leftCol
@@ -36,6 +38,40 @@ Rectangle {
       onClicked: {
         navigate("MainMenu.qml")
       }
+    }
+
+    PillButton {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 25
+      text: qsTr("Change Board Color 1")
+      onClicked: {
+        first.open()
+      }
+    }
+
+    PillButton {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 25
+      text: qsTr("Change Board Color 2")
+      onClicked: {
+        second.open()
+      }
+    }
+
+    ColorDialog {
+     id: first
+     color: game.boardModel.color1
+     onColorChanged: () => {
+                 game.boardModel.setColor1(first.color)
+               }
+    }
+
+    ColorDialog {
+     id: second
+     color: game.boardModel.color2
+     onColorChanged: () => {
+                 game.boardModel.setColor2(second.color)
+               }
     }
   }
 }

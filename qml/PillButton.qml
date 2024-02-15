@@ -1,5 +1,6 @@
 import QtQuick
-import "../"
+
+import "Style"
 
 Item {
   id: base

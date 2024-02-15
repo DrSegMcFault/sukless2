@@ -18,8 +18,8 @@ namespace chess {
   };
 
   enum class MoveResult {
-    Valid,
     Illegal,
+    Valid,
     Check,
     Checkmate,
     Stalemate,
@@ -37,6 +37,7 @@ namespace chess {
   struct Move {
     uint8_t from;
     uint8_t to;
+    std::optional<Piece> promoted_to;
   };
 
   enum class CastlingRights : uint8_t {
@@ -52,7 +53,7 @@ namespace chess {
 
   // Board State
   struct State {
-    uint8_t castling_rights = 15; //0b00001111;
+    uint8_t castling_rights = 15; //0b1111;
     uint8_t half_move_clock = 0;
     uint8_t full_move_count = 1;
     uint8_t en_passant_target = chess::NoSquare;

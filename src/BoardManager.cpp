@@ -195,15 +195,20 @@ bool BoardManager::is_check(const Board& board_, const State& state_)
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
-MoveResult BoardManager::try_move(const chess::Move& proposed)
+std::tuple<MoveResult, util::bits::HashedMove> BoardManager::try_move(const chess::Move& proposed)
 {
   MoveResult result = MoveResult::Illegal;
+  util::bits::HashedMove move_made;
 
-  if (auto move = find_move(proposed.from, proposed.to))
+  if (auto move = find_move(proposed.from,
+                            proposed.to,
+                            proposed.promoted_to.value_or(w_pawn)))
   {
     if (result = make_move(move.value());
         result != MoveResult::Illegal)
     {
+      move_made = move.value();
+
       bool no_legal_moves = true;
       bool was_check = is_check(_board, _state);
 
@@ -228,7 +233,7 @@ MoveResult BoardManager::try_move(const chess::Move& proposed)
     }
   }
 
-  return result;
+  return std::make_tuple(result, move_made);
 }
 
 /*******************************************************************************
@@ -489,11 +494,16 @@ std::string BoardManager::generate_fen()
  * Method: find_move(uint8_t source, uint8_t target)
  *
  *******************************************************************************/
-std::optional<util::bits::HashedMove> BoardManager::find_move(uint8_t source, uint8_t target) const
+std::optional<util::bits::HashedMove> BoardManager::find_move(uint8_t source,
+                                                              uint8_t target,
+                                                              uint32_t promoted_to) const
 {
   std::optional<util::bits::HashedMove> ret;
   for (const auto& move : _move_list) {
-    if (move.source == source && move.target == target) {
+    if (move.source == source &&
+        move.target == target &&
+        move.promoted == promoted_to)
+    {
       ret.emplace(move);
       return ret;
     }

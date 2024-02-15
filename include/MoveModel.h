@@ -52,6 +52,16 @@ public:
 
   void addEntry(const MoveModelDataEntry&);
 
+  void removeLast() {
+    beginResetModel();
+
+    if (_data.size() > 1) {
+      _data.back() = {};
+    }
+
+    endResetModel();
+  }
+
   void clear() {
     beginResetModel();
 

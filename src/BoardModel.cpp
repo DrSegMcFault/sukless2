@@ -8,6 +8,7 @@
 BoardModel::BoardModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+  reset();
 }
 
 /******************************************************************************
@@ -32,42 +33,11 @@ QHash<int, QByteArray> BoardModel::roleNames() const
     { RolePiece, "piece" },
     { RoleIcon, "icon" },
     { RoleIndex, "idx"},
-    { RolePossibleMove, "possible"},
     { RoleRankLabel, "rankLabel"},
     { RoleFileLabel, "fileLabel"}
   };
 
   return roles;
-}
-
-/******************************************************************************
- *
- * Method: init(ControlColor, engine_assist, ai_enable, difficulty)
- *
- *****************************************************************************/
-void BoardModel::init(Color user, bool engine_assist, bool ai_enable, AIDifficulty diff)
-{
-  beginResetModel();
-
-  _user_color = user;
-
-  _ai_assist_enabled = engine_assist;
-  _ai_enabled = ai_enable;
-  _ai_strength = diff;
-
-  _visual_rotation =
-    _user_color == Color::white ? Rotation::ViewFromWhite : Rotation::ViewFromBlack;
-
-  AIConfig cfg;
-  cfg.controlling = user == Color::white ? Color::black : Color::white;
-  cfg.difficulty = diff;
-
-  _game = std::make_shared<BoardManager>(&_generator);
-  _data = _game->get_current_board();
-
-  _possible_moves.reserve(55);
-
-  endResetModel();
 }
 
 /******************************************************************************
@@ -93,90 +63,14 @@ void BoardModel::toggleRotation()
 
 /******************************************************************************
  *
- * Method: move(int from, int to)
- *
- *****************************************************************************/
-void BoardModel::move(int from, int to) {
-  beginResetModel();
-
-  QUrl sound_to_play;
-
-  auto source = static_cast<uint8_t>(toInternalIndex(from));
-  auto target = static_cast<uint8_t>(toInternalIndex(to));
-
-  auto h_move = _game->find_move(source, target);
-  auto result = _game->try_move({ source, target });
-
-  sound_to_play = _move_to_sound.at(result);
-
-  if (result != MoveResult::Illegal) {
-
-    _data = _game->get_current_board();
-
-    _moveModel.addEntry({ *h_move,
-                          _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                          result });
-
-    // end of game conditions
-    switch (result) {
-      case MoveResult::Checkmate:
-      {
-        emit gameOver(_game->get_side_to_move() == Color::black
-                           ? QString(tr("White Wins!"))
-                           : QString(tr("Black Wins!")));
-        break;
-      }
-
-      case MoveResult::Stalemate:
-      {
-        emit gameOver(QString(tr("Stalemate!")));
-        break;
-      }
-
-      case MoveResult::Draw:
-      {
-        Q_ASSERT(false);
-      }
-
-      default:
-        break;
-    }
-  }
-
-  endResetModel();
-
-  emit playSound(sound_to_play);
-}
-
-/******************************************************************************
- *
- * Method: boardClicked(int index)
- *
- *****************************************************************************/
-void BoardModel::boardClicked(int index)
-{
-  beginResetModel();
-
-  auto i = toInternalIndex(index);
-  _possible_moves = _game->get_pseudo_legal_moves(i);
-
-  endResetModel();
-}
-
-/******************************************************************************
- *
  * Method: reset()
  *
  *****************************************************************************/
 void BoardModel::reset()
 {
   beginResetModel();
-
-  _moveModel.clear();
-  _game.reset();
-  _game = std::make_shared<BoardManager>(&_generator);
-  _data = _game->get_current_board();
-
+  _visual_rotation = Rotation::ViewFromWhite;
+  std::fill(_data.begin(), _data.end(), std::nullopt);
   endResetModel();
 }
 
@@ -201,9 +95,6 @@ QVariant BoardModel::data(const QModelIndex &index, int role) const
 
      case RoleIcon:
        return item ? _icons.at(*item) : QUrl("");
-
-     case RolePossibleMove:
-       return util::contains(_possible_moves, static_cast<uint8_t>(newIndex));
 
      case RoleIndex:
        return newIndex;
