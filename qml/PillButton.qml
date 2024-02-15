@@ -1,6 +1,7 @@
 import QtQuick
 
-import "Style"
+import ".."
+import "style"
 
 Item {
   id: base

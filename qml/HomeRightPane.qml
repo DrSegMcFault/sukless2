@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import ".."
-import "Style"
+import "style"
 
 Rectangle {
   id: base

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import Sukless
 
 import ".."
-import "Style"
+import "style"
 
 Rectangle {
   id: base

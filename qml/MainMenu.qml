@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import Sukless
 
 import "../"
-import "Style"
+import "style"
 
 Item {
   id: base

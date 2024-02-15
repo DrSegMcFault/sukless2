@@ -26,7 +26,7 @@ qt_add_executable(${PROJECT_NAME} MACOSX_BUNDLE)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
-set_source_files_properties(qml/Style/Style.qml PROPERTIES
+set_source_files_properties(qml/style/Style.qml PROPERTIES
   QT_QML_SINGLETON_TYPE TRUE
 )
 

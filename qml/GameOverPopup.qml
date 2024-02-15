@@ -2,7 +2,7 @@ import QtQuick
 import Sukless
 
 import ".."
-import "Style"
+import "style"
 
 Rectangle {
   id: base

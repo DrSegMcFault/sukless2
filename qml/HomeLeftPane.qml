@@ -4,7 +4,7 @@ import Qt.labs.platform
 
 import Sukless
 import ".."
-import "Style"
+import "style"
 
 Rectangle {
   id: base

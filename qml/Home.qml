@@ -6,7 +6,7 @@ import QtMultimedia
 import Sukless
 
 import ".."
-import "Style"
+import "style"
 
 Item {
   id: base
