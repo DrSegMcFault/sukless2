@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import Qt.labs.platform
 
 import Sukless
+
 import ".."
 import "style"
 
@@ -23,55 +23,25 @@ Rectangle {
     spacing: 10
 
     PillButton {
-      color: base.color
       Layout.fillWidth: true
       Layout.preferredHeight: 70
       text: qsTr("Sukless2")
-      textColor: Style.teal
+      color: base.color
       pixelSize: 44
     }
 
     PillButton {
       Layout.fillWidth: true
-      Layout.preferredHeight: 50
-      text: qsTr("Main Menu")
+      Layout.preferredHeight: 40
+      text: qsTr("Go")
+
       onClicked: {
-        navigate("MainMenu.qml")
+        game.init(Game.WHITE, 0, 0, 0)
+        // game.init(leftOption.selected ? Game.WHITE : Game.BLACK,
+        //           enabledAiAssist.value,
+        //           aiEnabled.value,
+        //           aiDifficulty.value)
       }
-    }
-
-    PillButton {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 25
-      text: qsTr("Change Board Color 1")
-      onClicked: {
-        first.open()
-      }
-    }
-
-    PillButton {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 25
-      text: qsTr("Change Board Color 2")
-      onClicked: {
-        second.open()
-      }
-    }
-
-    ColorDialog {
-     id: first
-     color: game.boardModel.color1
-     onColorChanged: () => {
-                 game.boardModel.setColor1(first.color)
-               }
-    }
-
-    ColorDialog {
-     id: second
-     color: game.boardModel.color2
-     onColorChanged: () => {
-                 game.boardModel.setColor2(second.color)
-               }
     }
   }
 }

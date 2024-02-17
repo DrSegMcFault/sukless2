@@ -3,7 +3,12 @@ import QtQuick
 import Sukless
 
 QtObject {
-  readonly property color teal: "#00e5b0"
+  readonly property color selectedColor: "#549F93"
   readonly property color blue: "#4284ed"
-  readonly property color background: "#2C2C2C"
+  readonly property color background: "#011627"
+  readonly property color borderColor: "black"
+  readonly property color buttonColor: "#FF3366"
+  readonly property color lightGrey: "#549f93"
+  readonly property color textColor: "#F6F7F8"
+  readonly property int borderThickness: 2
 }

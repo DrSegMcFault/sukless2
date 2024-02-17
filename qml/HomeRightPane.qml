@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
+import Sukless
+
 import ".."
 import "style"
 
@@ -12,63 +14,51 @@ Rectangle {
   property var mModel
 
   component RowEntry : Rectangle {
+    id: rowComponent
     property alias first: one.text
     property alias second: two.text
     property alias movenum: label.text
+    property color textColor
 
-    ColumnLayout {
+    border {
+      width: Style.borderThickness
+      color: Style.borderColor
+    }
+
+    RowLayout {
       anchors.fill: parent
+      spacing: 10
 
-      RowLayout {
+      Item{}
+
+      Item {
+        Layout.preferredWidth: 15
         Layout.fillHeight: true
-        Layout.fillWidth: true
-        spacing: 10
-
-        Item {
-          Layout.preferredWidth: 15
-          Layout.fillHeight: true
-          CenteredText {
-            id: label
-            font.pixelSize: 20
-            color: Style.teal
-          }
-        }
-
-        Item {
-          Layout.fillHeight: true
-          Layout.preferredWidth: 20
-        }
-
-        Item {
-          Layout.preferredWidth: 30
-          Layout.fillHeight:true
-          CenteredText {
-            id: one
-            font.pixelSize: 20
-            anchors.centerIn: parent
-            color: Style.teal
-          }
-        }
-
-        Item { Layout.preferredWidth: 25; Layout.fillHeight: true }
-        Item { Layout.preferredWidth: 25; Layout.fillHeight: true }
-
-        Item {
-          Layout.preferredWidth: 30
-          Layout.fillHeight:true
-          CenteredText {
-            id: two
-            font.pixelSize: 20
-            anchors.centerIn: parent
-            color: Style.teal
-          }
+        CenteredText {
+          id: label
+          color: rowComponent.textColor
+          anchors.centerIn: parent
         }
       }
 
-      Rectangle {
-        color: "black"
-        Layout.preferredHeight: 2
-        Layout.fillWidth: true
+      Item {
+        Layout.preferredWidth: 30
+        Layout.fillHeight: true
+        CenteredText {
+          id: one
+          color: rowComponent.textColor
+          anchors.centerIn: parent
+        }
+      }
+
+      Item {
+        Layout.preferredWidth: 30
+        Layout.fillHeight:true
+        CenteredText {
+          id: two
+          color: rowComponent.textColor
+          anchors.centerIn: parent
+        }
       }
     }
   }
@@ -79,22 +69,23 @@ Rectangle {
       top: parent.top
       left: parent.left
       right: parent.right
-      margins: 4
+      leftMargin: -Style.borderThickness
     }
-    spacing: 0
+    spacing: -Style.borderThickness
 
     PillButton {
+      id: title
       Layout.fillWidth: true
       Layout.preferredHeight: 70
       text: qsTr("Moves")
       color: base.color
+      radius: 0
       pixelSize: 44
-      textColor: Style.teal
     }
     Item {
       id: temp
-      Layout.fillWidth: true
-      Layout.preferredHeight: base.height
+      Layout.preferredWidth: base.width
+      Layout.preferredHeight: base.height - title.height
 
       Flickable {
         id: flick
@@ -102,22 +93,44 @@ Rectangle {
         width: temp.width
         height: temp.height
         contentHeight: col.height
-        flickableDirection: Flickable.VerticalFlick
+        interactive: true
+        flickableDirection: Flickable.AutoFlickIfNeeded
+
+        Connections {
+          target: base.mModel
+          function onItemAdded(i, f, s) {
+            currentMove.movenum = i + "."
+            currentMove.first = f
+            currentMove.second = s
+          }
+        }
 
         ColumnLayout {
           id: col
           anchors.top: parent.top
-          anchors.left:  parent.left
+          anchors.left: parent.left
           anchors.right: parent.right
-          spacing: 0
+          height: implicitHeight
+          spacing: -Style.borderThickness
+
+          RowEntry {
+            id: currentMove
+            Layout.preferredHeight: 40
+            Layout.fillWidth: true
+            textColor: Style.textColor
+            visible: rep.count > 1
+            color: Qt.lighter(base.color, 1.7)
+          }
 
           Repeater {
+            id: rep
             model: base.mModel
 
             delegate: RowEntry {
-              Layout.preferredHeight: 30
+              Layout.preferredHeight: 40
               Layout.fillWidth: true
-              color: base.color
+              textColor: Style.textColor
+              color: !model.selected ? base.color : Qt.lighter(base.color, 1.7)
               movenum: model.index + 1 + "."
               first: model.first
               second: model.second

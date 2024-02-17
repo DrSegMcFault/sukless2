@@ -6,7 +6,7 @@ import "style"
 Item {
   id: base
 
-  property color color: Style.teal
+  property color color: Style.buttonColor
   property alias border: button.border
   property alias radius: button.radius
   property alias text: txt.text
@@ -25,7 +25,6 @@ Item {
     CenteredText {
       id: txt
       anchors.fill: parent
-      color: "black"
     }
 
     MouseArea {

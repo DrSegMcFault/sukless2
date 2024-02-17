@@ -31,7 +31,8 @@ QHash<int, QByteArray> MoveModel::roleNames() const
 {
   static QHash<int, QByteArray> roles = {
     { RoleFirst, "first" },
-    { RoleSecond, "second" }
+    { RoleSecond, "second" },
+    { RoleSelected, "selected" }
   };
 
   return roles;
@@ -56,6 +57,9 @@ QVariant MoveModel::data(const QModelIndex &index, int role) const
 
     case RoleSecond:
       return item.second ? *item.second : QString("");
+
+    case RoleSelected:
+      return &item == &_data.back();
 
     default:
       return {};
@@ -87,19 +91,19 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
     }
   }
   else {
-    auto str_target = *util::fen::index_to_algebraic(target_square);
+    auto str_target = *chess::util::fen::index_to_algebraic(target_square);
 
-    if (!(piece == Piece::w_pawn || piece == Piece::b_pawn))
+    if (!(piece == chess::WhitePawn || piece == chess::BlackPawn))
     {
-      str += static_cast<QChar>(std::toupper(util::fen::piece_to_char(piece)));
+      str += static_cast<QChar>(std::toupper(chess::util::fen::piece_to_char(piece)));
     }
 
-    if (auto alg = util::fen::index_to_algebraic(source_square))
+    if (auto alg = chess::util::fen::index_to_algebraic(source_square))
     {
       // only name the file if its a pawn capture
-      if ((piece == Piece::w_pawn || piece == Piece::b_pawn) && capture)
+      if ((piece == chess::WhitePawn || piece == chess::BlackPawn) && capture)
       {
-        str += util::fen::index_to_algebraic(source_square).value().at(0);
+        str += chess::util::fen::index_to_algebraic(source_square).value().at(0);
       }
     }
 
@@ -109,20 +113,20 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
 
     str.append(str_target);
 
-    if (util::toul(promoted_to) != 0) {
+    if (chess::util::toul(promoted_to) != 0) {
       str.append("=");
-      str += util::fen::piece_to_char(promoted_to);
+      str += chess::util::fen::piece_to_char(promoted_to);
     }
   }
 
-  if (entry.result == MoveResult::Check) {
+  if (entry.result == chess::MoveResult::Check) {
     str.append("+");
   }
-  else if (entry.result == MoveResult::Checkmate) {
+  else if (entry.result == chess::MoveResult::Checkmate) {
     str.append("#");
   }
 
-  if (entry.made_by == Color::white) {
+  if (entry.made_by == chess::White) {
 
     if (_data.back()) {
       _data.push_back( { str, std::nullopt } );
@@ -136,4 +140,8 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
   }
 
   endResetModel();
+
+  emit itemAdded(_data.size(),
+                 _data.back().first.value_or(QString("")),
+                 _data.back().second.value_or(QString("")));
 }

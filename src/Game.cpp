@@ -6,9 +6,11 @@
  *
  *****************************************************************************/
 Game::Game(QObject *parent)
-    : QObject(parent)
+  : QObject(parent)
 {
-  reset();
+  _board_manager = std::make_shared<chess::BoardManager>(&_generator);
+  _board_model.setBoard(_board_manager->getCurrentBoard());
+  _move_model.clear();
 }
 
 /******************************************************************************
@@ -18,11 +20,10 @@ Game::Game(QObject *parent)
  *****************************************************************************/
 void Game::reset()
 {
-  _game = std::make_shared<BoardManager>(&_generator);
-  _boardModel.setBoard(_game->get_current_board());
-  _moveModel.clear();
+  _board_manager->reset();
+  _board_model.setBoard(_board_manager->getCurrentBoard());
+  _move_model.clear();
 }
-
 
 /******************************************************************************
  *
@@ -30,8 +31,15 @@ void Game::reset()
  *
  *****************************************************************************/
 void Game::init(chess::Color user, bool engine_help,
-                bool ai_enable, int /*aidiff*/)
+                bool /*ai_enable*/, chess::AIDifficulty aidiff)
 {
+  _board_model.setRotation(user);
+  _settings._user_color = user;
+
+  auto& ai_cfg = _settings._ai_settings;
+  ai_cfg.difficulty = aidiff;
+  ai_cfg.controlling = (user == chess::White) ? chess::Black : chess::White;
+  ai_cfg.assisting_user = engine_help;
 }
 
 /******************************************************************************
@@ -43,43 +51,67 @@ void Game::handleMove(int from, int to, int promoted_piece)
 {
   QUrl sound_to_play;
 
-  auto source = static_cast<uint8_t>(_boardModel.toInternalIndex(from));
-  auto target = static_cast<uint8_t>(_boardModel.toInternalIndex(to));
+  auto source = static_cast<uint8_t>(_board_model.toInternalIndex(from));
+  auto target = static_cast<uint8_t>(_board_model.toInternalIndex(to));
 
-  std::optional<Piece> promoted;
-  if (promoted_piece >= 0) {
-    promoted = static_cast<Piece>(promoted_piece);
+  auto color_moved = _board_manager->getSideToMove();
+
+  auto will_promote = [&] () -> bool {
+    if (auto p = _board_manager->squareToPiece(source)) {
+      if (*p == chess::WhitePawn) {
+        if (target >= chess::A8 && target <= chess::H8) {
+           return true;
+
+        }
+      } else if (*p == chess::BlackPawn) {
+        if (target >= chess::A1 && target <= chess::H1) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  if (promoted_piece == 0 &&
+      will_promote())
+  {
+    emit promotionSelect(from, to, chess::util::toul(color_moved));
+    return;
   }
 
-  const auto [result, move_made] = _game->try_move({ source, target, promoted });
+  chess::Piece promoted;
+  if (promoted_piece > 0) {
+    promoted = static_cast<chess::Piece>(promoted_piece);
+  }
+
+  const auto [result, move_made] = _board_manager->tryMove({ source, target, promoted });
 
   sound_to_play = _result_to_sound.at(result);
 
-  if (result != MoveResult::Illegal) {
+  if (result != chess::MoveResult::Illegal) {
 
-    _moveModel.addEntry({ move_made,
-                          _game->get_side_to_move() == Color::white ? Color::black : Color::white,
-                          result });
+    _move_model.addEntry({ move_made,
+                           color_moved,
+                           result });
 
     emit moveConfirmed(from, to);
 
     // end of game conditions
     switch (result) {
-      case MoveResult::Checkmate:
+      case chess::MoveResult::Checkmate:
       {
-        emit gameOver(_game->get_side_to_move() == Color::black
-                           ? QString(tr("White Wins!"))
-                           : QString(tr("Black Wins!")));
+        emit gameOver(color_moved == chess::White ? QString(tr("White Wins!"))
+                                                  : QString(tr("Black Wins!")));
         break;
       }
 
-      case MoveResult::Stalemate:
+      case chess::MoveResult::Stalemate:
       {
         emit gameOver(QString(tr("Stalemate!")));
         break;
       }
 
-      case MoveResult::Draw:
+      case chess::MoveResult::Draw:
       {
         emit gameOver(QString(tr("Draw by Repetition!")));
         break;
@@ -90,7 +122,7 @@ void Game::handleMove(int from, int to, int promoted_piece)
     }
   }
 
-  _boardModel.setBoard(std::move(_game->get_current_board()));
+  _board_model.setBoard(std::move(_board_manager->getCurrentBoard()));
 
   emit playSound(sound_to_play);
 }

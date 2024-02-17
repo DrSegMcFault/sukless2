@@ -1,3 +1,4 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -11,19 +12,19 @@ import "style"
 Item {
   id: base
   anchors.fill: parent
-
-  required property int userColor
-  required property bool aiAssistEnabled
-  required property bool aiEnabled
-  required property int aiDifficulty
   property bool gameEnd: false
+  property bool selectPromotion: false
+
+  Component.onCompleted: splitView.restoreState(settings.splitView)
+  Component.onDestruction: settings.splitView = splitView.saveState()
+
+  Settings {
+    id: settings
+    property var splitView
+  }
 
   Game {
     id: game
-    Component.onCompleted: {
-      game.init(base.userColor, base.aiAssistEnabled,
-                     base.aiEnabled, base.aiDifficulty)
-    }
   }
 
   Connections {
@@ -54,16 +55,37 @@ Item {
     function onMoveConfirmed(from, to) {
       console.log("Move confirmed: ", from, " ", to)
     }
+
+    function onPromotionSelect(from, to, c) {
+      console.log("Promotion Select", from, " ", to, " ", c)
+      promotePopup.moveFrom = from
+      promotePopup.moveTo = to
+      promotePopup.colorMoving = c
+      base.selectPromotion = true
+    }
   }
 
   GameOverPopup {
     id: gameOver
-
     visible: base.gameEnd === true
+
     onClicked: {
       base.gameEnd = false;
       game.reset();
     }
+  }
+
+  PromotionPopup {
+    id: promotePopup
+    z: 10000
+    anchors.centerIn: base
+    visible: base.selectPromotion === true
+    width: board.width / 2
+    height: board.height / 8
+    onSelected: (from, to, piece) => {
+                  game.handleMove(from, to, piece)
+                  base.selectPromotion = false
+                }
   }
 
   MediaPlayer {
@@ -92,28 +114,24 @@ Item {
     color: Style.background
     anchors.fill: parent
 
-    RowLayout {
-      id: row
-      anchors.fill:parent
+    SplitView {
+      id: splitView
+      anchors.fill: parent
+      orientation: Qt.Horizontal
       spacing: 0
 
       HomeLeftPane {
         id: left
-        Layout.fillHeight: true
-        Layout.preferredWidth: base.width * 1/5
-      }
-
-      Rectangle {
-        color: "black"
-        Layout.preferredWidth: 2
-        Layout.fillHeight: true
+        SplitView.preferredHeight: parent.height
+        SplitView.preferredWidth: parent.width * 1/5
       }
 
       Rectangle {
         id: center
         color: Style.background
-        Layout.fillHeight: true
-        Layout.preferredWidth: base.width * 3/5
+        SplitView.fillHeight: true
+        SplitView.fillWidth: parent.width * 3/5
+        SplitView.minimumWidth: parent.width * 1/4
 
         Board {
           id: board
@@ -123,27 +141,22 @@ Item {
               return parent.height * 9/10
             }
             return parent.width
-
           }
           width: height
           anchors.centerIn: parent
           onMove: (from, to) => {
-                    game.handleMove(from, to, -1)
+                    game.handleMove(from, to, 0)
                   }
         }
       }
 
-      Rectangle {
-        color: "black"
-        Layout.preferredWidth: 2
-        Layout.fillHeight: true
-      }
-
       HomeRightPane {
         id: right
-        Layout.fillHeight: true
-        Layout.preferredWidth: base.width * 1/5
         mModel: game.moveModel
+        SplitView.preferredHeight: parent.height
+        SplitView.preferredWidth: parent.width * 1/5
+        SplitView.maximumWidth: parent.width * 1/2
+        SplitView.minimumWidth: 50
       }
     }
   }

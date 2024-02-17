@@ -16,7 +16,7 @@ Item {
       id: stack
       Layout.fillWidth: true
       Layout.fillHeight: true
-      initialItem: "MainMenu.qml"
+      initialItem: "Home.qml"
 
       popEnter: Transition {
         XAnimator { from: 0; to: 0; duration: 0; easing.type: Easing.OutCubic }

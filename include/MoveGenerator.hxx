@@ -6,20 +6,20 @@
 
 namespace chess {
 
-class MoveGen {
+class MoveGenerator {
   public:
 
-    MoveGen(const MoveGen&) = delete;
-    MoveGen(MoveGen&&) = delete;
-    MoveGen& operator=(const MoveGen&) = delete;
+    MoveGenerator(const MoveGenerator&) = delete;
+    MoveGenerator(MoveGenerator&&) = delete;
+    MoveGenerator& operator=(const MoveGenerator&) = delete;
 
-    bool is_square_attacked(uint8_t square,
-                            Color side,
-                            const Board& board) const;
+    bool isSquareAttacked(uint8_t square,
+                          Color side,
+                          const Board& board) const;
 
-    void generate_moves(const Board& board,
-                        const State& state,
-                        std::vector<util::bits::HashedMove>& moves) const;
+    void generateMoves(const Board& board,
+                       const State& state,
+                       std::vector<util::bits::HashedMove>& moves) const;
   private:
 
     // pre-calculated attack Bitboards
@@ -35,7 +35,7 @@ class MoveGen {
     const std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
 
     // initialization functions
-    constexpr std::array<std::array<Bitboard, 64>, 2> init_pawn_attacks() {
+    constexpr std::array<std::array<Bitboard, 64>, 2> initPawnAttacks() {
       std::array<std::array<Bitboard, 64>, 2> result;
 
       constexpr auto get_mask = [](Color side, uint8_t square) {
@@ -44,7 +44,7 @@ class MoveGen {
 
         set_bit(square, b);
 
-        if (side == Color::white) {
+        if (side == White) {
           if ((b << 7) & not_h_file)
             attacks |= (b << 7);
 
@@ -63,14 +63,14 @@ class MoveGen {
       };
 
       for (const auto i : util::range(NoSquare)) {
-        result[white][i] = get_mask(white, i);
-        result[black][i] = get_mask(black, i);
+        result[White][i] = get_mask(White, i);
+        result[Black][i] = get_mask(Black, i);
       }
 
       return result;
     }
 
-    constexpr std::array<Bitboard, 64> init_knight_attacks()
+    constexpr std::array<Bitboard, 64> initKnightAttacks()
     {
       std::array<Bitboard, 64> result;
 
@@ -103,7 +103,7 @@ class MoveGen {
       return result;
     }
 
-    constexpr std::array<Bitboard, 64> init_king_attacks()
+    constexpr std::array<Bitboard, 64> initKingAttacks()
     {
       std::array<Bitboard, 64> result;
 
@@ -137,7 +137,7 @@ class MoveGen {
       return result;
     }
 
-    constexpr std::array<Bitboard, 64> init_bishop_masks()
+    constexpr std::array<Bitboard, 64> initBishopMasks()
     {
       std::array<Bitboard, 64> result;
 
@@ -167,7 +167,7 @@ class MoveGen {
       return result;
     }
 
-    constexpr std::array<Bitboard, 64> init_rook_masks()
+    constexpr std::array<Bitboard, 64> initRookMasks()
     {
       std::array<Bitboard, 64> result;
 
@@ -197,7 +197,7 @@ class MoveGen {
       return result;
     }
 
-    constexpr Bitboard calc_bishop_attacks(uint8_t square, Bitboard occ) const
+    constexpr Bitboard calcBishopAttacks(uint8_t square, Bitboard occ) const
     {
       Bitboard attacks {0ULL};
 
@@ -226,7 +226,7 @@ class MoveGen {
       return attacks;
     }
 
-    constexpr Bitboard calc_rook_attacks(uint8_t square, Bitboard occ) const
+    constexpr Bitboard calcRookAttacks(uint8_t square, Bitboard occ) const
     {
       Bitboard attacks {0ULL};
 
@@ -256,48 +256,48 @@ class MoveGen {
     }
 
     // attack retrieval functions
-    Bitboard get_bishop_attacks(uint8_t square, Bitboard occ) const;
-    Bitboard get_rook_attacks(uint8_t square, Bitboard occ) const;
-    Bitboard get_queen_attacks(uint8_t square, Bitboard occ) const
+    Bitboard getBishopAttacks(uint8_t square, Bitboard occ) const;
+    Bitboard getRookAttacks(uint8_t square, Bitboard occ) const;
+    Bitboard getQueenAttacks(uint8_t square, Bitboard occ) const
     {
-      return (get_bishop_attacks(square, occ) | get_rook_attacks(square, occ));
+      return (getBishopAttacks(square, occ) | getRookAttacks(square, occ));
     }
 
     // move generation
-    inline void add_move(std::vector<util::bits::HashedMove>& moves,
-                         uint32_t source, uint32_t target,
-                         uint32_t piece, uint32_t promotion,
-                         uint32_t capture, uint32_t double_push,
-                         uint32_t enpassant, uint32_t castling) const;
+    inline void addMove(std::vector<util::bits::HashedMove>& moves,
+                        uint32_t source, uint32_t target,
+                        uint32_t piece, uint32_t promotion,
+                        uint32_t capture, uint32_t double_push,
+                        uint32_t enpassant, uint32_t castling) const;
 
-    void generate_white_pawn_moves(const Board& board,
-                                   const State& state,
-                                   std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_black_pawn_moves(const Board& board,
-                                   const State& state,
-                                   std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_castling_moves(const Board& board,
-                                 const State& state,
-                                 std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_king_moves(const Board& b, Color side_to_move,
-                             std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_knight_moves(const Board& b, Color side_to_move,
+    void generateWhitePawnMoves(const Board& board,
+                                const State& state,
                                 std::vector<util::bits::HashedMove>& moves) const;
 
-    void generate_bishop_moves(const Board& b, Color side_to_move,
+    void generateBlackPawnMoves(const Board& board,
+                                const State& state,
                                 std::vector<util::bits::HashedMove>& moves) const;
 
-    void generate_rook_moves(const Board& b, Color side_to_move,
-                              std::vector<util::bits::HashedMove>& moves) const;
-
-    void generate_queen_moves(const Board& b, Color side_to_move,
+    void generateCastlingMoves(const Board& board,
+                               const State& state,
                                std::vector<util::bits::HashedMove>& moves) const;
 
-    void test_attack_lookup();
+    void generateKingMoves(const Board& b, Color side_to_move,
+                           std::vector<util::bits::HashedMove>& moves) const;
+
+    void generateKnightMoves(const Board& b, Color side_to_move,
+                             std::vector<util::bits::HashedMove>& moves) const;
+
+    void generateBishopMoves(const Board& b, Color side_to_move,
+                             std::vector<util::bits::HashedMove>& moves) const;
+
+    void generateRookMoves(const Board& b, Color side_to_move,
+                           std::vector<util::bits::HashedMove>& moves) const;
+
+    void generateQueenMoves(const Board& b, Color side_to_move,
+                            std::vector<util::bits::HashedMove>& moves) const;
+
+    void testAttackLookup();
 
     static constexpr std::array<Bitboard, 64> bishop_magics = {
       0x40040844404084ULL,  0x2004208a004208ULL,
@@ -394,9 +394,9 @@ class MoveGen {
     // used to initialize a big array of attacks at compile time,
     // currently for rook and bishop attack tables
     template <size_t N, bool is_bishop>
-    constexpr auto init_slider_attacks(const std::array<Bitboard, 64> masks,
-                                       const std::array<Bitboard, 64> magics,
-                                       const std::array<uint8_t, 64> bits)
+    constexpr auto initSliderAttacks(const std::array<Bitboard, 64> masks,
+                                     const std::array<Bitboard, 64> magics,
+                                     const std::array<uint8_t, 64> bits)
     {
       std::array<std::array<Bitboard, N>, 64> result = {};
 
@@ -432,10 +432,10 @@ class MoveGen {
           uint16_t magic_index = (occupancy * magics[square]) >> (64ULL - bit_count);
 
           if constexpr (is_bishop) {
-            result[square][magic_index] = calc_bishop_attacks(square, occupancy);
+            result[square][magic_index] = calcBishopAttacks(square, occupancy);
           }
           else {
-            result[square][magic_index] = calc_rook_attacks(square, occupancy);
+            result[square][magic_index] = calcRookAttacks(square, occupancy);
           }
         }
       }
@@ -444,14 +444,14 @@ class MoveGen {
     }
 
   public:
-    constexpr MoveGen()
-      : pawn_attacks(init_pawn_attacks())
-      , knight_attacks(init_knight_attacks())
-      , king_attacks(init_king_attacks())
-      , bishop_masks(init_bishop_masks())
-      , rook_masks(init_rook_masks())
-      , bishop_attacks(init_slider_attacks<512, true>(bishop_masks, bishop_magics, bishop_bits))
-      , rook_attacks(init_slider_attacks<4096, false>(rook_masks, rook_magics, rook_bits))
+    constexpr MoveGenerator()
+      : pawn_attacks(initPawnAttacks())
+      , knight_attacks(initKnightAttacks())
+      , king_attacks(initKingAttacks())
+      , bishop_masks(initBishopMasks())
+      , rook_masks(initRookMasks())
+      , bishop_attacks(initSliderAttacks<512, true>(bishop_masks, bishop_magics, bishop_bits))
+      , rook_attacks(initSliderAttacks<4096, false>(rook_masks, rook_magics, rook_bits))
     {
     }
 };

@@ -7,8 +7,6 @@
 
 #include "util.hxx"
 
-using namespace chess;
-
 class MoveModel : public QAbstractListModel
 {
   Q_OBJECT
@@ -17,13 +15,14 @@ public:
 
   enum Role {
     RoleFirst = Qt::UserRole + 1,
-    RoleSecond
+    RoleSecond,
+    RoleSelected
   };
 
   struct MoveModelDataEntry {
-    util::bits::HashedMove move;
-    Color made_by;
-    MoveResult result;
+    chess::util::bits::HashedMove move;
+    chess::Color made_by;
+    chess::MoveResult result;
   };
 
 private:
@@ -42,6 +41,9 @@ private:
 protected:
 
   virtual QHash<int, QByteArray> roleNames() const override;
+
+signals:
+  void itemAdded(int index, QString first, QString second);
 
 public:
 

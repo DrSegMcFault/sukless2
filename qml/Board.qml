@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt.labs.platform
 
 import Sukless
 
@@ -8,7 +9,7 @@ import "style"
 
 Rectangle {
   id: base
-  color: "white"
+  color: Style.background
 
   required property BoardModel board
   signal move(int from, int to)
@@ -23,19 +24,83 @@ Rectangle {
   Rectangle {
     color: "black"
     anchors.bottom: parent.top
-    anchors.right: parent.right
-    anchors.rightMargin: 4
-    anchors.bottomMargin: 10
+    anchors.right: grid.right
+    anchors.rightMargin: 0
+    anchors.bottomMargin: 2
     width: parent.width * 1/7
     height: parent.height * 1/30
     radius: 8
 
     PillButton {
       anchors.fill: parent
-      anchors.margins: 1
+      anchors.margins: 2
+      pixelSize: 16
       onClicked: base.board.toggleRotation()
       text: qsTr("Flip Board")
     }
+  }
+
+  GridLayout {
+    rows: 1
+    columns: 2
+    rowSpacing: 0
+    columnSpacing: -Style.borderThickness
+    anchors.bottom: grid.top
+    anchors.left: grid.left
+    anchors.bottomMargin: 2
+    width: parent.width * 1/16
+    height: parent.height * 1/32
+
+    Rectangle {
+      Layout.fillHeight: true
+      Layout.fillWidth: true
+      color: base.board.color1
+      border {
+        width: Style.borderThickness
+        color: "black"
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          first.open()
+        }
+      }
+    }
+    Rectangle {
+      Layout.fillHeight: true
+      Layout.fillWidth: true
+      color: base.board.color2
+      border {
+        width: Style.borderThickness
+        color: "black"
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          second.open()
+        }
+      }
+    }
+  }
+
+  ColorDialog {
+    id: first
+    color: base.board.color1
+    onColorChanged: () => {
+                      base.board.setColor1(first.color)
+                      first.color = base.board.color1
+                    }
+  }
+
+  ColorDialog {
+    id: second
+    color: base.board.color2
+    onColorChanged: () => {
+                      base.board.setColor2(second.color)
+                      second.color = base.board.color2
+                    }
   }
 
   GridLayout {
@@ -122,12 +187,12 @@ Rectangle {
 
         // file label
         CenteredText {
-          text: model.fileLabel
-          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
+          id: fileLabel
           anchors.bottom: parent.bottom
           anchors.right: parent.right
           anchors.rightMargin: 2
-          anchors.bottomMargin: 2
+          text: model.fileLabel
+          color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
         }
 
         // rank label

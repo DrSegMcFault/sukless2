@@ -10,11 +10,11 @@
 
 namespace chess {
   using Bitboard = uint64_t;
-  using Board = std::array<Bitboard, 15>;
+  using Board = std::array<Bitboard, 16>;
 
   enum Color {
-    white,
-    black
+    White,
+    Black
   };
 
   enum class MoveResult {
@@ -27,17 +27,18 @@ namespace chess {
   };
 
   enum Piece {
-    w_pawn, w_knight, w_bishop,
-    w_rook, w_queen,  w_king,
-    b_pawn, b_knight, b_bishop,
-    b_rook, b_queen,  b_king,
-    w_all,  b_all,    All
+    NoPiece,
+    WhitePawn, WhiteKnight, WhiteBishop,
+    WhiteRook, WhiteQueen,  WhiteKing,
+    BlackPawn, BlackKnight, BlackBishop,
+    BlackRook, BlackQueen,  BlackKing,
+    WhiteAll,  BlackAll,    All
   };
 
   struct Move {
     uint8_t from;
     uint8_t to;
-    std::optional<Piece> promoted_to;
+    Piece promoted_to;
   };
 
   enum class CastlingRights : uint8_t {
@@ -57,7 +58,7 @@ namespace chess {
     uint8_t half_move_clock = 0;
     uint8_t full_move_count = 1;
     uint8_t en_passant_target = chess::NoSquare;
-    Color side_to_move = Color::white;
+    Color side_to_move = White;
   };
 
   enum class AIDifficulty {
@@ -69,6 +70,7 @@ namespace chess {
   struct AIConfig {
     AIDifficulty difficulty;
     Color controlling;
+    bool assisting_user;
   };
 
   const static std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -115,36 +117,36 @@ namespace chess {
   static constexpr Bitboard not_ab_file = 18229723555195321596ULL;
 
   static constexpr std::array<Piece, 6> WhitePieces = {
-    Piece::w_pawn,
-    Piece::w_knight,
-    Piece::w_bishop,
-    Piece::w_rook,
-    Piece::w_queen,
-    Piece::w_king
+    Piece::WhitePawn,
+    Piece::WhiteKnight,
+    Piece::WhiteBishop,
+    Piece::WhiteRook,
+    Piece::WhiteQueen,
+    Piece::WhiteKing
   };
 
   static constexpr std::array<Piece, 6> BlackPieces = {
-    Piece::b_pawn,
-    Piece::b_knight,
-    Piece::b_bishop,
-    Piece::b_rook,
-    Piece::b_queen,
-    Piece::b_king
+    Piece::BlackPawn,
+    Piece::BlackKnight,
+    Piece::BlackBishop,
+    Piece::BlackRook,
+    Piece::BlackQueen,
+    Piece::BlackKing
   };
 
   static constexpr std::array<Piece, 12> AllPieces = {
-    Piece::w_pawn,
-    Piece::w_knight,
-    Piece::w_bishop,
-    Piece::w_rook,
-    Piece::w_queen,
-    Piece::w_king,
-    Piece::b_pawn,
-    Piece::b_knight,
-    Piece::b_bishop,
-    Piece::b_rook,
-    Piece::b_queen,
-    Piece::b_king
+    Piece::WhitePawn,
+    Piece::WhiteKnight,
+    Piece::WhiteBishop,
+    Piece::WhiteRook,
+    Piece::WhiteQueen,
+    Piece::WhiteKing,
+    Piece::BlackPawn,
+    Piece::BlackKnight,
+    Piece::BlackBishop,
+    Piece::BlackRook,
+    Piece::BlackQueen,
+    Piece::BlackKing
   };
 
   namespace util {
@@ -163,7 +165,7 @@ namespace chess {
     concept EnumClass = std::is_enum_v<T>;
 
     template<EnumClass T>
-    inline auto toul(T enum_value) {
+    constexpr inline auto toul(T enum_value) {
       return static_cast<std::underlying_type_t<T>>(enum_value);
     }
 
@@ -181,13 +183,13 @@ namespace chess {
         struct {
           uint32_t source : 6;
           uint32_t target : 6;
-          uint32_t piece : 4;
-          uint32_t promoted : 4;
+          uint32_t piece : 5;
+          uint32_t promoted : 5;
           uint32_t capture : 1;
           uint32_t double_push : 1;
           uint32_t enpassant : 1;
           uint32_t castling : 1;
-          uint32_t : 8;
+          uint32_t : 6;
         };
 
         uint32_t move;

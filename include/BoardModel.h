@@ -12,8 +12,6 @@
 
 #include "util.hxx"
 
-using namespace chess;
-
 class BoardModel : public QAbstractListModel
 {
   Q_OBJECT
@@ -54,9 +52,6 @@ public:
 
 public:
 
-  Q_ENUM(Color)
-  Q_ENUM(AIDifficulty);
-
   enum Role {
     RolePiece = Qt::UserRole + 1,
     RoleIcon,
@@ -79,13 +74,12 @@ protected:
   virtual QHash<int, QByteArray> roleNames() const override;
 
 private:
-  std::array<std::optional<Piece>, 64> _data = {};
+  std::array<std::optional<chess::Piece>, 64> _data = {};
 
   QColor _color1 = QColor("white");
   QColor _color2 = QColor("#4284ed");
 
   Rotation _visual_rotation = Rotation::ViewFromWhite;
-
 
   const std::unordered_map<int, QString> _white_rank_map = {
     { 0,   QString("1") },
@@ -132,18 +126,18 @@ private:
   };
 
   const std::unordered_map<chess::Piece, QUrl> _icons = {
-    { Piece::w_pawn,   QUrl("qrc:/images/pawn_white.png")   },
-    { Piece::w_knight, QUrl("qrc:/images/knight_white.png") },
-    { Piece::w_bishop, QUrl("qrc:/images/bishop_white.png") },
-    { Piece::w_rook,   QUrl("qrc:/images/rook_white.png")   },
-    { Piece::w_queen,  QUrl("qrc:/images/queen_white.png")  },
-    { Piece::w_king,   QUrl("qrc:/images/king_white.png")   },
-    { Piece::b_pawn,   QUrl("qrc:/images/pawn_black.png")   },
-    { Piece::b_knight, QUrl("qrc:/images/knight_black.png") },
-    { Piece::b_bishop, QUrl("qrc:/images/bishop_black.png") },
-    { Piece::b_rook,   QUrl("qrc:/images/rook_black.png")   },
-    { Piece::b_queen,  QUrl("qrc:/images/queen_black.png")  },
-    { Piece::b_king,   QUrl("qrc:/images/king_black.png")   }
+    { chess::WhitePawn,   QUrl("qrc:/images/pawn_white.png")   },
+    { chess::WhiteKnight, QUrl("qrc:/images/knight_white.png") },
+    { chess::WhiteBishop, QUrl("qrc:/images/bishop_white.png") },
+    { chess::WhiteRook,   QUrl("qrc:/images/rook_white.png")   },
+    { chess::WhiteQueen,  QUrl("qrc:/images/queen_white.png")  },
+    { chess::WhiteKing,   QUrl("qrc:/images/king_white.png")   },
+    { chess::BlackPawn,   QUrl("qrc:/images/pawn_black.png")   },
+    { chess::BlackKnight, QUrl("qrc:/images/knight_black.png") },
+    { chess::BlackBishop, QUrl("qrc:/images/bishop_black.png") },
+    { chess::BlackRook,   QUrl("qrc:/images/rook_black.png")   },
+    { chess::BlackQueen,  QUrl("qrc:/images/queen_black.png")  },
+    { chess::BlackKing,   QUrl("qrc:/images/king_black.png")   }
   };
 
 public:
@@ -155,12 +149,18 @@ public:
 
   Q_INVOKABLE void toggleRotation();
 
-  void setBoard(std::array<std::optional<Piece>, 64>&& b) {
+  void setBoard(std::array<std::optional<chess::Piece>, 64>&& b) {
     beginResetModel();
     _data = b;
     endResetModel();
   }
 
-  void reset();
+  void setRotation(chess::Color c) {
+    beginResetModel();
+    _visual_rotation = (c == chess::White) ? Rotation::ViewFromWhite
+                                           : Rotation::ViewFromBlack;
+    endResetModel();
+  }
 
+  void reset();
 };

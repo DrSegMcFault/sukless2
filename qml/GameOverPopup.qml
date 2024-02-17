@@ -11,7 +11,7 @@ Rectangle {
 
   signal clicked()
 
-  color: "black"
+  color: Style.borderColor
   width: 280
   height: 85
   radius: 4
@@ -29,10 +29,8 @@ Rectangle {
   PillButton {
     width: 120
     height: 20
-    color: "black"
     radius: 4
     text: qsTr("Reset Board")
-    textColor: Style.teal
 
     anchors {
       bottom: inner.bottom

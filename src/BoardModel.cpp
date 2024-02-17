@@ -91,7 +91,7 @@ QVariant BoardModel::data(const QModelIndex &index, int role) const
    switch (role) {
 
      case RolePiece:
-       return item ? *item : Piece::All;
+       return item ? *item : chess::All;
 
      case RoleIcon:
        return item ? _icons.at(*item) : QUrl("");

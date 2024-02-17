@@ -71,18 +71,18 @@ std::optional<std::string> chess::util::fen::index_to_algebraic(uint8_t index)
 std::optional<chess::Piece> chess::util::fen::char_to_piece(char c) {
   using enum Piece;
   switch (c) {
-    case 'P': return w_pawn;
-    case 'N': return w_knight;
-    case 'B': return w_bishop;
-    case 'R': return w_rook;
-    case 'Q': return w_queen;
-    case 'K': return w_king;
-    case 'p': return b_pawn;
-    case 'n': return b_knight;
-    case 'b': return b_bishop;
-    case 'r': return b_rook;
-    case 'q': return b_queen;
-    case 'k': return b_king;
+    case 'P': return WhitePawn;
+    case 'N': return WhiteKnight;
+    case 'B': return WhiteBishop;
+    case 'R': return WhiteRook;
+    case 'Q': return WhiteQueen;
+    case 'K': return WhiteKing;
+    case 'p': return BlackPawn;
+    case 'n': return BlackKnight;
+    case 'b': return BlackBishop;
+    case 'r': return BlackRook;
+    case 'q': return BlackQueen;
+    case 'k': return BlackKing;
     default:
       return std::nullopt;
   }
@@ -96,21 +96,23 @@ std::optional<chess::Piece> chess::util::fen::char_to_piece(char c) {
 char chess::util::fen::piece_to_char(Piece p)
 {
   switch (p) {
-    case w_pawn: return 'P';
-    case w_knight: return 'N';
-    case w_bishop: return 'B';
-    case w_rook: return 'R';
-    case w_queen: return 'Q';
-    case w_king: return 'K';
-    case b_pawn: return 'p';
-    case b_knight: return 'n';
-    case b_bishop: return 'b';
-    case b_rook: return 'r';
-    case b_queen: return 'q';
-    case b_king: return 'k';
-    case b_all:
-    case w_all:
+    case WhitePawn: return 'P';
+    case WhiteKnight: return 'N';
+    case WhiteBishop: return 'B';
+    case WhiteRook: return 'R';
+    case WhiteQueen: return 'Q';
+    case WhiteKing: return 'K';
+    case BlackPawn: return 'p';
+    case BlackKnight: return 'n';
+    case BlackBishop: return 'b';
+    case BlackRook: return 'r';
+    case BlackQueen: return 'q';
+    case BlackKing: return 'k';
+    case NoPiece:
+    case BlackAll:
+    case WhiteAll:
     case All:
       return ' ';
   }
+  return ' ';
 }
