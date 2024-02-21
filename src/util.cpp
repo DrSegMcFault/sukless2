@@ -116,3 +116,118 @@ char chess::util::fen::piece_to_char(Piece p)
   }
   return ' ';
 }
+
+/*******************************************************************************
+ *
+ * Function: piece_at(const Board& b, uint8_t square )
+ *
+ *******************************************************************************/
+std::optional<chess::Piece> chess::piece_at(const chess::Board& b, uint8_t square)
+{
+  for (auto p : chess::AllPieces) {
+    if (is_set(square, b[p])) {
+      return p;
+    }
+  }
+  return std::nullopt;
+}
+
+/*******************************************************************************
+ *
+ * Function: to_array(const Board& b)
+ *
+ *******************************************************************************/
+std::array<std::optional<chess::Piece>, 64> chess::to_array(const chess::Board& b)
+{
+  std::array<std::optional<chess::Piece>, 64> board;
+  for (auto i : chess::util::range(NoSquare)) {
+    board[i] = chess::piece_at(b, i);
+  }
+  return board;
+}
+
+/*******************************************************************************
+ *
+ * Function: util::fen::generate(const Board& b, uint8_t square )
+ *
+ *******************************************************************************/
+std::string chess::util::fen::generate(const chess::Board& b, const State& state) {
+  std::string fen = "";
+  fen.reserve(40);
+
+  uint8_t cur_missing_count = 0;
+  static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
+
+  for (int start : ranges) {
+    for (uint8_t square : std::views::iota(start, start + 8)) {
+
+      if (auto piece_at_sq = chess::piece_at(b, square)) {
+        std::string temp = "";
+        if (cur_missing_count) {
+          temp += std::to_string(cur_missing_count);
+        }
+
+        temp += util::fen::piece_to_char(*piece_at_sq);
+        fen += temp;
+
+        cur_missing_count = 0;
+      }
+      else {
+        cur_missing_count++;
+      }
+    }
+
+    if (cur_missing_count) {
+      fen += std::to_string(cur_missing_count);
+      cur_missing_count = 0;
+    }
+
+    if (start != *(ranges.end() - 1)) {
+      fen.append("/");
+    }
+  }
+
+  fen.append(" ");
+
+  fen += state.side_to_move == White ? 'w' : 'b';
+
+  fen.append(" ");
+
+  if (!state.castling_rights) {
+    fen.append("-");
+  }
+  else {
+    if (state.castling_rights & util::toul(CastlingRights::WhiteKingSide))
+    {
+      fen.append("K");
+    }
+    if (state.castling_rights & util::toul(CastlingRights::WhiteQueenSide))
+    {
+      fen.append("Q");
+    }
+    if (state.castling_rights & util::toul(CastlingRights::BlackKingSide))
+    {
+      fen.append("k");
+    }
+    if (state.castling_rights & util::toul(CastlingRights::BlackQueenSide))
+    {
+      fen.append("q");
+    }
+  }
+
+  fen.append(" ");
+
+  if (state.en_passant_target == chess::NoSquare) {
+    fen.append("-");
+  }
+  else if (auto str = util::fen::index_to_algebraic(state.en_passant_target)) {
+    fen.append(*str);
+  }
+
+  fen.append(" ");
+
+  fen.append(std::to_string(state.half_move_clock) + " " +
+             std::to_string(state.full_move_count));
+
+  return fen;
+}

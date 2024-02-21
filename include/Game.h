@@ -56,6 +56,15 @@ private:
   BoardModel _board_model;
   std::shared_ptr<chess::BoardManager> _board_manager;
 
+  // to keep track of the index in the move_model that is
+  // currently being displayed
+  size_t _current_move_index = 1;
+
+  // to keep track of the current board being displayed from
+  // the history in board_manager. after any legal move is
+  // made this should be incremented.
+  size_t _current_history_index = 0;
+
   GameSettings _settings;
 
   const QUrl _move_sound = QUrl("qrc:/sounds/move.mp3");
@@ -80,4 +89,42 @@ public:
                         bool engineHelp,
                         bool aiEnable,
                         chess::AIDifficulty d);
+
+  Q_INVOKABLE void showPrevious() {
+
+    if (_current_history_index >= 1) {
+      --_current_history_index;
+
+      if (auto fen = _board_manager->historyAt(_current_history_index)) {
+
+        if (_current_move_index >= 1 && _current_history_index % 2 == 0) {
+          _move_model.setSelected(--_current_move_index);
+        }
+
+        auto opt = _board_manager->makeBoardFromFen(*fen);
+        auto [board, state] = *opt;
+
+        _board_model.setBoard(std::move(chess::to_array(board)));
+      }
+    }
+  }
+
+  Q_INVOKABLE void showNext() {
+
+    if (auto fen = _board_manager->historyAt(_current_history_index + 1)) {
+
+      _current_history_index++;
+
+      if (_current_move_index + 1 <= _move_model.dataCount() -1) {
+        if (_current_history_index > 1 && _current_history_index % 2 != 0) {
+          _move_model.setSelected(++_current_move_index);
+        }
+      }
+
+      auto opt = _board_manager->makeBoardFromFen(*fen);
+      auto [board, state] = *opt;
+
+      _board_model.setBoard(std::move(chess::to_array(board)));
+    }
+  }
 };

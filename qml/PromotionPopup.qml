@@ -23,45 +23,46 @@ Rectangle {
   ListModel {
     id: whiteModel
     ListElement {
-      source: "qrc:/images/knight_white.png"
+      source: "qrc:/images/knight_white.svg"
       value: 2 // chess::Piece::WhiteKnight
     }
     ListElement {
-      source: "qrc:/images/bishop_white.png"
+      source: "qrc:/images/bishop_white.svg"
       value: 3 // chess::Piece::WhiteBishop
     }
     ListElement {
-      source: "qrc:/images/rook_white.png"
+      source: "qrc:/images/rook_white.svg"
       value: 4 // chess::Piece::WhiteRook
     }
     ListElement {
-      source: "qrc:/images/queen_white.png"
+      source: "qrc:/images/queen_white.svg"
       value: 5 // chess::Piece::WhiteQueen
     }
   }
   ListModel {
     id: blackModel
     ListElement {
-      source: "qrc:/images/knight_black.png"
+      source: "qrc:/images/knight_black.svg"
       value: 8 // chess::Piece::BlackKnight
     }
     ListElement {
-      source: "qrc:/images/bishop_black.png"
+      source: "qrc:/images/bishop_black.svg"
       value: 9 // chess::Piece::BlackBishop
     }
     ListElement {
-      source: "qrc:/images/rook_black.png"
+      source: "qrc:/images/rook_black.svg"
       value: 10 // chess::Piece::BlackRook
     }
     ListElement {
-      source: "qrc:/images/queen_black.png"
+      source: "qrc:/images/queen_black.svg"
       value: 11 // chess::Piece::BlackQueen
     }
   }
+
   RowLayout {
     id: row
     anchors.fill: parent
-    spacing: 2
+    spacing: Style.borderThickness
 
     Repeater {
       model: base.colorMoving === Game.WHITE ? whiteModel : blackModel
@@ -80,8 +81,6 @@ Rectangle {
           onClicked: base.selected(base.moveFrom, base.moveTo, model.value)
         }
       }
-
     }
-
   }
 }

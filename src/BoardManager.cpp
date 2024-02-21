@@ -19,7 +19,7 @@ BoardManager::BoardManager(const MoveGenerator* g)
 
 /*******************************************************************************
  *
- * Method: BoardManager(std::shared_ptr<MoveGenerator>, const string& fen)
+ * Method: BoardManager(const MoveGenerator*, const string& fen)
  *
  *******************************************************************************/
 BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
@@ -32,14 +32,47 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
 
 /*******************************************************************************
  *
- * Method: init_from_fen(Bitboard b)
+ * Method: initFromFen(const std::string& fen)
  * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
  *******************************************************************************/
 void BoardManager::initFromFen(const std::string &fen)
 {
+  std::fill(_board.begin(), _board.end(), 0ULL);
+  _history.clear();
+  _move_list.clear();
+
+  if (auto val = makeBoardFromFen(fen))
+  {
+    auto [board, state] = *val;
+    _board = board;
+    _state = state;
+
+    _history.push_back(generateFen());
+
+    assert(generateFen() == fen);
+
+    _generator->generateMoves(_board, _state, _move_list);
+
+  } else {
+    // critical error if the FEN string is invalid
+    assert(false);
+  }
+}
+
+/*******************************************************************************
+ *
+ * Method: makeBoardFromFen(const std::string& fen)
+ *
+ *******************************************************************************/
+std::optional<std::pair<Board,State>>
+    BoardManager::makeBoardFromFen(const std::string& fen) const
+{
+  Board board;
+  State state;
+
   // populate board occupancies and game state
   // using a FEN string
-  for (auto& b : _board) {
+  for (auto& b : board) {
     b = 0ULL;
   }
 
@@ -74,75 +107,56 @@ void BoardManager::initFromFen(const std::string &fen)
     }
     else if (auto piece = util::fen::char_to_piece(c)) {
       uint8_t square = rank * 8 + file;
-      set_bit(square, _board[*piece]);
+      set_bit(square, board[*piece]);
       file++;
     }
     else {
-      // error, call this function with known fen
-      initFromFen(chess::starting_position);
+      return std::nullopt;
     }
   }
 
-  _board[WhiteAll] = calcWhiteOccupancy(_board);
-  _board[BlackAll] = calcBlackOccupancy(_board);
-  _board[All] = calcGlobalOccupancy(_board);
+  board[WhiteAll] = calcWhiteOccupancy(board);
+  board[BlackAll] = calcBlackOccupancy(board);
+  board[All] = calcGlobalOccupancy(board);
 
   // get the turn info
-  _state.side_to_move = fen_turn == "w" ? White : Black;
+  state.side_to_move = fen_turn == "w" ? White : Black;
 
   // castling rights
   if (fen_castling == "-") {
-    _state.castling_rights = ~(util::toul(CastlingRights::WhiteCastlingRights) |
-                               util::toul(CastlingRights::BlackCastlingRights));
+    state.castling_rights = ~(util::toul(CastlingRights::WhiteCastlingRights) |
+                              util::toul(CastlingRights::BlackCastlingRights));
   } else {
     if (util::contains(fen_castling, 'K')) {
-      _state.castling_rights |= util::toul(CastlingRights::WhiteKingSide);
+      state.castling_rights |= util::toul(CastlingRights::WhiteKingSide);
     }
     if (util::contains(fen_castling, 'Q')) {
-      _state.castling_rights |= util::toul(CastlingRights::WhiteQueenSide);
+      state.castling_rights |= util::toul(CastlingRights::WhiteQueenSide);
     }
     if (util::contains(fen_castling, 'k')) {
-      _state.castling_rights |= util::toul(CastlingRights::BlackKingSide);
+      state.castling_rights |= util::toul(CastlingRights::BlackKingSide);
     }
     if (util::contains(fen_castling, 'q')) {
-      _state.castling_rights |= util::toul(CastlingRights::BlackQueenSide);
+      state.castling_rights |= util::toul(CastlingRights::BlackQueenSide);
     }
   }
 
   // en passant information
   if (fen_en_passant == "-") {
-    _state.en_passant_target = chess::NoSquare;
+    state.en_passant_target = chess::NoSquare;
   }
   else if (auto index = util::fen::algebraic_to_index(fen_en_passant))
   {
-    _state.en_passant_target = index.value();
+    state.en_passant_target = index.value();
   }
 
   // half move clock
-  _state.half_move_clock = std::stoul(fen_half_clock);
+  state.half_move_clock = std::stoul(fen_half_clock);
 
   // full move count
-  _state.full_move_count = std::stoul(fen_move_cnt);
+  state.full_move_count = std::stoul(fen_move_cnt);
 
-  _generator->generateMoves(_board, _state, _move_list);
-}
-
-/*******************************************************************************
- *
- * Method: square_to_piece(uint8_t square)
- *
- *******************************************************************************/
-std::optional<Piece> BoardManager::squareToPiece(uint8_t square) const
-{
-  std::optional<Piece> ret;
-  for (auto p : chess::AllPieces) {
-    if (is_set(square, _board[p])) {
-      ret.emplace(p);
-      return ret;
-    }
-  }
-
-  return ret;
+  return std::make_tuple(board, state);
 }
 
 /*******************************************************************************
@@ -161,20 +175,6 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
   }
 
   return ret;
-}
-
-/*******************************************************************************
- *
- * Method: get_current_board()
- *
- *******************************************************************************/
-std::array<std::optional<Piece>, 64> BoardManager::getCurrentBoard() const
-{
-  std::array<std::optional<Piece>, 64> board;
-  for (auto i : util::range(NoSquare)) {
-    board[i] = squareToPiece(i);
-  }
-  return board;
 }
 
 /*******************************************************************************
@@ -400,93 +400,6 @@ MoveResult BoardManager::makeMove(
   }
 
   return result;
-}
-
-/*******************************************************************************
- *
- * Method: generate_fen()
- * - return the fen string representation of the current board
- * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
- *******************************************************************************/
-std::string BoardManager::generateFen()
-{
-  std::string fen = "";
-  fen.reserve(40);
-
-  uint8_t cur_missing_count = 0;
-  static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
-
-  for (int start : ranges) {
-    for (uint8_t square : std::views::iota(start, start + 8)) {
-
-      if (auto piece_at_sq = squareToPiece(square)) {
-
-        std::string temp = "";
-        if (cur_missing_count) {
-          temp += std::to_string(cur_missing_count);
-        }
-
-        temp += util::fen::piece_to_char(*piece_at_sq);
-        fen += temp;
-
-        cur_missing_count = 0;
-      }
-      else {
-        cur_missing_count++;
-      }
-    }
-
-    if (cur_missing_count) {
-      fen += std::to_string(cur_missing_count);
-      cur_missing_count = 0;
-    }
-
-    if (start != *(ranges.end() - 1)) {
-      fen.append("/");
-    }
-  }
-
-  fen.append(" ");
-
-  fen += _state.side_to_move == White ? 'w' : 'b';
-
-  fen.append(" ");
-
-  if (!_state.castling_rights) {
-    fen.append("-");
-  } else {
-    if (_state.castling_rights & util::toul(CastlingRights::WhiteKingSide))
-    {
-      fen.append("K");
-    }
-    if (_state.castling_rights & util::toul(CastlingRights::WhiteQueenSide))
-    {
-      fen.append("Q");
-    }
-    if (_state.castling_rights & util::toul(CastlingRights::BlackKingSide))
-    {
-      fen.append("k");
-    }
-    if (_state.castling_rights & util::toul(CastlingRights::BlackQueenSide))
-    {
-      fen.append("q");
-    }
-  }
-
-  fen.append(" ");
-
-  if (_state.en_passant_target == chess::NoSquare) {
-    fen.append("-");
-  } else if (auto str = util::fen::index_to_algebraic(_state.en_passant_target)) {
-    fen.append(*str);
-  }
-
-  fen.append(" ");
-
-  fen.append(std::to_string(_state.half_move_clock) + " " +
-             std::to_string(_state.full_move_count));
-
-  return fen;
 }
 
 /*******************************************************************************

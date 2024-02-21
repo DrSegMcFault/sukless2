@@ -75,7 +75,13 @@ namespace chess {
 
   const static std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+  // prints the board to std::cout
   void print_board(const Bitboard& b);
+
+  // returns the piece at the provided square from Board b
+  std::optional<Piece> piece_at(const Board &b, uint8_t sqaure);
+
+  std::array<std::optional<Piece>, 64> to_array(const Board& b);
 
   static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;
   static constexpr uint8_t C1 = 2;  static constexpr uint8_t D1 = 3;
@@ -231,9 +237,19 @@ namespace chess {
 
     namespace fen {
 
+      // generates the FEN representation of the provided board and state
+      std::string generate(const Board& b, const State& s);
+
+      // convert an algebraic notation of a square to an index
       std::optional<uint8_t> algebraic_to_index(const std::string& alg);
+
+      // convert an index into the corresponding algebraic notation
       std::optional<std::string> index_to_algebraic(uint8_t index);
+
+      // return the Piece associated with the provided char
       std::optional<Piece> char_to_piece(char c);
+
+      // return the char associated with the provided piece
       char piece_to_char(Piece p);
 
     } // namespace util::fen

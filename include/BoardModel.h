@@ -126,18 +126,18 @@ private:
   };
 
   const std::unordered_map<chess::Piece, QUrl> _icons = {
-    { chess::WhitePawn,   QUrl("qrc:/images/pawn_white.png")   },
-    { chess::WhiteKnight, QUrl("qrc:/images/knight_white.png") },
-    { chess::WhiteBishop, QUrl("qrc:/images/bishop_white.png") },
-    { chess::WhiteRook,   QUrl("qrc:/images/rook_white.png")   },
-    { chess::WhiteQueen,  QUrl("qrc:/images/queen_white.png")  },
-    { chess::WhiteKing,   QUrl("qrc:/images/king_white.png")   },
-    { chess::BlackPawn,   QUrl("qrc:/images/pawn_black.png")   },
-    { chess::BlackKnight, QUrl("qrc:/images/knight_black.png") },
-    { chess::BlackBishop, QUrl("qrc:/images/bishop_black.png") },
-    { chess::BlackRook,   QUrl("qrc:/images/rook_black.png")   },
-    { chess::BlackQueen,  QUrl("qrc:/images/queen_black.png")  },
-    { chess::BlackKing,   QUrl("qrc:/images/king_black.png")   }
+    { chess::WhitePawn,   QUrl("qrc:/images/pawn_white.svg")   },
+    { chess::WhiteKnight, QUrl("qrc:/images/knight_white.svg") },
+    { chess::WhiteBishop, QUrl("qrc:/images/bishop_white.svg") },
+    { chess::WhiteRook,   QUrl("qrc:/images/rook_white.svg")   },
+    { chess::WhiteQueen,  QUrl("qrc:/images/queen_white.svg")  },
+    { chess::WhiteKing,   QUrl("qrc:/images/king_white.svg")   },
+    { chess::BlackPawn,   QUrl("qrc:/images/pawn_black.svg")   },
+    { chess::BlackKnight, QUrl("qrc:/images/knight_black.svg") },
+    { chess::BlackBishop, QUrl("qrc:/images/bishop_black.svg") },
+    { chess::BlackRook,   QUrl("qrc:/images/rook_black.svg")   },
+    { chess::BlackQueen,  QUrl("qrc:/images/queen_black.svg")  },
+    { chess::BlackKing,   QUrl("qrc:/images/king_black.svg")   }
   };
 
 public:

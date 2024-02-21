@@ -8,7 +8,7 @@
 MoveModel::MoveModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-  _data.push_back({std::nullopt, std::nullopt});
+  _data.push_back({std::nullopt, std::nullopt, true});
 }
 
 /******************************************************************************
@@ -59,7 +59,7 @@ QVariant MoveModel::data(const QModelIndex &index, int role) const
       return item.second ? *item.second : QString("");
 
     case RoleSelected:
-      return &item == &_data.back();
+      return QVariant(item.selected).toBool();
 
     default:
       return {};
@@ -139,9 +139,21 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
     _data.back().second = str;
   }
 
-  endResetModel();
+  for (auto i : chess::util::range(_data.size())) {
+    _data[i].selected = false;
+  }
 
-  emit itemAdded(_data.size(),
-                 _data.back().first.value_or(QString("")),
-                 _data.back().second.value_or(QString("")));
+  _data.back().selected = true;
+
+  _active_index = _data.size();
+  _active_first = _data.back().first.value_or(QString(""));
+  _active_second = _data.back().second.value_or(QString(""));
+
+  emit activeIndexChanged();
+  emit activeFirstChanged();
+  emit activeSecondChanged();
+
+  _current_count++;
+
+  endResetModel();
 }

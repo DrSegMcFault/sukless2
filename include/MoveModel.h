@@ -10,6 +10,9 @@
 class MoveModel : public QAbstractListModel
 {
   Q_OBJECT
+  Q_PROPERTY(qint32 activeIndex MEMBER _active_index NOTIFY activeIndexChanged)
+  Q_PROPERTY(QString activeFirst MEMBER _active_first NOTIFY activeFirstChanged)
+  Q_PROPERTY(QString activeSecond MEMBER _active_second NOTIFY activeSecondChanged)
 
 public:
 
@@ -30,6 +33,7 @@ private:
   struct MoveModelData {
     std::optional<QString> first;
     std::optional<QString> second;
+    bool selected = true;
 
     operator bool() {
       return first && second;
@@ -37,13 +41,18 @@ private:
   };
 
   std::vector<MoveModelData> _data;
+  qint32 _active_index = 0;
+  QString _active_first = "";
+  QString _active_second = "";
 
 protected:
 
   virtual QHash<int, QByteArray> roleNames() const override;
 
 signals:
-  void itemAdded(int index, QString first, QString second);
+  void activeIndexChanged();
+  void activeFirstChanged();
+  void activeSecondChanged();
 
 public:
 
@@ -67,8 +76,35 @@ public:
   void clear() {
     beginResetModel();
 
+    _active_index = 0;
+    _active_first = "";
+    _active_second = "";
+
     _data.clear();
-    _data.push_back( { std::nullopt, std::nullopt } );
+    _data.push_back( { std::nullopt, std::nullopt, true} );
+
+    endResetModel();
+  }
+
+  size_t dataCount() { return _data.size(); }
+
+  void setSelected(size_t index) {
+    beginResetModel();
+
+    for (size_t i = 0; i < _data.size(); i++) {
+      if (i == index) {
+        _data[i].selected = true;
+        _active_index = index + 1;
+        _active_first = _data[i].first.value_or("");
+        _active_second = _data[i].second.value_or("");
+      } else {
+        _data[i].selected = false;
+      }
+    }
+
+    emit activeIndexChanged();
+    emit activeFirstChanged();
+    emit activeSecondChanged();
 
     endResetModel();
   }

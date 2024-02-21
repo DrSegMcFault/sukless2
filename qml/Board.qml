@@ -20,24 +20,16 @@ Rectangle {
   // by the user
   property Image draggedItem: null
 
-
-  Rectangle {
-    color: "black"
+  PillButton {
     anchors.bottom: parent.top
+    anchors.bottomMargin: Style.borderThickness * 2
     anchors.right: grid.right
     anchors.rightMargin: 0
-    anchors.bottomMargin: 2
-    width: parent.width * 1/7
-    height: parent.height * 1/30
-    radius: 8
-
-    PillButton {
-      anchors.fill: parent
-      anchors.margins: 2
-      pixelSize: 16
-      onClicked: base.board.toggleRotation()
-      text: qsTr("Flip Board")
-    }
+    width: parent.width * 1/8
+    height: parent.height * 1/35
+    pixelSize: 16
+    onClicked: base.board.toggleRotation()
+    text: qsTr("Flip Board")
   }
 
   GridLayout {
@@ -47,6 +39,7 @@ Rectangle {
     columnSpacing: -Style.borderThickness
     anchors.bottom: grid.top
     anchors.left: grid.left
+    anchors.leftMargin: -Style.borderThickness
     anchors.bottomMargin: 2
     width: parent.width * 1/16
     height: parent.height * 1/32
@@ -190,7 +183,7 @@ Rectangle {
           id: fileLabel
           anchors.bottom: parent.bottom
           anchors.right: parent.right
-          anchors.rightMargin: 2
+          anchors.rightMargin: Style.borderThickness
           text: model.fileLabel
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
         }
@@ -201,8 +194,8 @@ Rectangle {
           color: ((Math.floor(index / 8) + index) % 2 === 0) ? base.board.color2 : base.board.color1
           anchors.top: parent.top
           anchors.left: parent.left
-          anchors.topMargin: 2
-          anchors.leftMargin: 2
+          anchors.topMargin: Style.borderThickness
+          anchors.leftMargin: Style.borderThickness
         }
       }
     }

@@ -19,17 +19,13 @@ Rectangle {
     property alias second: two.text
     property alias movenum: label.text
     property color textColor
-
-    border {
-      width: Style.borderThickness
-      color: Style.borderColor
-    }
+    radius: 4
 
     RowLayout {
       anchors.fill: parent
       spacing: 10
 
-      Item{}
+      Item {}
 
       Item {
         Layout.preferredWidth: 15
@@ -48,15 +44,17 @@ Rectangle {
           id: one
           color: rowComponent.textColor
           anchors.centerIn: parent
+          font.bold: false
         }
       }
 
       Item {
         Layout.preferredWidth: 30
-        Layout.fillHeight:true
+        Layout.fillHeight: true
         CenteredText {
           id: two
           color: rowComponent.textColor
+          font.bold: false
           anchors.centerIn: parent
         }
       }
@@ -66,26 +64,41 @@ Rectangle {
   ColumnLayout {
     id: rightPane
     anchors {
-      top: parent.top
-      left: parent.left
-      right: parent.right
-      leftMargin: -Style.borderThickness
+      top: base.top
+      left: base.left
+      right: base.right
+      leftMargin: 4
+      rightMargin: 4
     }
-    spacing: -Style.borderThickness
+
+    spacing: 0
 
     PillButton {
       id: title
-      Layout.fillWidth: true
       Layout.preferredHeight: 70
+      Layout.fillWidth: true
       text: qsTr("Moves")
       color: base.color
-      radius: 0
+      radius: 4
       pixelSize: 44
     }
+
+    RowEntry {
+      id: currentMove
+      Layout.preferredHeight: 30
+      Layout.fillWidth: true
+      movenum: mModel.activeIndex + "."
+      first: mModel.activeFirst
+      second: mModel.activeSecond
+      textColor: Style.textColor
+      visible: rep.count > 1
+      color: Qt.lighter(base.color, 1.7)
+    }
+
     Item {
       id: temp
-      Layout.preferredWidth: base.width
-      Layout.preferredHeight: base.height - title.height
+      Layout.preferredWidth: parent.width
+      Layout.preferredHeight: base.height - (title.height + currentMove.height)
 
       Flickable {
         id: flick
@@ -96,41 +109,22 @@ Rectangle {
         interactive: true
         flickableDirection: Flickable.AutoFlickIfNeeded
 
-        Connections {
-          target: base.mModel
-          function onItemAdded(i, f, s) {
-            currentMove.movenum = i + "."
-            currentMove.first = f
-            currentMove.second = s
-          }
-        }
-
         ColumnLayout {
           id: col
           anchors.top: parent.top
           anchors.left: parent.left
           anchors.right: parent.right
-          height: implicitHeight
-          spacing: -Style.borderThickness
-
-          RowEntry {
-            id: currentMove
-            Layout.preferredHeight: 40
-            Layout.fillWidth: true
-            textColor: Style.textColor
-            visible: rep.count > 1
-            color: Qt.lighter(base.color, 1.7)
-          }
+          spacing: 0
 
           Repeater {
             id: rep
             model: base.mModel
 
             delegate: RowEntry {
-              Layout.preferredHeight: 40
               Layout.fillWidth: true
+              Layout.preferredHeight: 30
               textColor: Style.textColor
-              color: !model.selected ? base.color : Qt.lighter(base.color, 1.7)
+              color: model.selected ? Qt.lighter(base.color, 1.7) : Style.background
               movenum: model.index + 1 + "."
               first: model.first
               second: model.second

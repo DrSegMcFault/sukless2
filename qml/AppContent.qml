@@ -1,5 +1,7 @@
 import QtQuick
 
+import Sukless
+
 Item {
   id: base
   Loader {

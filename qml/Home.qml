@@ -12,20 +12,9 @@ import "style"
 Item {
   id: base
   anchors.fill: parent
+
   property bool gameEnd: false
   property bool selectPromotion: false
-
-  Component.onCompleted: splitView.restoreState(settings.splitView)
-  Component.onDestruction: settings.splitView = splitView.saveState()
-
-  Settings {
-    id: settings
-    property var splitView
-  }
-
-  Game {
-    id: game
-  }
 
   Connections {
     target: game
@@ -111,26 +100,45 @@ Item {
   }
 
   Rectangle {
-    color: Style.background
     anchors.fill: parent
+    color: Style.backgroundLight
+    radius: 6
 
     SplitView {
       id: splitView
       anchors.fill: parent
+      anchors.margins: Style.borderThickness
       orientation: Qt.Horizontal
       spacing: 0
+      handle: Rectangle {
+        id: handleDelegate
+        implicitWidth:  Style.borderThickness
+        implicitHeight: Style.borderThickness
+        color: (SplitHandle.pressed || SplitHandle.hovered) ? Style.buttonColor
+                                                            : Style.backgroundLight
+
+        containmentMask: Item {
+          x: (handleDelegate.width - width) / 2
+          width: Style.borderThickness * 8
+          height: splitView.height
+        }
+      }
 
       HomeLeftPane {
         id: left
         SplitView.preferredHeight: parent.height
         SplitView.preferredWidth: parent.width * 1/5
+        SplitView.maximumWidth: parent.width * 1/4
+        radius: 4
       }
 
       Rectangle {
         id: center
         color: Style.background
-        SplitView.fillHeight: true
-        SplitView.fillWidth: parent.width * 3/5
+        radius: 4
+
+        SplitView.preferredHeight: parent.height
+        SplitView.fillWidth: true
         SplitView.minimumWidth: parent.width * 1/4
 
         Board {
@@ -155,8 +163,9 @@ Item {
         mModel: game.moveModel
         SplitView.preferredHeight: parent.height
         SplitView.preferredWidth: parent.width * 1/5
-        SplitView.maximumWidth: parent.width * 1/2
-        SplitView.minimumWidth: 50
+        SplitView.maximumWidth: parent.width * 1/4
+        SplitView.minimumWidth: parent.width * 1/6
+        radius: 4
       }
     }
   }

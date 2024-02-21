@@ -21,7 +21,7 @@ Rectangle {
   PillButton {
     id: inner
     anchors.fill: parent
-    anchors.margins: 2
+    anchors.margins: Style.borderThickness
     radius: 4
     pixelSize: 36
   }

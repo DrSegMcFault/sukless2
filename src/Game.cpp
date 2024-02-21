@@ -9,7 +9,7 @@ Game::Game(QObject *parent)
   : QObject(parent)
 {
   _board_manager = std::make_shared<chess::BoardManager>(&_generator);
-  _board_model.setBoard(_board_manager->getCurrentBoard());
+  _board_model.setBoard(_board_manager->toArray());
   _move_model.clear();
 }
 
@@ -21,7 +21,7 @@ Game::Game(QObject *parent)
 void Game::reset()
 {
   _board_manager->reset();
-  _board_model.setBoard(_board_manager->getCurrentBoard());
+  _board_model.setBoard(_board_manager->toArray());
   _move_model.clear();
 }
 
@@ -57,7 +57,7 @@ void Game::handleMove(int from, int to, int promoted_piece)
   auto color_moved = _board_manager->getSideToMove();
 
   auto will_promote = [&] () -> bool {
-    if (auto p = _board_manager->squareToPiece(source)) {
+    if (auto p = _board_manager->pieceAt(source)) {
       if (*p == chess::WhitePawn) {
         if (target >= chess::A8 && target <= chess::H8) {
            return true;
@@ -95,6 +95,7 @@ void Game::handleMove(int from, int to, int promoted_piece)
                            result });
 
     emit moveConfirmed(from, to);
+    _current_history_index++;
 
     // end of game conditions
     switch (result) {
@@ -122,7 +123,9 @@ void Game::handleMove(int from, int to, int promoted_piece)
     }
   }
 
-  _board_model.setBoard(std::move(_board_manager->getCurrentBoard()));
+  // always update the board and view number
+  _current_move_index = _move_model.dataCount() - 1;
+  _board_model.setBoard(std::move(_board_manager->toArray()));
 
   emit playSound(sound_to_play);
 }
