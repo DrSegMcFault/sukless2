@@ -1,7 +1,9 @@
 # Sukless2
 A successor to the failed project sukless-chess, Sukless2 is a magic bitboard chess engine
 written in C++. It aims to be a beautiful, readable, and (relatively) fast chess engine.
-<img width="1512" alt="image" src="https://github.com/DrSegMcFault/sukless2/assets/125482233/15269d77-8eaa-41e7-af67-14cc20c52450">
+
+<img width="1159" alt="image" src="https://github.com/DrSegMcFault/sukless2/assets/125482233/057dea82-3b2f-48a0-bfdd-d31cd28c053f">
+
 ## Why?
 There are many open source chess engines, some of them use magic bitboards, but none that I 
 have seen are easily readable. Sukless2 aims to change that. Sukless2 isn't stockfish and 
