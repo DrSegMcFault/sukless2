@@ -153,7 +153,5 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
   emit activeFirstChanged();
   emit activeSecondChanged();
 
-  _current_count++;
-
   endResetModel();
 }
