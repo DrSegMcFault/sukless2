@@ -10,21 +10,15 @@ ApplicationWindow {
   height: 1080
   visible: true
 
-  Game {
-    id: game
-  }
-
   AppContent {
     anchors.centerIn: parent
     focus: true
     clip: true
     width: parent.width
     height: parent.height
-
     Keys.onLeftPressed: {
       game.showPrevious()
     }
-
     Keys.onRightPressed: {
       game.showNext()
     }

@@ -7,52 +7,57 @@
  *****************************************************************************/
 Game::Game(QObject *parent)
   : QObject(parent)
+  , _move_model(this)
 {
   _board_manager = std::make_shared<chess::BoardManager>(&_generator);
   _board_model.setBoard(_board_manager->toArray());
   _move_model.clear();
+
+  connect(this, &Game::moveConfirmed, &_move_model, &MoveModel::onMoveConfirmed);
+}
+
+/******************************************************************************
+ *
+ * Method: init()
+ * Q_INVOKABLE
+ *****************************************************************************/
+void Game::init(chess::Color user,
+                bool engine_help,
+                bool ai_enable,
+                chess::AIDifficulty aidiff)
+{
+  reset();
+
+  chess::Color controlling = user == chess::White ? chess::Black : chess::White;
+
+  emit gameStart({ aidiff, controlling, engine_help, ai_enable }, chess::starting_position);
 }
 
 /******************************************************************************
  *
  * Method: reset()
- *
+ * Q_INVOKABLE
  *****************************************************************************/
 void Game::reset()
 {
   _board_manager->reset();
   _board_model.setBoard(_board_manager->toArray());
   _move_model.clear();
-}
-
-/******************************************************************************
- *
- * Method: init()
- *
- *****************************************************************************/
-void Game::init(chess::Color user, bool engine_help,
-                bool /*ai_enable*/, chess::AIDifficulty aidiff)
-{
-  _board_model.setRotation(user);
-  _settings._user_color = user;
-
-  auto& ai_cfg = _settings._ai_settings;
-  ai_cfg.difficulty = aidiff;
-  ai_cfg.controlling = (user == chess::White) ? chess::Black : chess::White;
-  ai_cfg.assisting_user = engine_help;
+  _current_move_index = 1;
+  _current_history_index = 0;
 }
 
 /******************************************************************************
  *
  * Method: handleMove()
- *
+ * Q_INVOKABLE
  *****************************************************************************/
 void Game::handleMove(int from, int to, int promoted_piece)
 {
-  QUrl sound_to_play;
-
   auto source = static_cast<uint8_t>(_board_model.toInternalIndex(from));
   auto target = static_cast<uint8_t>(_board_model.toInternalIndex(to));
+
+  QUrl sound_to_play;
 
   auto color_moved = _board_manager->getSideToMove();
 
@@ -89,12 +94,65 @@ void Game::handleMove(int from, int to, int promoted_piece)
   sound_to_play = _result_to_sound.at(result);
 
   if (result != chess::MoveResult::Illegal) {
+    emit moveConfirmed( move_made, color_moved, result);
+    _current_history_index++;
 
-    _move_model.addEntry({ move_made,
-                           color_moved,
-                           result });
+    // end of game conditions
+    switch (result) {
+      case chess::MoveResult::Checkmate:
+      {
+        emit gameOver(color_moved == chess::White ? QString(tr("White Wins!"))
+                                                  : QString(tr("Black Wins!")));
+        break;
+      }
 
-    emit moveConfirmed(from, to);
+      case chess::MoveResult::Stalemate:
+      {
+        emit gameOver(QString(tr("Stalemate!")));
+        break;
+      }
+
+      case chess::MoveResult::Draw:
+      {
+        emit gameOver(QString(tr("Draw by Repetition!")));
+        break;
+      }
+
+      default:
+        break;
+    }
+  }
+  else if (source == target) {
+    sound_to_play = "";
+  }
+
+  // always update the board and view number
+  if (_current_move_index != _move_model.dataCount() - 1) {
+     _current_move_index = _move_model.dataCount() - 1;
+    _move_model.setSelected(_current_move_index);
+  }
+  _board_model.setBoard(std::move(_board_manager->toArray()));
+
+  emit playSound(sound_to_play);
+}
+
+/******************************************************************************
+ *
+ * Method: onMoveReady(chess::HashedMove, chess::Color)
+ *
+ *****************************************************************************/
+void Game::onMoveReady(chess::HashedMove m, chess::Color color_moved)
+{
+  qDebug() << "AI move received\n";
+
+  QUrl sound_to_play;
+
+  const auto [result, move_made] = _board_manager->tryMove(m.toMove());
+
+  sound_to_play = _result_to_sound.at(result);
+
+  if (result != chess::MoveResult::Illegal) {
+    emit moveConfirmed( move_made, color_moved, result);
     _current_history_index++;
 
     // end of game conditions
@@ -123,9 +181,66 @@ void Game::handleMove(int from, int to, int promoted_piece)
     }
   }
 
-  // always update the board and view number
-  _current_move_index = _move_model.dataCount() - 1;
+  // always update the board
   _board_model.setBoard(std::move(_board_manager->toArray()));
 
   emit playSound(sound_to_play);
+}
+
+/******************************************************************************
+ *
+ * Method: onSuggestionReady(chess::HashedMove)
+ *
+ *****************************************************************************/
+void Game::onSuggestionReady(chess::HashedMove m)
+{
+  qDebug() << "Game: onSuggestionReady " << chess::to_string(m) << "\n";
+}
+
+/******************************************************************************
+ *
+ * Method: showPrevious()
+ * Q_INVOKABLE
+ *****************************************************************************/
+void Game::showPrevious() {
+
+  if (_current_history_index >= 1) {
+    --_current_history_index;
+
+    if (auto fen = _board_manager->historyAt(_current_history_index)) {
+
+      if (_current_move_index >= 1 && _current_history_index % 2 == 0) {
+        _move_model.setSelected(--_current_move_index);
+      }
+
+      auto opt = _board_manager->makeBoardFromFen(*fen);
+      auto&& [board, state] = *opt;
+
+      _board_model.setBoard(std::move(chess::to_array(board)));
+    }
+  }
+}
+
+/******************************************************************************
+ *
+ * Method: showNext()
+ * Q_INVOKABLE
+ *****************************************************************************/
+void Game::showNext() {
+
+  if (auto fen = _board_manager->historyAt(_current_history_index + 1)) {
+
+    _current_history_index++;
+
+    if (_current_move_index + 1 <= _move_model.dataCount() -1) {
+      if (_current_history_index > 1 && _current_history_index % 2 != 0) {
+        _move_model.setSelected(++_current_move_index);
+      }
+    }
+
+    auto opt = _board_manager->makeBoardFromFen(*fen);
+    auto&& [board, state] = *opt;
+
+    _board_model.setBoard(std::move(chess::to_array(board)));
+  }
 }

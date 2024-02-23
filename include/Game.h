@@ -2,7 +2,6 @@
 
 #include <QObject>
 #include <QUrl>
-#include <QThread>
 #include <memory>
 #include <QtQml>
 
@@ -17,7 +16,9 @@ class Game : public QObject
   Q_OBJECT
   Q_PROPERTY(MoveModel* moveModel READ moveModel CONSTANT)
   Q_PROPERTY(BoardModel* boardModel READ boardModel CONSTANT)
+
   QML_ELEMENT
+  QML_UNCREATABLE("Game can't be created in qml")
 
 public:
 
@@ -38,16 +39,16 @@ public:
   auto moveModel() { return &_move_model; }
   auto boardModel() { return &_board_model; }
 
-  struct GameSettings {
-    chess::Color _user_color;
-    chess::AIConfig _ai_settings;
-  };
-
 signals:
   void playSound(QUrl s);
-  void moveConfirmed(int from, int to);
   void gameOver(QString text);
   void promotionSelect(int from, int to, int color);
+  void moveConfirmed(chess::HashedMove, chess::Color c, chess::MoveResult m);
+  void gameStart(chess::AIConfig, std::string fen);
+
+public slots:
+  void onMoveReady(chess::HashedMove, chess::Color);
+  void onSuggestionReady(chess::HashedMove);
 
 private:
   static constexpr chess::MoveGenerator _generator;
@@ -65,8 +66,6 @@ private:
   // made this should be incremented.
   size_t _current_history_index = 0;
 
-  GameSettings _settings;
-
   const QUrl _move_sound = QUrl("qrc:/sounds/move.mp3");
   const QUrl _game_end_sound = QUrl("qrc:/sounds/game_end.mp3");
   const QUrl _illegal_sound = QUrl("qrc:/sounds/illegal_move.mp3");
@@ -83,48 +82,19 @@ private:
 public:
   explicit Game(QObject* parent = nullptr);
 
-  Q_INVOKABLE void handleMove(int from, int to, int promoted_piece);
-  Q_INVOKABLE void reset();
   Q_INVOKABLE void init(chess::Color user,
                         bool engineHelp,
                         bool aiEnable,
                         chess::AIDifficulty d);
 
-  Q_INVOKABLE void showPrevious() {
+  Q_INVOKABLE void handleMove(int from, int to, int promoted_piece);
 
-    if (_current_history_index >= 1) {
-      --_current_history_index;
+  // reset members to default state
+  Q_INVOKABLE void reset();
 
-      if (auto fen = _board_manager->historyAt(_current_history_index)) {
+  // show the previous move
+  Q_INVOKABLE void showPrevious();
 
-        if (_current_move_index >= 1 && _current_history_index % 2 == 0) {
-          _move_model.setSelected(--_current_move_index);
-        }
-
-        auto opt = _board_manager->makeBoardFromFen(*fen);
-        auto [board, state] = *opt;
-
-        _board_model.setBoard(std::move(chess::to_array(board)));
-      }
-    }
-  }
-
-  Q_INVOKABLE void showNext() {
-
-    if (auto fen = _board_manager->historyAt(_current_history_index + 1)) {
-
-      _current_history_index++;
-
-      if (_current_move_index + 1 <= _move_model.dataCount() -1) {
-        if (_current_history_index > 1 && _current_history_index % 2 != 0) {
-          _move_model.setSelected(++_current_move_index);
-        }
-      }
-
-      auto opt = _board_manager->makeBoardFromFen(*fen);
-      auto [board, state] = *opt;
-
-      _board_model.setBoard(std::move(chess::to_array(board)));
-    }
-  }
+  // show the next move
+  Q_INVOKABLE void showNext();
 };

@@ -15,28 +15,11 @@
 class BoardModel : public QAbstractListModel
 {
   Q_OBJECT
-  Q_PROPERTY(QColor color1 READ color1 WRITE setColor1 NOTIFY color1Changed)
-  Q_PROPERTY(QColor color2 READ color2 WRITE setColor2 NOTIFY color2Changed)
+  Q_PROPERTY(QColor color1 MEMBER _color1 NOTIFY color1Changed)
+  Q_PROPERTY(QColor color2 MEMBER _color2 NOTIFY color2Changed)
   QML_ELEMENT
 
 public:
-  auto color1() { return _color1; }
-  auto color2() { return _color2; }
-
-  Q_INVOKABLE void setColor1(QColor c) {
-    if (c != _color1) {
-      _color1 = c;
-      emit color1Changed();
-    }
-  }
-
-  Q_INVOKABLE void setColor2(QColor c) {
-    if (c != _color2) {
-      _color2 = c;
-      emit color2Changed();
-    }
-  }
-
   [[nodiscard]] inline int toInternalIndex(int index) const noexcept {
     int row = index / 8;
     int column = index % 8;
@@ -49,8 +32,6 @@ public:
     }
     return 0;
   }
-
-public:
 
   enum Role {
     RolePiece = Qt::UserRole + 1,
@@ -155,7 +136,7 @@ public:
     endResetModel();
   }
 
-  void setRotation(chess::Color c) {
+  Q_INVOKABLE void setRotation(chess::Color c) {
     beginResetModel();
     _visual_rotation = (c == chess::White) ? Rotation::ViewFromWhite
                                            : Rotation::ViewFromBlack;

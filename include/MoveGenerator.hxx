@@ -19,7 +19,7 @@ class MoveGenerator {
 
     void generateMoves(const Board& board,
                        const State& state,
-                       std::vector<util::bits::HashedMove>& moves) const;
+                       std::vector<HashedMove>& moves) const;
   private:
 
     // pre-calculated attack Bitboards
@@ -264,7 +264,7 @@ class MoveGenerator {
     }
 
     // move generation
-    inline void addMove(std::vector<util::bits::HashedMove>& moves,
+    inline void addMove(std::vector<HashedMove>& moves,
                         uint32_t source, uint32_t target,
                         uint32_t piece, uint32_t promotion,
                         uint32_t capture, uint32_t double_push,
@@ -272,30 +272,35 @@ class MoveGenerator {
 
     void generateWhitePawnMoves(const Board& board,
                                 const State& state,
-                                std::vector<util::bits::HashedMove>& moves) const;
+                                std::vector<HashedMove>& moves) const;
 
     void generateBlackPawnMoves(const Board& board,
                                 const State& state,
-                                std::vector<util::bits::HashedMove>& moves) const;
+                                std::vector<HashedMove>& moves) const;
 
     void generateCastlingMoves(const Board& board,
                                const State& state,
-                               std::vector<util::bits::HashedMove>& moves) const;
+                               std::vector<HashedMove>& moves) const;
 
-    void generateKingMoves(const Board& b, Color side_to_move,
-                           std::vector<util::bits::HashedMove>& moves) const;
+    void generateKingMoves(const Board& b,
+                           Color side_to_move,
+                           std::vector<HashedMove>& moves) const;
 
-    void generateKnightMoves(const Board& b, Color side_to_move,
-                             std::vector<util::bits::HashedMove>& moves) const;
+    void generateKnightMoves(const Board& b,
+                             Color side_to_move,
+                             std::vector<HashedMove>& moves) const;
 
-    void generateBishopMoves(const Board& b, Color side_to_move,
-                             std::vector<util::bits::HashedMove>& moves) const;
+    void generateBishopMoves(const Board& b,
+                             Color side_to_move,
+                             std::vector<HashedMove>& moves) const;
 
-    void generateRookMoves(const Board& b, Color side_to_move,
-                           std::vector<util::bits::HashedMove>& moves) const;
+    void generateRookMoves(const Board& b,
+                           Color side_to_move,
+                           std::vector<HashedMove>& moves) const;
 
-    void generateQueenMoves(const Board& b, Color side_to_move,
-                            std::vector<util::bits::HashedMove>& moves) const;
+    void generateQueenMoves(const Board& b,
+                            Color side_to_move,
+                            std::vector<HashedMove>& moves) const;
 
     void testAttackLookup();
 
@@ -455,4 +460,4 @@ class MoveGenerator {
     {
     }
 };
-}
+} // namespace chess

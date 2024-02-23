@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 MoveModel::MoveModel(QObject *parent)
-    : QAbstractListModel(parent)
+  : QAbstractListModel(parent)
 {
   _data.push_back({std::nullopt, std::nullopt, true});
 }
@@ -68,56 +68,26 @@ QVariant MoveModel::data(const QModelIndex &index, int role) const
 
 /******************************************************************************
  *
+ * Method: onMoveConfirmed()
+ *
+ *****************************************************************************/
+void MoveModel::onMoveConfirmed(chess::HashedMove m, chess::Color c, chess::MoveResult b)
+{
+  MoveModelDataEntry e {m, c, b};
+  addEntry(e);
+}
+
+/******************************************************************************
+ *
  * Method: addEntry()
  *
  *****************************************************************************/
 void MoveModel::addEntry(const MoveModelDataEntry& entry) {
   beginResetModel();
 
-  const auto&& [ source_square, target_square,
-                 piece, promoted_to,
-                 capture, double_push,
-                 was_en_passant, castling ] = entry.move.explode();
-
   QString str;
 
-  if (castling) {
-    if (target_square == chess::G8 || target_square == chess::G1)
-    {
-      str = "O-O";
-    }
-    else {
-      str = "O-O-O";
-    }
-  }
-  else {
-    auto str_target = *chess::util::fen::index_to_algebraic(target_square);
-
-    if (!(piece == chess::WhitePawn || piece == chess::BlackPawn))
-    {
-      str += static_cast<QChar>(std::toupper(chess::util::fen::piece_to_char(piece)));
-    }
-
-    if (auto alg = chess::util::fen::index_to_algebraic(source_square))
-    {
-      // only name the file if its a pawn capture
-      if ((piece == chess::WhitePawn || piece == chess::BlackPawn) && capture)
-      {
-        str += chess::util::fen::index_to_algebraic(source_square).value().at(0);
-      }
-    }
-
-    if (capture) {
-      str.append("x");
-    }
-
-    str.append(str_target);
-
-    if (chess::util::toul(promoted_to) != 0) {
-      str.append("=");
-      str += chess::util::fen::piece_to_char(promoted_to);
-    }
-  }
+  str = QString::fromStdString(chess::to_string(entry.move));
 
   if (entry.result == chess::MoveResult::Check) {
     str.append("+");

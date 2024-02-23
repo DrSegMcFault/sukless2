@@ -1,7 +1,7 @@
 #include "BoardManager.hxx"
 #include <cassert>
 
-using namespace chess;
+namespace chess {
 
 /*******************************************************************************
  *
@@ -195,10 +195,10 @@ bool BoardManager::isCheck(const Board& board_, const State& state_)
  * Method: make_move(uint32_t move)
  *
  *******************************************************************************/
-std::tuple<MoveResult, util::bits::HashedMove> BoardManager::tryMove(const chess::Move& proposed)
+std::tuple<MoveResult, HashedMove> BoardManager::tryMove(const chess::Move& proposed)
 {
   MoveResult result = MoveResult::Illegal;
-  util::bits::HashedMove move_made;
+  HashedMove move_made;
 
   if (auto move = findMove(proposed.from,
                            proposed.to,
@@ -242,10 +242,9 @@ std::tuple<MoveResult, util::bits::HashedMove> BoardManager::tryMove(const chess
  *
  *******************************************************************************/
 MoveResult BoardManager::makeMove(
-    const util::bits::HashedMove& move)
+    const HashedMove& move)
 {
   using namespace util;
-
   MoveResult result = MoveResult::Illegal;
 
   // copy the board and state in case of illegal move
@@ -407,20 +406,20 @@ MoveResult BoardManager::makeMove(
  * Method: find_move(uint8_t source, uint8_t target)
  *
  *******************************************************************************/
-std::optional<util::bits::HashedMove> BoardManager::findMove(uint8_t source,
-                                                             uint8_t target,
-                                                             uint32_t promoted_to) const
+std::optional<HashedMove> BoardManager::findMove(uint8_t source,
+                                                 uint8_t target,
+                                                 uint32_t promoted_to) const
 {
-  std::optional<util::bits::HashedMove> ret;
   for (const auto& move : _move_list) {
     if (move.source == source &&
         move.target == target &&
         move.promoted == promoted_to)
     {
-      ret.emplace(move);
-      return ret;
+      return move;
     }
   }
 
   return std::nullopt;
 }
+
+} // namespace chess

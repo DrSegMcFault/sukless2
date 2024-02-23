@@ -82,7 +82,7 @@ Rectangle {
     id: first
     color: base.board.color1
     onColorChanged: () => {
-                      base.board.setColor1(first.color)
+                      base.board.color1 = first.color
                       first.color = base.board.color1
                     }
   }
@@ -91,7 +91,7 @@ Rectangle {
     id: second
     color: base.board.color2
     onColorChanged: () => {
-                      base.board.setColor2(second.color)
+                      base.board.color2 = second.color
                       second.color = base.board.color2
                     }
   }

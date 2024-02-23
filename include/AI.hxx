@@ -19,27 +19,30 @@ public:
   AI(AI&&) = delete;
   ~AI() = default;
 
-  Color getControllingColor() { return _controlling_color; }
+  Color color() { return cfg.controlling; }
 
-  AIConfig getCfg() const { return _cfg; }
+  Color opponent() { return cfg.controlling == White ? Black : White; }
+
+  bool assisting() { return cfg.assisting_user; }
+
+  bool enabled() { return cfg.enabled; }
 
   int getWhiteEval() const { return _white_eval; };
 
   int getBlackEval() const { return _black_eval; };
 
-  std::optional<util::bits::HashedMove> getBestMove(const BoardManager&);
+  std::optional<HashedMove> getBestMove(const BoardManager&);
+
+  AIConfig cfg;
 
 private:
   const MoveGenerator* _generator;
-  AIConfig _cfg;
 
   int _depth;
   int _white_eval;
   int _black_eval;
   int _white_material_score;
   int _black_material_score;
-
-  Color _controlling_color;
 
   // calc material diff score
   int calcMaterialScore(const BoardManager& b, Color c) const;

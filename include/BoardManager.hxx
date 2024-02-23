@@ -19,15 +19,15 @@ public:
   ~BoardManager() = default;
 
   // attempts to perfrom the provided move on the board
-  std::tuple<MoveResult, util::bits::HashedMove> tryMove(const chess::Move& move);
+  [[nodiscard]] std::tuple<MoveResult, HashedMove> tryMove(const chess::Move& move);
 
   // return the squares that the piece can go to, provided a piece is there
   std::vector<uint8_t> getPseudoLegalMoves(uint8_t square) const;
 
   // return the move if found in the hashed form
-  std::optional<util::bits::HashedMove> findMove(uint8_t source,
-                                                 uint8_t target,
-                                                 uint32_t promoted_to) const;
+  std::optional<HashedMove> findMove(uint8_t source,
+                                     uint8_t target,
+                                     uint32_t promoted_to) const;
 
 
   // generates Board and State from FEN string
@@ -96,13 +96,13 @@ private:
   const MoveGenerator* _generator;
 
   // current list of pseudo legal moves
-  std::vector<util::bits::HashedMove> _move_list;
+  std::vector<HashedMove> _move_list;
 
   // FEN history of the current game being played
   std::vector<std::string> _history;
 
   // performs the move on the board
-  MoveResult makeMove(const util::bits::HashedMove& move);
+  MoveResult makeMove(const HashedMove& move);
 
   // initialize board from FEN string
   void initFromFen(const std::string& fen);

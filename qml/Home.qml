@@ -41,12 +41,7 @@ Item {
       gameOver.text = text
     }
 
-    function onMoveConfirmed(from, to) {
-      console.log("Move confirmed: ", from, " ", to)
-    }
-
     function onPromotionSelect(from, to, c) {
-      console.log("Promotion Select", from, " ", to, " ", c)
       promotePopup.moveFrom = from
       promotePopup.moveTo = to
       promotePopup.colorMoving = c

@@ -4,7 +4,6 @@
 #include <optional>
 #include <vector>
 #include <QString>
-
 #include "util.hxx"
 
 class MoveModel : public QAbstractListModel
@@ -23,7 +22,7 @@ public:
   };
 
   struct MoveModelDataEntry {
-    chess::util::bits::HashedMove move;
+    chess::HashedMove move;
     chess::Color made_by;
     chess::MoveResult result;
   };
@@ -41,6 +40,7 @@ private:
   };
 
   std::vector<MoveModelData> _data;
+
   qint32 _active_index = 0;
   QString _active_first = "";
   QString _active_second = "";
@@ -53,6 +53,9 @@ signals:
   void activeIndexChanged();
   void activeFirstChanged();
   void activeSecondChanged();
+
+public slots:
+  void onMoveConfirmed(chess::HashedMove, chess::Color, chess::MoveResult);
 
 public:
 

@@ -41,6 +41,41 @@ namespace chess {
     Piece promoted_to;
   };
 
+  union HashedMove {
+    struct {
+      uint32_t source : 6;
+      uint32_t target : 6;
+      uint32_t piece : 5;
+      uint32_t promoted : 5;
+      uint32_t capture : 1;
+      uint32_t double_push : 1;
+      uint32_t enpassant : 1;
+      uint32_t castling : 1;
+      uint32_t : 6;
+    };
+
+    uint32_t move;
+
+    bool operator==(const HashedMove& other) const {
+      return move == other.move;
+    }
+
+    auto explode() const {
+      return
+          std::make_tuple(static_cast<uint8_t>(source), static_cast<uint8_t>(target),
+                          static_cast<Piece>(piece), static_cast<Piece>(promoted),
+                          static_cast<bool>(capture), static_cast<bool>(double_push),
+                          static_cast<bool>(enpassant), static_cast<bool>(castling));
+    }
+
+    chess::Move toMove() const {
+      return { static_cast<uint8_t>(source),
+               static_cast<uint8_t>(target),
+               static_cast<chess::Piece>(promoted) };
+    }
+  };
+
+
   enum class CastlingRights : uint8_t {
     WhiteKingSide = 1,
     WhiteQueenSide = 2,
@@ -71,6 +106,7 @@ namespace chess {
     AIDifficulty difficulty;
     Color controlling;
     bool assisting_user;
+    bool enabled;
   };
 
   const static std::string starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -81,7 +117,13 @@ namespace chess {
   // returns the piece at the provided square from Board b
   std::optional<Piece> piece_at(const Board &b, uint8_t sqaure);
 
+  // converts the array of Bitboards (Board) to an array of pieces
   std::array<std::optional<Piece>, 64> to_array(const Board& b);
+
+  // convert a HashedMove into an algebraic move string
+  // *Hashed moves are not aware of game states
+  // like Checkmate, StaleMate, or Draws
+  std::string to_string(const HashedMove& m);
 
   static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;
   static constexpr uint8_t C1 = 2;  static constexpr uint8_t D1 = 3;
@@ -155,105 +197,77 @@ namespace chess {
     Piece::BlackKing
   };
 
-  namespace util {
-
-    template<typename T, typename V>
-    bool contains(const T& a, const V& b) {
-      return std::find(a.begin(), a.end(), b) != a.end();
-    }
-
-    template <typename T>
-    constexpr auto range(T end) {
-      return std::ranges::views::iota(static_cast<T>(0), end);
-    }
-
-    template <typename T>
-    concept EnumClass = std::is_enum_v<T>;
-
-    template<EnumClass T>
-    constexpr inline auto toul(T enum_value) {
-      return static_cast<std::underlying_type_t<T>>(enum_value);
-    }
-
-    namespace bits {
-
-      #define set_bit(i, b) ((b) |= (1ULL << (i)))
-
-      #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
-
-      #define is_set(i, b) ((b) & (1ULL << (i)))
-
-      #define move_bit(from, to, b) do { clear_bit(from, b); set_bit(to, b); } while(0)
-
-      union HashedMove {
-        struct {
-          uint32_t source : 6;
-          uint32_t target : 6;
-          uint32_t piece : 5;
-          uint32_t promoted : 5;
-          uint32_t capture : 1;
-          uint32_t double_push : 1;
-          uint32_t enpassant : 1;
-          uint32_t castling : 1;
-          uint32_t : 6;
-        };
-
-        uint32_t move;
-
-        bool operator==(const HashedMove& other) const {
-          return move == other.move;
-        }
-
-        auto explode() const {
-          return
-              std::make_tuple(static_cast<uint8_t>(source), static_cast<uint8_t>(target),
-                              static_cast<Piece>(piece), static_cast<Piece>(promoted),
-                              static_cast<bool>(capture), static_cast<bool>(double_push),
-                              static_cast<bool>(enpassant), static_cast<bool>(castling));
-        }
-      };
-
-      // count the number of set bits
-      constexpr int count(Bitboard b) {
-        #if defined (__GNUC__) || defined (__clang__)
-          return __builtin_popcountll(b);
-        #else
-          int count = 0;
-          while (b) {
-            count++;
-            b &= b - 1;
-          }
-          return count;
-        #endif
-      }
-
-      // index of least significant bit, must be called under precondition
-      // that b has at least 1 set bit
-      constexpr uint8_t get_lsb_index(Bitboard b) {
-        return count((b & -b) -1);
-      }
-
-    } // namespace util::bits
-
-    namespace fen {
-
-      // generates the FEN representation of the provided board and state
-      std::string generate(const Board& b, const State& s);
-
-      // convert an algebraic notation of a square to an index
-      std::optional<uint8_t> algebraic_to_index(const std::string& alg);
-
-      // convert an index into the corresponding algebraic notation
-      std::optional<std::string> index_to_algebraic(uint8_t index);
-
-      // return the Piece associated with the provided char
-      std::optional<Piece> char_to_piece(char c);
-
-      // return the char associated with the provided piece
-      char piece_to_char(Piece p);
-
-    } // namespace util::fen
-
-  } // namespace util
 
 } // namespace chess
+
+namespace chess::util {
+
+  template<typename T, typename V>
+  bool contains(const T& a, const V& b) {
+    return std::find(a.begin(), a.end(), b) != a.end();
+  }
+
+  template <typename T>
+  constexpr auto range(T end) {
+    return std::ranges::views::iota(static_cast<T>(0), end);
+  }
+
+  template <typename T>
+  concept EnumClass = std::is_enum_v<T>;
+
+  template<EnumClass T>
+  constexpr inline auto toul(T enum_value) {
+    return static_cast<std::underlying_type_t<T>>(enum_value);
+  }
+} // namespace util
+
+namespace chess::util::fen {
+
+  // generates the FEN representation of the provided board and state
+  std::string generate(const Board& b, const State& s);
+
+  // convert an algebraic notation of a square to an index
+  std::optional<uint8_t> algebraic_to_index(const std::string& alg);
+
+  // convert an index into the corresponding algebraic notation
+  std::optional<std::string> index_to_algebraic(uint8_t index);
+
+  // return the Piece associated with the provided char
+  std::optional<Piece> char_to_piece(char c);
+
+  // return the char associated with the provided piece
+  char piece_to_char(Piece p);
+
+} // namespace chess::util::fen
+
+namespace chess::util::bits {
+
+  #define set_bit(i, b) ((b) |= (1ULL << (i)))
+
+  #define clear_bit(i, b) ((b) &= ~(1ULL << (i)))
+
+  #define is_set(i, b) ((b) & (1ULL << (i)))
+
+  #define move_bit(from, to, b) do { clear_bit(from, b); set_bit(to, b); } while(0)
+
+  // count the number of set bits
+  constexpr int count(Bitboard b) {
+    #if defined (__GNUC__) || defined (__clang__)
+      return __builtin_popcountll(b);
+    #else
+      int count = 0;
+      while (b) {
+        count++;
+        b &= b - 1;
+      }
+      return count;
+    #endif
+  }
+
+  // index of least significant bit, must be called under precondition
+  // that b has at least 1 set bit
+  constexpr uint8_t get_lsb_index(Bitboard b) {
+    return count((b & -b) -1);
+  }
+
+} // namespace chess::util::bits
