@@ -24,8 +24,8 @@ AIRunner::AIRunner(QObject* parent)
                        &ev_loop, &QEventLoop::quit);
 
       QObject::connect(this, &AIRunner::gameStartReceived, &ev_loop,
-      [&](chess::AIConfig settings, std::string fen) {
-
+        [&](chess::AIConfig settings, std::string fen)
+      {
         qDebug() << "AIRunner: gameStartReceived\n";
 
         _manager.reset(fen);
@@ -39,7 +39,8 @@ AIRunner::AIRunner(QObject* parent)
       });
 
       QObject::connect(this, &AIRunner::moveRecieved, &ev_loop,
-      [&](chess::HashedMove m, chess::Color color, chess::MoveResult r) {
+        [&](chess::HashedMove m, chess::Color color, chess::MoveResult r)
+      {
 
         if (!_ai.enabled() && !_ai.assisting()) {
           qDebug() << "AIRunner: Move Received but not configured\n";

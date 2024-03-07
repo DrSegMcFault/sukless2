@@ -125,6 +125,9 @@ namespace chess {
   // like Checkmate, StaleMate, or Draws
   std::string to_string(const HashedMove& m);
 
+  // convert the boa
+  std::string to_string(const Bitboard& m);
+
   static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;
   static constexpr uint8_t C1 = 2;  static constexpr uint8_t D1 = 3;
   static constexpr uint8_t E1 = 4;  static constexpr uint8_t F1 = 5;
@@ -209,7 +212,12 @@ namespace chess::util {
 
   template <typename T>
   constexpr auto range(T end) {
-    return std::ranges::views::iota(static_cast<T>(0), end);
+    return std::views::iota(T{0}, end);
+  }
+
+  template <typename T>
+  constexpr auto range(T begin, T end) {
+    return std::views::iota(begin, end);
   }
 
   template <typename T>

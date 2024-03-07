@@ -28,6 +28,21 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
   _move_list.reserve(256);
   _history.reserve(150);
   initFromFen(fen);
+  assert(generateFen() == fen);
+}
+
+/*******************************************************************************
+ *
+ * Method: BoardManager(const Board&, const State&, const vec<Move>)
+ *
+ *******************************************************************************/
+BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const State& s,
+                           const std::vector<HashedMove>& v)
+  : _generator(g)
+  , _board(b)
+  , _state(s)
+  , _move_list(v)
+{
 }
 
 /*******************************************************************************
@@ -115,9 +130,7 @@ std::optional<std::pair<Board,State>>
     }
   }
 
-  board[WhiteAll] = calcWhiteOccupancy(board);
-  board[BlackAll] = calcBlackOccupancy(board);
-  board[All] = calcGlobalOccupancy(board);
+  updateOccupancies(board);
 
   // get the turn info
   state.side_to_move = fen_turn == "w" ? White : Black;
@@ -161,7 +174,7 @@ std::optional<std::pair<Board,State>>
 
 /*******************************************************************************
  *
- * Method: get_pseudo_legal_moves(uint8_t square)
+ * Method: getPseudoLegalMoves(uint8_t square)
  *
  *******************************************************************************/
 std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
@@ -179,7 +192,7 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
 
 /*******************************************************************************
  *
- * Method: is_check(const Board&, const State&)
+ * Method: isCheck(const Board&, const State&)
  *
  *******************************************************************************/
 bool BoardManager::isCheck(const Board& board_, const State& state_)
@@ -192,7 +205,7 @@ bool BoardManager::isCheck(const Board& board_, const State& state_)
 
 /*******************************************************************************
  *
- * Method: make_move(uint32_t move)
+ * Method: tryMove(const chess::Move&)
  *
  *******************************************************************************/
 std::tuple<MoveResult, HashedMove> BoardManager::tryMove(const chess::Move& proposed)
@@ -364,9 +377,7 @@ MoveResult BoardManager::makeMove(
   }
 
   // update occupancies
-  board_copy[WhiteAll] = calcWhiteOccupancy(board_copy);
-  board_copy[BlackAll] = calcBlackOccupancy(board_copy);
-  board_copy[All] = calcGlobalOccupancy(board_copy);
+  updateOccupancies(board_copy);
 
   // if the move puts themselves in check -> Illegal
   if (isCheck(board_copy, state_copy)) {

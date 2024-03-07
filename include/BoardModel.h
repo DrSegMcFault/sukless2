@@ -21,6 +21,9 @@ class BoardModel : public QAbstractListModel
 
 public:
   [[nodiscard]] inline int toInternalIndex(int index) const noexcept {
+    if (index < 0) {
+      index = 0;
+    }
     int row = index / 8;
     int column = index % 8;
 

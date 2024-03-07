@@ -8,12 +8,11 @@
 Game::Game(QObject *parent)
   : QObject(parent)
   , _move_model(this)
+  , _board_model(this)
+  , _board_manager(std::make_shared<chess::BoardManager>(&_generator))
 {
-  _board_manager = std::make_shared<chess::BoardManager>(&_generator);
-  _board_model.setBoard(_board_manager->toArray());
-  _move_model.clear();
-
   connect(this, &Game::moveConfirmed, &_move_model, &MoveModel::onMoveConfirmed);
+  reset();
 }
 
 /******************************************************************************
@@ -28,9 +27,11 @@ void Game::init(chess::Color user,
 {
   reset();
 
-  chess::Color controlling = user == chess::White ? chess::Black : chess::White;
+  chess::Color controlling =
+      user == chess::White ? chess::Black : chess::White;
 
-  emit gameStart({ aidiff, controlling, engine_help, ai_enable }, chess::starting_position);
+  emit gameStart({ aidiff, controlling, engine_help, ai_enable },
+                   chess::starting_position);
 }
 
 /******************************************************************************
@@ -45,6 +46,9 @@ void Game::reset()
   _move_model.clear();
   _current_move_index = 1;
   _current_history_index = 0;
+
+  emit gameStart({ chess::AIDifficulty::Easy, chess::Black, false, false },
+                   chess::starting_position);
 }
 
 /******************************************************************************

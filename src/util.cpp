@@ -39,6 +39,29 @@ std::optional<Piece> piece_at(const Board& b, uint8_t square)
 
 /*******************************************************************************
  *
+ * Function: chess::to_string(const Bitboard& m)
+ *
+ *******************************************************************************/
+std::string to_string(const Bitboard& b) {
+  std::string ret;
+  for (int rank = 7; rank >= 0; rank--) {
+    for (int file = 0; file < 8; file++) {
+      uint8_t square = rank * 8 + file;
+      if (!file) {
+        ret.append("  " + std::to_string(rank + 1) + " ");
+      }
+      std::string c = ((is_set(square, b)) ? "1 " : "0 ");
+      ret.append(c);
+    }
+    if (rank != 0) {
+      ret.append("\n");
+    }
+  }
+  ret.append("\n    a b c d e f g h\n\n");
+  return ret;
+}
+/*******************************************************************************
+ *
  * Function: chess::to_string(const HashedMove& m)
  *
  *******************************************************************************/
@@ -206,18 +229,18 @@ char piece_to_char(Piece p)
 
 /*******************************************************************************
  *
- * Function: util::fen::generate(const Board& b, uint8_t square )
+ * Function: util::fen::generate(const Board& b, uint8_t square)
  *
  *******************************************************************************/
 std::string generate(const Board& b, const State& state) {
-  std::string fen = "";
+  std::string fen;
   fen.reserve(40);
 
   uint8_t cur_missing_count = 0;
   static constexpr auto ranges = {56, 48, 40, 32, 24, 16, 8, 0};
 
   for (int start : ranges) {
-    for (uint8_t square : std::views::iota(start, start + 8)) {
+    for (uint8_t square : util::range(start, start + 8)) {
 
       if (auto piece_at_sq = piece_at(b, square)) {
         std::string temp = "";

@@ -18,6 +18,13 @@ public:
   BoardManager(BoardManager&&) = delete;
   ~BoardManager() = default;
 
+private:
+  BoardManager(const MoveGenerator* g,
+               const Board&,
+               const State&,
+               const std::vector<HashedMove>&);
+
+public:
   // attempts to perfrom the provided move on the board
   [[nodiscard]] std::tuple<MoveResult, HashedMove> tryMove(const chess::Move& move);
 
@@ -110,21 +117,15 @@ private:
   // is the board in check
   bool isCheck(const Board&, const State&);
 
-  // update the white occupancy bitboard
-  inline Bitboard calcWhiteOccupancy(const Board& board) const {
-    return (board[WhitePawn] | board[WhiteKnight] | board[WhiteBishop] |
-            board[WhiteRook] | board[WhiteQueen] | board[WhiteKing]);
-  }
+  // update the occupancy bitboards
+  inline void updateOccupancies(Board& b) const {
+    b[WhiteAll] = (b[WhitePawn] | b[WhiteKnight] | b[WhiteBishop] |
+                   b[WhiteRook] | b[WhiteQueen] | b[WhiteKing]);
 
-  // update the black occupancy bitboard
-  inline Bitboard calcBlackOccupancy(const Board& board) const {
-    return (board[BlackPawn] | board[BlackKnight] | board[BlackBishop] |
-            board[BlackRook] | board[BlackQueen] | board[BlackKing]);
-  }
+    b[BlackAll] = (b[BlackPawn] | b[BlackKnight] | b[BlackBishop] |
+                   b[BlackRook] | b[BlackQueen] | b[BlackKing]);
 
-  // update the global occupancy bitboard
-  inline Bitboard calcGlobalOccupancy(const Board& board) const {
-    return (calcWhiteOccupancy(board) | calcBlackOccupancy(board));
+    b[All] = b[WhiteAll] | b[BlackAll];
   }
 
   friend class AI;

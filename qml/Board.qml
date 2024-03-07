@@ -55,11 +55,10 @@ Rectangle {
 
       MouseArea {
         anchors.fill: parent
-        onClicked: {
-          first.open()
-        }
+        onClicked: first.open()
       }
     }
+
     Rectangle {
       Layout.fillHeight: true
       Layout.fillWidth: true
@@ -71,9 +70,7 @@ Rectangle {
 
       MouseArea {
         anchors.fill: parent
-        onClicked: {
-          second.open()
-        }
+        onClicked: second.open()
       }
     }
   }
@@ -166,6 +163,7 @@ Rectangle {
                                  draggedItem.x = mouse.x - draggedItem.width / 2;
                                  draggedItem.y = mouse.y - draggedItem.height / 2;
                                }
+                               mouse.accepted = false
                              }
         }
 

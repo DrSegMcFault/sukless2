@@ -45,7 +45,16 @@ private:
   int _black_material_score;
 
   // calc material diff score
-  int calcMaterialScore(const BoardManager& b, Color c) const;
+  std::pair<int,int> calcMaterialScore(const BoardManager& b) const;
+
+  int calcPositionalScore(const BoardManager& b, Color c) const;
+
+  int evaluate(const BoardManager& b) const;
+
+  int alphaBeta(BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
+
+  // get the legal moves from a board
+  std::vector<HashedMove> getLegalMoves(const BoardManager&);
 
   const std::unordered_map<int, int> piece_values = {
     { util::toul(Piece::WhitePawn),    100    },
@@ -61,6 +70,87 @@ private:
     { util::toul(Piece::BlackRook),    500    },
     { util::toul(Piece::BlackQueen),   900    },
     { util::toul(Piece::BlackKing),    10'000 }
+  };
+
+  static constexpr std::array<int, 64> pawn_values = {
+     90, 100, 100, 100, 100, 100, 100,  90,
+     40,  40,  50,  60,  60,  50,  40,  40,
+     20,  20,  50,  55,  55,  50,  20,  20,
+     10,  10,  40,  50,  50,  40,  10,  10,
+      0,   0,  20,  40,  40,  20,   0,   0,
+    -10, -10,  10,  30,  30,  10, -10, -10,
+      1,   1,   1,   1,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   0,   0,   0
+  };
+
+  static constexpr std::array<int, 64> knight_values = {
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   5,   5,   5,   5,   5,   5,  0,
+   0,   5,  20,   25, 25,  20,   5,  0,
+   0,   5,  10,   30, 30,  10,   5,  0,
+   0,   5,  10,   30, 30,  10,   5,  0,
+   0,   5,  20,   25, 25,  20,   5,  0,
+   0,   5,   5,   5,   5,   5,   5,  0,
+   0,   0,   0,   0,   0,   0,   0,  0
+  };
+
+  static constexpr std::array<int, 64> king_values = {
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0
+  };
+
+  static constexpr std::array<int, 64> bishop_values = {
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0
+  };
+
+  static constexpr std::array<int, 64> rook_values = {
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0
+  };
+
+  static constexpr std::array<int, 64> queen_values = {
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0,
+   0,   0,   0,   0,   0,   0,   0,  0
+  };
+
+  std::unordered_map<Piece, std::array<int, 64>> positional_map {
+    {Piece::WhitePawn, pawn_values},
+    {Piece::WhiteKnight, knight_values},
+    {Piece::WhiteBishop, bishop_values},
+    {Piece::WhiteRook, rook_values},
+    {Piece::WhiteQueen, queen_values},
+    {Piece::WhiteKing, king_values},
+    {Piece::BlackPawn, pawn_values},
+    {Piece::BlackKnight, knight_values},
+    {Piece::BlackBishop, bishop_values},
+    {Piece::BlackRook, rook_values},
+    {Piece::BlackQueen, queen_values},
+    {Piece::BlackKing, king_values}
   };
 };
 }
