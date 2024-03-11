@@ -79,6 +79,24 @@ private:
     { chess::MoveResult::Draw,      _game_end_sound }
   };
 
+  const std::unordered_map<int, float> piece_values = {
+    { chess::util::toul(chess::Piece::WhitePawn),   1.0 },
+    { chess::util::toul(chess::Piece::WhiteKnight), 3.0 },
+    { chess::util::toul(chess::Piece::WhiteBishop), 3.0 },
+    { chess::util::toul(chess::Piece::WhiteRook),   5.0 },
+    { chess::util::toul(chess::Piece::WhiteQueen),  9.0 },
+    { chess::util::toul(chess::Piece::WhiteKing),   0.0 },
+
+    { chess::util::toul(chess::Piece::BlackPawn),   1.0 },
+    { chess::util::toul(chess::Piece::BlackKnight), 3.0 },
+    { chess::util::toul(chess::Piece::BlackBishop), 3.0 },
+    { chess::util::toul(chess::Piece::BlackRook),   5.0 },
+    { chess::util::toul(chess::Piece::BlackQueen),  9.0 },
+    { chess::util::toul(chess::Piece::BlackKing),   0.0 }
+  };
+
+  void afterMove(chess::MoveResult, chess::HashedMove);
+
 public:
   explicit Game(QObject* parent = nullptr);
 

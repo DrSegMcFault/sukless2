@@ -234,7 +234,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
          addMove(moves, source_square, target_square, BlackPawn, BlackKnight,0,0,0,0);
 
        } else { // one move forward, no promotion
-           addMove(moves, source_square, target_square, BlackPawn, NoPiece, 0,0,0,0);
+         addMove(moves, source_square, target_square, BlackPawn, NoPiece, 0,0,0,0);
 
          if (source_square >= chess::A7 && source_square <= chess::H7 &&
              !is_set(target_square - 8, board_[All]))

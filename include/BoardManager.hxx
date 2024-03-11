@@ -108,6 +108,10 @@ private:
   // FEN history of the current game being played
   std::vector<std::string> _history;
 
+  // flag to not generate fen history
+  // useful for AI move making when in move search
+  bool NO_HISTORY = false;
+
   // performs the move on the board
   MoveResult makeMove(const HashedMove& move);
 
@@ -115,7 +119,7 @@ private:
   void initFromFen(const std::string& fen);
 
   // is the board in check
-  bool isCheck(const Board&, const State&);
+  bool isCheck(const Board&, const State&) const;
 
   // update the occupancy bitboards
   inline void updateOccupancies(Board& b) const {

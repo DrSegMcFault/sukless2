@@ -20,19 +20,29 @@ Rectangle {
   // by the user
   property Image draggedItem: null
 
-  PillButton {
-    anchors.bottom: parent.top
+
+  DefaultText {
+    id: top
+    anchors.bottom: grid.top
     anchors.bottomMargin: Style.borderThickness * 2
     anchors.right: grid.right
-    anchors.rightMargin: 0
-    width: parent.width * 1/8
-    height: parent.height * 1/35
-    pixelSize: 16
-    onClicked: base.board.toggleRotation()
-    text: qsTr("Flip Board")
+    anchors.rightMargin: 5
+    text: board.topEval >= 0 ? qsTr("+%1").arg(board.topEval) : board.topEval
+    font.pixelSize: 20
+  }
+
+  DefaultText {
+    id: bottom
+    anchors.top: grid.bottom
+    anchors.topMargin: Style.borderThickness * 2
+    anchors.right: grid.right
+    anchors.rightMargin: Style.borderThickness * 2
+    text: board.bottomEval >= 0 ? qsTr("+%1").arg(board.bottomEval) : board.bottomEval
+    font.pixelSize: 20
   }
 
   GridLayout {
+    id: colorSelect
     rows: 1
     columns: 2
     rowSpacing: 0
@@ -73,6 +83,19 @@ Rectangle {
         onClicked: second.open()
       }
     }
+  }
+
+  PillButton {
+    id: flip
+    anchors.left: colorSelect.right
+    anchors.leftMargin: Style.borderThickness * 2
+    anchors.bottom: grid.top
+    anchors.bottomMargin: Style.borderThickness * 2
+    width: parent.width * 1/8
+    height: parent.height * 1/35
+    pixelSize: 16
+    onClicked: base.board.toggleRotation()
+    text: qsTr("Flip Board")
   }
 
   ColorDialog {

@@ -130,14 +130,9 @@ void Game::handleMove(int from, int to, int promoted_piece)
     sound_to_play = "";
   }
 
-  // always update the board and view number
-  if (_current_move_index != _move_model.dataCount() - 1) {
-     _current_move_index = _move_model.dataCount() - 1;
-    _move_model.setSelected(_current_move_index);
-  }
-  _board_model.setBoard(std::move(_board_manager->toArray()));
 
   emit playSound(sound_to_play);
+  afterMove(result, move_made);
 }
 
 /******************************************************************************
@@ -149,11 +144,7 @@ void Game::onMoveReady(chess::HashedMove m, chess::Color color_moved)
 {
   qDebug() << "AI move received\n";
 
-  QUrl sound_to_play;
-
   const auto [result, move_made] = _board_manager->tryMove(m.toMove());
-
-  sound_to_play = _result_to_sound.at(result);
 
   if (result != chess::MoveResult::Illegal) {
     emit moveConfirmed( move_made, color_moved, result);
@@ -185,10 +176,41 @@ void Game::onMoveReady(chess::HashedMove m, chess::Color color_moved)
     }
   }
 
-  // always update the board
+  emit playSound(_result_to_sound.at(result));
+  afterMove(result, move_made);
+}
+
+/******************************************************************************
+ *
+ * Method: afterMove()
+ *
+ *****************************************************************************/
+void Game::afterMove(chess::MoveResult result, chess::HashedMove move_made)
+{
+  // always update the board and view number
+  if (_current_move_index != _move_model.dataCount() - 1) {
+     _current_move_index = _move_model.dataCount() - 1;
+    _move_model.setSelected(_current_move_index);
+  }
   _board_model.setBoard(std::move(_board_manager->toArray()));
 
-  emit playSound(sound_to_play);
+  if (move_made.capture) {
+
+    float white_mat = 0.0f;
+    float black_mat = 0.0f;
+
+    for (auto p : chess::WhitePieces) {
+      white_mat +=
+            piece_values.at(p) * _board_manager->pieceCount(p);
+    }
+
+    for (auto p : chess::BlackPieces) {
+      black_mat +=
+            piece_values.at(p) * _board_manager->pieceCount(p);
+    }
+
+    _board_model.updateEvals(white_mat - black_mat, black_mat - white_mat);
+  }
 }
 
 /******************************************************************************

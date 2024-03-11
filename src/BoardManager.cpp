@@ -1,5 +1,4 @@
 #include "BoardManager.hxx"
-#include <cassert>
 
 namespace chess {
 
@@ -14,7 +13,6 @@ BoardManager::BoardManager(const MoveGenerator* g)
   _move_list.reserve(256);
   _history.reserve(150);
   initFromFen(chess::starting_position);
-  assert(generateFen() == chess::starting_position);
 }
 
 /*******************************************************************************
@@ -28,13 +26,12 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
   _move_list.reserve(256);
   _history.reserve(150);
   initFromFen(fen);
-  assert(generateFen() == fen);
 }
 
 /*******************************************************************************
  *
  * Method: BoardManager(const Board&, const State&, const vec<Move>)
- *
+ * private
  *******************************************************************************/
 BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const State& s,
                            const std::vector<HashedMove>& v)
@@ -42,6 +39,7 @@ BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const State& s
   , _board(b)
   , _state(s)
   , _move_list(v)
+  , NO_HISTORY(true)
 {
 }
 
@@ -64,13 +62,19 @@ void BoardManager::initFromFen(const std::string &fen)
 
     _history.push_back(generateFen());
 
-    assert(generateFen() == fen);
-
     _generator->generateMoves(_board, _state, _move_list);
 
   } else {
     // critical error if the FEN string is invalid
-    assert(false);
+    // use the default starting position
+    auto tup = makeBoardFromFen(chess::starting_position);
+    auto&& [board, state] = *tup;
+    _board = board;
+    _state = state;
+
+    _history.push_back(generateFen());
+
+    _generator->generateMoves(_board, _state, _move_list);
   }
 }
 
@@ -98,7 +102,9 @@ std::optional<std::pair<Board,State>>
 
   std::vector<std::string> tokens(view.begin(), view.end());
 
-  assert(tokens.size() == 6);
+  if (tokens.size() != 6) {
+    return makeBoardFromFen(chess::starting_position);
+  }
 
   auto& fen_board_layout = tokens[0];
   auto& fen_turn = tokens[1];
@@ -195,7 +201,7 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
  * Method: isCheck(const Board&, const State&)
  *
  *******************************************************************************/
-bool BoardManager::isCheck(const Board& board_, const State& state_)
+bool BoardManager::isCheck(const Board& board_, const State& state_) const
 {
   return
     _generator->isSquareAttacked(util::bits::get_lsb_index(state_.side_to_move == White ? board_[WhiteKing] : board_[BlackKing]),
@@ -283,6 +289,22 @@ MoveResult BoardManager::makeMove(
     {
       if (is_set(target_square, board_copy[p])) {
         clear_bit(target_square, board_copy[p]);
+        if (p == BlackRook) {
+          if (target_square == H8) {
+            state_copy.castling_rights &= ~toul(CastlingRights::BlackKingSide);
+          }
+          if (target_square == A8) {
+            state_copy.castling_rights &= ~toul(CastlingRights::BlackQueenSide);
+          }
+        }
+        if (p == WhiteRook) {
+          if (target_square == H1) {
+            state_copy.castling_rights &= ~toul(CastlingRights::WhiteKingSide);
+          }
+          if (target_square == A1) {
+            state_copy.castling_rights &= ~toul(CastlingRights::WhiteQueenSide);
+          }
+        }
         break;
       }
     }
@@ -368,12 +390,47 @@ MoveResult BoardManager::makeMove(
         break;
     }
   }
-
-  if (piece == WhiteKing && !castling) {
-    state_copy.castling_rights &= ~toul(CastlingRights::WhiteCastlingRights);
-  }
-  else if (piece == BlackKing && !castling) {
-    state_copy.castling_rights &= ~toul(CastlingRights::BlackCastlingRights);
+  else if ((state_copy.castling_rights & toul(CastlingRights::WhiteCastlingRights)) ||
+           (state_copy.castling_rights & toul(CastlingRights::BlackCastlingRights)))
+  {
+    switch (piece) {
+      case WhiteKing:
+      {
+        state_copy.castling_rights &= ~toul(CastlingRights::WhiteCastlingRights);
+        break;
+      }
+      case WhiteRook:
+      {
+        if (source_square == H1)
+        {
+          state_copy.castling_rights &= ~toul(CastlingRights::WhiteKingSide);
+        }
+        else if (source_square == A1)
+        {
+          state_copy.castling_rights &= ~toul(CastlingRights::WhiteQueenSide);
+        }
+        break;
+      }
+      case BlackKing:
+      {
+        state_copy.castling_rights &= ~toul(CastlingRights::BlackCastlingRights);
+        break;
+      }
+      case BlackRook:
+      {
+        if (source_square == A8)
+        {
+          state_copy.castling_rights &= ~toul(CastlingRights::BlackQueenSide);
+        }
+        if (source_square == H8)
+        {
+          state_copy.castling_rights &= ~toul(CastlingRights::BlackKingSide);
+        }
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   // update occupancies
@@ -403,7 +460,12 @@ MoveResult BoardManager::makeMove(
 
     _board = board_copy;
     _state = state_copy;
-    _history.push_back(generateFen());
+
+    // TODO: PEM do zobrist hashing instead
+    // because this is incredibly slow
+    if (!NO_HISTORY) {
+      _history.push_back(generateFen());
+    }
 
     _move_list.clear();
     _generator->generateMoves(_board, _state, _move_list);

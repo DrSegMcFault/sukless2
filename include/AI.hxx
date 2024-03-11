@@ -47,11 +47,11 @@ private:
   // calc material diff score
   std::pair<int,int> calcMaterialScore(const BoardManager& b) const;
 
-  int calcPositionalScore(const BoardManager& b, Color c) const;
+  int calcPositionalScore(const BoardManager& b, Color c);
 
-  int evaluate(const BoardManager& b) const;
+  int evaluate(MoveResult last_move, const BoardManager& b);
 
-  int alphaBeta(BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
+  int alphaBeta(MoveResult last, BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
 
   // get the legal moves from a board
   std::vector<HashedMove> getLegalMoves(const BoardManager&);
@@ -106,25 +106,25 @@ private:
   };
 
   static constexpr std::array<int, 64> bishop_values = {
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0
+   10,   0,   0,   0,   0,   0,   0, 10,
+   10,  10,   0,   0,   0,   0,  10,  0,
+    0,   0,   0,   0,   0,   0,   0,  0,
+    0,   0,   0,   0,   0,   0,   0,  0,
+    0,   0,   0,   0,   0,   0,   0,  0,
+    0,   0,   0,   0,   0,   0,   0,  0,
+    0,  10,   0,   0,   0,   0,  10,  0,
+   10,   0,   0,   0,   0,   0,   0, 10
   };
 
   static constexpr std::array<int, 64> rook_values = {
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0,
-   0,   0,   0,   0,   0,   0,   0,  0
+   0,   10,  10,  10,   10,  10,  10,   0,
+   10,  10,  10,  10,   10,  10,  10,  10,
+    0,   0,   0,   0,    0,   0,   0,   0,
+    0,   0,   0,   0,    0,   0,   0,   0,
+    0,   0,   0,   0,    0,   0,   0,   0,
+    0,   0,   0,   0,    0,   0,   0,   0,
+   10,  10,  10,  10,   10,  10,  10,  10,
+    0,  10,  10,  10,   10,  10,  10,   0
   };
 
   static constexpr std::array<int, 64> queen_values = {

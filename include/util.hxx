@@ -125,7 +125,7 @@ namespace chess {
   // like Checkmate, StaleMate, or Draws
   std::string to_string(const HashedMove& m);
 
-  // convert the boa
+  // convert the board to a string
   std::string to_string(const Bitboard& m);
 
   static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;

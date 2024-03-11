@@ -8,6 +8,8 @@
 BoardModel::BoardModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+  connect(this, &BoardModel::rotationChanged, this, &BoardModel::onRotationChanged);
+  connect(this, &BoardModel::rotationChanged, this, &BoardModel::onRotationChanged);
   reset();
 }
 
@@ -57,6 +59,7 @@ void BoardModel::toggleRotation()
       _visual_rotation = Rotation::ViewFromWhite;
       break;
   }
+  emit rotationChanged();
 
   endResetModel();
 }
@@ -71,6 +74,7 @@ void BoardModel::reset()
   beginResetModel();
   _visual_rotation = Rotation::ViewFromWhite;
   std::fill(_data.begin(), _data.end(), std::nullopt);
+  emit rotationChanged();
   endResetModel();
 }
 

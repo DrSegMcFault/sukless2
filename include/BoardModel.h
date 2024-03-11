@@ -17,6 +17,9 @@ class BoardModel : public QAbstractListModel
   Q_OBJECT
   Q_PROPERTY(QColor color1 MEMBER _color1 NOTIFY color1Changed)
   Q_PROPERTY(QColor color2 MEMBER _color2 NOTIFY color2Changed)
+  Q_PROPERTY(float topEval MEMBER _top_diff NOTIFY topEvalChanged)
+  Q_PROPERTY(float bottomEval MEMBER _bottom_diff NOTIFY bottomEvalChanged)
+  Q_PROPERTY(Rotation rotation MEMBER _visual_rotation NOTIFY rotationChanged)
   QML_ELEMENT
 
 public:
@@ -44,14 +47,19 @@ public:
     RoleFileLabel
   };
 
-  enum class Rotation {
+  enum  Rotation {
     ViewFromWhite,
     ViewFromBlack
   };
+  Q_ENUM(Rotation)
+
 
 signals:
   void color1Changed();
   void color2Changed();
+  void rotationChanged();
+  void topEvalChanged();
+  void bottomEvalChanged();
 
 protected:
 
@@ -64,6 +72,11 @@ private:
   QColor _color2 = QColor("#4284ed");
 
   Rotation _visual_rotation = Rotation::ViewFromWhite;
+
+  float _top_diff = 0;
+  float _bottom_diff = 0;
+  float _white_diff = 0;
+  float _black_diff = 0;
 
   const std::unordered_map<int, QString> _white_rank_map = {
     { 0,   QString("1") },
@@ -133,6 +146,32 @@ public:
 
   Q_INVOKABLE void toggleRotation();
 
+  void updateEvals(float white, float black) {
+    _white_diff = white;
+    _black_diff = black;
+    onRotationChanged();
+  }
+
+  void onRotationChanged() {
+    switch (_visual_rotation)  {
+      case Rotation::ViewFromWhite:
+      {
+        _top_diff = _black_diff;
+        _bottom_diff = _white_diff;
+        break;
+      }
+      case Rotation::ViewFromBlack:
+      {
+        _top_diff = _white_diff;
+        _bottom_diff = _black_diff;
+        break;
+      }
+    }
+
+    emit topEvalChanged();
+    emit bottomEvalChanged();
+  }
+
   void setBoard(std::array<std::optional<chess::Piece>, 64>&& b) {
     beginResetModel();
     _data = b;
@@ -144,6 +183,7 @@ public:
     _visual_rotation = (c == chess::White) ? Rotation::ViewFromWhite
                                            : Rotation::ViewFromBlack;
     endResetModel();
+    emit rotationChanged();
   }
 
   void reset();
