@@ -7,6 +7,22 @@ namespace chess {
 
 /*******************************************************************************
  *
+ * Method: MoveGenerator()
+ *
+ *******************************************************************************/
+MoveGenerator::MoveGenerator()
+  : pawn_attacks(initPawnAttacks())
+  , knight_attacks(initKnightAttacks())
+  , king_attacks(initKingAttacks())
+  , bishop_masks(initBishopMasks())
+  , rook_masks(initRookMasks())
+  , bishop_attacks(initSliderAttacks<512, true>(bishop_masks, bishop_magics, bishop_bits))
+  , rook_attacks(initSliderAttacks<4096, false>(rook_masks, rook_magics, rook_bits))
+{
+}
+
+/*******************************************************************************
+ *
  * Method: addMove()
  *
  *******************************************************************************/
@@ -53,6 +69,262 @@ void MoveGenerator::generateMoves(const Board& b,
 
 /*******************************************************************************
  *
+ * Method: initPawnAttacks()
+ *
+ *******************************************************************************/
+std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
+{
+  std::array<std::array<Bitboard, 64>, 2> result;
+
+  constexpr auto get_mask = [](Color side, uint8_t square) {
+    Bitboard attacks {0ULL};
+    Bitboard b {0ULL};
+
+    set_bit(square, b);
+
+    if (side == White) {
+      if ((b << 7) & not_h_file)
+        attacks |= (b << 7);
+
+      if ((b << 9) & not_a_file)
+        attacks |= (b << 9);
+
+    } else {
+      if ((b >> 7) & not_a_file)
+        attacks |= (b >> 7);
+
+      if ((b >> 9) & not_h_file)
+        attacks |= (b >> 9);
+      }
+
+    return attacks;
+  };
+
+  for (const auto i : util::range(NoSquare)) {
+    result[White][i] = get_mask(White, i);
+    result[Black][i] = get_mask(Black, i);
+  }
+
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: initKnightAttacks()
+ *
+ *******************************************************************************/
+std::array<Bitboard, 64> MoveGenerator::initKnightAttacks()
+{
+  std::array<Bitboard, 64> result;
+
+  for (auto square : util::range(NoSquare)) {
+    Bitboard attacks {0ULL};
+    Bitboard b {0ULL};
+
+    set_bit(square, b);
+
+    if ((b << 17) & not_a_file)
+      attacks |= b << 17;
+    if ((b << 15) & not_h_file)
+      attacks |= b << 15;
+    if ((b << 10) & not_ab_file)
+      attacks |= b << 10;
+    if ((b << 6) & not_hg_file)
+      attacks |= b << 6;
+    if ((b >> 17) & not_h_file)
+      attacks |= b >> 17;
+    if ((b >> 15) & not_a_file)
+      attacks |= b >> 15;
+    if ((b >> 10) & not_hg_file)
+      attacks |= b >> 10;
+    if ((b >> 6) & not_ab_file)
+      attacks |= b >> 6;
+
+    result[square] = attacks;
+  }
+
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: initKingAttacks()
+ *
+ *******************************************************************************/
+std::array<Bitboard, 64> MoveGenerator::initKingAttacks()
+{
+  std::array<Bitboard, 64> result;
+
+  for (const auto square : util::range(NoSquare)) {
+    Bitboard attacks {0ULL};
+    Bitboard b {0ULL};
+
+    set_bit(square, b);
+
+    if ((b << 8))
+      attacks |= b << 8;
+    if ((b << 9) & not_a_file)
+      attacks |= b << 9;
+    if ((b << 7) & not_h_file)
+      attacks |= b << 7;
+    if ((b << 1) & not_a_file)
+      attacks |= b << 1;
+
+    if ((b >> 8))
+      attacks |= b >> 8;
+    if ((b >> 9) & not_h_file)
+      attacks |= b >> 9;
+    if ((b >> 7) & not_a_file)
+      attacks |= b >> 7;
+    if ((b >> 1) & not_h_file)
+      attacks |= b >> 1;
+
+    result[square] = attacks;
+  }
+
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: initBishopMasks()
+ *
+ *******************************************************************************/
+std::array<Bitboard, 64> MoveGenerator::initBishopMasks()
+{
+  std::array<Bitboard, 64> result;
+
+  for (const auto square : util::range(NoSquare)) {
+    Bitboard attacks {0ULL};
+
+    int r = 0;
+    int f = 0;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
+      set_bit(r * 8 + f, attacks);
+    }
+    for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
+      set_bit(r * 8 + f, attacks);
+    }
+    for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
+      set_bit(r * 8 + f, attacks);
+    }
+    for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
+      set_bit(r * 8 + f, attacks);
+    }
+
+    result[square] = attacks;
+  }
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: initRookMasks()
+ *
+ *******************************************************************************/
+std::array<Bitboard, 64> MoveGenerator::initRookMasks()
+{
+  std::array<Bitboard, 64> result;
+
+  for (auto square : util::range(NoSquare)) {
+    Bitboard attacks {0ULL};
+
+    int r = 0;
+    int f = 0;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    for (r = tr + 1; r <= 6; r++) {
+      set_bit(r * 8 + tf, attacks);
+    }
+    for (r = tr - 1; r >= 1; r--) {
+      set_bit(r * 8 + tf, attacks);
+    }
+    for (f = tf + 1; f <= 6; f++) {
+      set_bit(tr * 8 + f, attacks);
+    }
+    for (f = tf - 1; f >= 1; f--) {
+      set_bit(tr * 8 + f, attacks);
+    }
+
+    result[square] = attacks;
+  }
+  return result;
+}
+
+/*******************************************************************************
+ *
+ * Method: calcBishopAttacks(uint8_t square, Bitboard occ)
+ *
+ *******************************************************************************/
+Bitboard MoveGenerator::calcBishopAttacks(uint8_t square, Bitboard occ) const
+{
+  Bitboard attacks {0ULL};
+
+  int r, f;
+  int tr = square / 8;
+  int tf = square % 8;
+
+  for (r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++) {
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
+  }
+
+  for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
+  }
+  for (r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--) {
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
+  }
+  for (r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--) {
+    set_bit(r * 8 + f, attacks);
+    if (is_set(r * 8 + f, occ)) break;
+  }
+
+  return attacks;
+}
+
+/*******************************************************************************
+ *
+ * Method: calcRookAttacks(uint8_t square, Bitboard occ)
+ *
+ *******************************************************************************/
+Bitboard MoveGenerator::calcRookAttacks(uint8_t square, Bitboard occ) const
+{
+  Bitboard attacks {0ULL};
+
+  int r = 0;
+  int f = 0;
+  int tr = square / 8;
+  int tf = square % 8;
+
+  for (r = tr + 1; r <= 7; r++) {
+    set_bit(r * 8 + tf, attacks);
+    if (is_set(r * 8 + tf, occ)) break;
+  }
+  for (r = tr - 1; r >= 0; r--) {
+    set_bit(r * 8 + tf, attacks);
+    if (is_set(r * 8 + tf, occ)) break;
+  }
+  for (f = tf + 1; f <= 7; f++) {
+    set_bit(tr * 8 + f, attacks);
+    if (is_set(tr * 8 + f, occ)) break;
+  }
+  for (f = tf - 1; f >= 0; f--) {
+    set_bit(tr * 8 + f, attacks);
+    if (is_set(tr * 8 + f, occ)) break;
+  }
+
+  return attacks;
+}
+
+/*******************************************************************************
+ *
  * Method: getBishopAttacks(uint8_t square, Bitboard occ)
  *
  *******************************************************************************/
@@ -86,14 +358,9 @@ bool MoveGenerator::isSquareAttacked(uint8_t square,
                                      Color side,
                                      const Board& board) const
 {
-  // this seems counter intuitive at first glance, but heres why it works:
-  // in this first case, we are checking if the square is attacked by a
-  // white pawn. To do this, we check the black pawn attacks at the provided
-  // square (we dont care if a black pawn is actually on the square).
-  // If the location of those attacks overlaps with the presence of a
-  // white pawn, then the white pawn can also attack there. This gives us the
-  // desired result of seeing if 'square' is attacked by a white pawn.
-  // the rest of the cases use the same principle
+  // check if the opposing colors piece can attack it
+  // even if the opposing piece isnt there, this by definition
+  // gives us the desired result
 
   if ((side == White) && (pawn_attacks[Black][square] & board[WhitePawn]) ) {
     return true;

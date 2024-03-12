@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.18)
 
 project(chess VERSION 0.1 LANGUAGES CXX)
 
-# 30,000,000 steps, dont know what the gcc or MSVC equivalent is
-add_compile_options(-fconstexpr-steps=30000000)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)

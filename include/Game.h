@@ -51,7 +51,7 @@ public slots:
   void onSuggestionReady(chess::HashedMove);
 
 private:
-  static constexpr chess::MoveGenerator _generator;
+  chess::MoveGenerator _generator;
 
   MoveModel _move_model;
   BoardModel _board_model;
