@@ -1,5 +1,6 @@
 #include "util.hxx"
 #include <iostream>
+#include <string>
 
 namespace chess {
 
