@@ -1,6 +1,7 @@
 #include "AI.hxx"
 
-#include <future>
+#include <mutex>
+#include <thread>
 #include <ranges>
 #include <QDebug>
 
@@ -209,23 +210,21 @@ std::vector<HashedMove> AI::getLegalMoves(const BoardManager& cpy)
  *****************************************************************************/
 std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
 {
+  std::mutex mtx;
   auto startTime = std::chrono::high_resolution_clock::now();
 
   auto legal_moves = getLegalMoves(cpy);
   std::vector<std::pair<HashedMove, int>> move_scores = {};
 
   if (legal_moves.size()) {
-    constexpr size_t num_threads = 10;
+    constexpr size_t num_threads = 4;
     const size_t items_per_thread = legal_moves.size() / num_threads;
 
     auto process = [&] (int thread_num,
                         std::vector<HashedMove>::iterator begin,
-                        std::vector<HashedMove>::iterator end)
+                        std::vector<HashedMove>::iterator end) -> void
     {
       std::vector<std::pair<HashedMove, int>> ret;
-      auto roots_evaluated = 0;
-
-      auto startTime = std::chrono::high_resolution_clock::now();
 
       for (auto it = begin; it != end; ++it) {
         BoardManager initial_board (_generator, cpy._board, cpy._state, legal_moves);
@@ -234,30 +233,24 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
                        miniMax(result, initial_board,
                                std::numeric_limits<int>::min(),
                                std::numeric_limits<int>::max(), 5, false)});
-        roots_evaluated++;
       }
 
-      auto endTime = std::chrono::high_resolution_clock::now();
-      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-
-      qDebug() << "Thread " << thread_num << " executed in " << duration.count() << " msec(s).\n";
-      qDebug() << "\t evaluated "  << roots_evaluated << " roots\n";
-      return ret;
+      mtx.lock();
+      move_scores.insert(move_scores.end(), ret.begin(), ret.end());
+      mtx.unlock();
     };
 
-    std::vector<std::future<std::vector<std::pair<HashedMove,int>>>> futures;
+    std::vector<std::thread> threads;
+
     for (auto i : util::range(num_threads)) {
 
       auto begin = std::begin(legal_moves) + i * items_per_thread;
       auto end = (i == num_threads - 1) ? std::end(legal_moves) : begin + items_per_thread;
-
-      futures.emplace_back(std::async(std::launch::async, process, i, begin, end));
+      threads.emplace_back(process, i, begin, end);
     }
 
-    // Collect results from each thread
-    for (auto& future : futures) {
-      auto vec = future.get();
-      move_scores.insert(move_scores.end(), vec.begin(), vec.end());
+    for (auto& t : threads) {
+      t.join();
     }
 
     std::ranges::sort(move_scores, [&](const auto& a, const auto& b) {

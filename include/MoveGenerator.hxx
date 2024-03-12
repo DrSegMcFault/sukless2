@@ -198,16 +198,16 @@ private:
     auto ith_permutation =
       [](uint64_t index, uint8_t bits_in_mask, Bitboard attack_mask)
     {
-       Bitboard occupancy = 0ULL;
+      Bitboard occupancy = 0ULL;
 
-       for (const auto count : util::range(bits_in_mask))
-       {
-         uint8_t square = util::bits::get_lsb_index(attack_mask);
-         clear_bit(square, attack_mask);
+      for (const auto count : util::range(bits_in_mask))
+      {
+        uint8_t square = util::bits::get_lsb_index(attack_mask);
+        clear_bit(square, attack_mask);
 
-         if (is_set(count, index)) {
-           set_bit(square, occupancy);
-         }
+        if (is_set(count, index)) {
+          set_bit(square, occupancy);
+        }
       }
 
       return occupancy;

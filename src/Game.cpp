@@ -131,7 +131,6 @@ void Game::handleMove(int from, int to, int promoted_piece)
     sound_to_play = "";
   }
 
-
   emit playSound(sound_to_play);
   afterMove(result, move_made);
 }
@@ -190,7 +189,7 @@ void Game::afterMove(chess::MoveResult result, chess::HashedMove move_made)
 {
   // always update the board and view number
   if (_current_move_index != _move_model.dataCount() - 1) {
-     _current_move_index = _move_model.dataCount() - 1;
+    _current_move_index = _move_model.dataCount() - 1;
     _move_model.setSelected(_current_move_index);
   }
   _board_model.setBoard(_board_manager->toArray());

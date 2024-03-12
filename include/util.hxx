@@ -204,8 +204,6 @@ namespace chess {
     Piece::BlackQueen,
     Piece::BlackKing
   };
-
-
 } // namespace chess
 
 namespace chess::util {

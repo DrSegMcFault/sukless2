@@ -1,6 +1,5 @@
 #include "AIRunner.h"
 
-#include <cassert>
 #include <QEventLoop>
 #include <QDebug>
 
@@ -52,12 +51,6 @@ AIRunner::AIRunner(QObject* parent)
         // make the move on our copy of the board
         auto&& [ result, move_made ] = _manager.tryMove(m.toMove());
 
-        // this should never assert but if it does, something is very wrong.
-        // not sure how i want to recover from this yet.
-        assert(m == move_made && r == result);
-
-        qDebug() << "AIRunner: move is legal\n";
-
         if (color != _ai.color()) {
 
           qDebug() << "AIRunner: finding best move...\n";
@@ -68,6 +61,7 @@ AIRunner::AIRunner(QObject* parent)
 
         }
         else if (_ai.assisting()) {
+          qDebug() << "AIRunner: finding suggestion...\n";
 
           if (auto move = _ai.getBestMove(_manager)) {
             emit suggestionReady(*move);

@@ -36,7 +36,6 @@ public:
                                      uint8_t target,
                                      uint32_t promoted_to) const;
 
-
   // generates Board and State from FEN string
   std::optional<std::pair<Board, State>> makeBoardFromFen(const std::string& fen) const;
 
