@@ -1,4 +1,5 @@
 #include "BoardManager.hxx"
+#include <string>
 
 namespace chess {
 

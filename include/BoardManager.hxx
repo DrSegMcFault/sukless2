@@ -3,6 +3,7 @@
 #include <array>
 #include <optional>
 #include <vector>
+#include <string>
 
 #include "util.hxx"
 #include "MoveGenerator.hxx"
