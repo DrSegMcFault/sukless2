@@ -35,9 +35,9 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
  *******************************************************************************/
 BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const State& s,
                            const std::vector<HashedMove>& v)
-  : _generator(g)
-  , _board(b)
+  : _board(b)
   , _state(s)
+  , _generator(g)
   , _move_list(v)
   , NO_HISTORY(true)
 {
@@ -453,7 +453,7 @@ MoveResult BoardManager::makeMove(
 
     // the half move clock is the number of
     // half moves since the last pawn move or any capture
-    if (!capture && ( piece != WhitePawn || piece != BlackPawn))
+    if (!capture &&  piece != WhitePawn && piece != BlackPawn)
     {
       state_copy.half_move_clock++;
     }

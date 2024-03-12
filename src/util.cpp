@@ -1,4 +1,5 @@
 #include "util.hxx"
+#include <iostream>
 
 namespace chess {
 

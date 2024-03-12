@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-
 #include "util.hxx"
 
 namespace chess {

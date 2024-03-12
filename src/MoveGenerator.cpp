@@ -1,7 +1,4 @@
-
 #include "MoveGenerator.hxx"
-#include <random>
-#include <cassert>
 
 namespace chess {
 
@@ -51,20 +48,20 @@ void MoveGenerator::generateMoves(const Board& b,
                                   const State& s,
                                   std::vector<HashedMove>& moves) const
 {
-   switch (s.side_to_move) {
-     case White:
-       generateWhitePawnMoves(b, s, moves);
-       break;
-     case Black:
-       generateBlackPawnMoves(b, s, moves);
-       break;
-   }
-   generateCastlingMoves(b, s, moves);
-   generateKnightMoves(b, s.side_to_move, moves);
-   generateBishopMoves(b, s.side_to_move, moves);
-   generateRookMoves(b, s.side_to_move, moves);
-   generateQueenMoves(b, s.side_to_move, moves);
-   generateKingMoves(b, s.side_to_move, moves);
+  switch (s.side_to_move) {
+    case White:
+      generateWhitePawnMoves(b, s, moves);
+      break;
+    case Black:
+      generateBlackPawnMoves(b, s, moves);
+      break;
+  }
+  generateCastlingMoves(b, s, moves);
+  generateKnightMoves(b, s.side_to_move, moves);
+  generateBishopMoves(b, s.side_to_move, moves);
+  generateRookMoves(b, s.side_to_move, moves);
+  generateQueenMoves(b, s.side_to_move, moves);
+  generateKingMoves(b, s.side_to_move, moves);
 }
 
 /*******************************************************************************
@@ -361,7 +358,6 @@ bool MoveGenerator::isSquareAttacked(uint8_t square,
   // check if the opposing colors piece can attack it
   // even if the opposing piece isnt there, this by definition
   // gives us the desired result
-
   if ((side == White) && (pawn_attacks[Black][square] & board[WhitePawn]) ) {
     return true;
   }
@@ -481,62 +477,62 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
                                            const State& state,
                                            std::vector<HashedMove>& moves) const
 {
-   Bitboard board = board_[BlackPawn];
-   uint8_t source_square = 0;
-   uint8_t target_square = 0;
+  Bitboard board = board_[BlackPawn];
+  uint8_t source_square = 0;
+  uint8_t target_square = 0;
 
-   while (board) {
-     source_square = util::bits::get_lsb_index(board);
-     // this is a black pawn push of 1 square
-     target_square = source_square - 8;
+  while (board) {
+    source_square = util::bits::get_lsb_index(board);
+    // this is a black pawn push of 1 square
+    target_square = source_square - 8;
 
-     // if the target square is on board and not occupied
-     if (target_square >= chess::A1 && !is_set(target_square, board_[All])) {
-       // promotion
-       if (source_square >= chess::A2 && source_square <= chess::H2)
-       {
-         addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 0,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackRook,  0,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackBishop,0,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackKnight,0,0,0,0);
+    // if the target square is on board and not occupied
+    if (target_square >= chess::A1 && !is_set(target_square, board_[All])) {
+      // promotion
+      if (source_square >= chess::A2 && source_square <= chess::H2)
+      {
+        addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 0,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackRook,  0,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackBishop,0,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackKnight,0,0,0,0);
 
-       } else { // one move forward, no promotion
-         addMove(moves, source_square, target_square, BlackPawn, NoPiece, 0,0,0,0);
+      } else { // one move forward, no promotion
+        addMove(moves, source_square, target_square, BlackPawn, NoPiece, 0,0,0,0);
 
-         if (source_square >= chess::A7 && source_square <= chess::H7 &&
-             !is_set(target_square - 8, board_[All]))
-         {
-           // two square push
-           addMove(moves, source_square, target_square - 8, BlackPawn, NoPiece, 0,1,0,0);
-         }
-       }
-     }
+        if (source_square >= chess::A7 && source_square <= chess::H7 &&
+            !is_set(target_square - 8, board_[All]))
+        {
+          // two square push
+          addMove(moves, source_square, target_square - 8, BlackPawn, NoPiece, 0,1,0,0);
+        }
+      }
+    }
 
-     auto attacks = pawn_attacks[Black][source_square] & board_[WhiteAll];
+    auto attacks = pawn_attacks[Black][source_square] & board_[WhiteAll];
 
-     while (attacks) {
-       target_square = util::bits::get_lsb_index(attacks);
+    while (attacks) {
+      target_square = util::bits::get_lsb_index(attacks);
 
-       // promotion
-       if (source_square >= chess::A2 && source_square <= chess::H2) {
-         addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 1,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackRook,  1,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackBishop,1,0,0,0);
-         addMove(moves, source_square, target_square, BlackPawn, BlackKnight,1,0,0,0);
-       } else { // capture, no promotion
-         addMove(moves, source_square, target_square, BlackPawn, NoPiece, 1,0,0,0);
-       }
-       clear_bit(target_square, attacks);
-     }
+      // promotion
+      if (source_square >= chess::A2 && source_square <= chess::H2) {
+        addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 1,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackRook,  1,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackBishop,1,0,0,0);
+        addMove(moves, source_square, target_square, BlackPawn, BlackKnight,1,0,0,0);
+      } else { // capture, no promotion
+        addMove(moves, source_square, target_square, BlackPawn, NoPiece, 1,0,0,0);
+      }
+      clear_bit(target_square, attacks);
+    }
 
-     if (state.en_passant_target != chess::NoSquare) {
-       auto en_passant_attacks = pawn_attacks[Black][source_square] & (1ULL << state.en_passant_target);
-       if (en_passant_attacks) {
-         auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
-         addMove(moves, source_square, attack_square, BlackPawn, NoPiece, 1,0,1,0);
-       }
-     }
-     clear_bit(source_square, board);
+    if (state.en_passant_target != chess::NoSquare) {
+      auto en_passant_attacks = pawn_attacks[Black][source_square] & (1ULL << state.en_passant_target);
+      if (en_passant_attacks) {
+        auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
+        addMove(moves, source_square, attack_square, BlackPawn, NoPiece, 1,0,1,0);
+      }
+    }
+    clear_bit(source_square, board);
   }
 }
 
@@ -549,72 +545,72 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
                                           const State& state,
                                           std::vector<HashedMove>& moves) const
 {
-   using namespace util;
+  using namespace util;
 
-   switch (state.side_to_move) {
-     case White:
-     {
-       if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
-       {
-         if (!is_set(chess::F1, board_[All]) &&
-             !is_set(chess::G1, board_[All]))
+  switch (state.side_to_move) {
+    case White:
+    {
+      if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
+      {
+        if (!is_set(chess::F1, board_[All]) &&
+            !is_set(chess::G1, board_[All]))
+        {
+          if (!isSquareAttacked(chess::E1, Black, board_) &&
+              !isSquareAttacked(chess::F1, Black, board_))
+          {
+            addMove(moves, chess::E1, chess::G1, WhiteKing, NoPiece, 0,0,0,1);
+          }
+        }
+      }
+
+      if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
+      {
+        if (!(is_set(chess::D1, board_[All])) &&
+            !(is_set(chess::C1, board_[All])) &&
+            !(is_set(chess::B1, board_[All])))
          {
            if (!isSquareAttacked(chess::E1, Black, board_) &&
-               !isSquareAttacked(chess::F1, Black, board_))
+               !isSquareAttacked(chess::D1, Black, board_))
            {
-             addMove(moves, chess::E1, chess::G1, WhiteKing, NoPiece, 0,0,0,1);
+             addMove(moves, chess::E1, chess::C1, WhiteKing, NoPiece, 0,0,0,1);
            }
          }
-       }
+      }
+      break;
+    }
 
-       if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
-       {
-         if (!(is_set(chess::D1, board_[All])) &&
-             !(is_set(chess::C1, board_[All])) &&
-             !(is_set(chess::B1, board_[All])))
+    case Black:
+    {
+      if (state.castling_rights & toul(CastlingRights::BlackKingSide))
+      {
+        if (!is_set(chess::F8, board_[All]) &&
+            !is_set(chess::G8, board_[All]))
+        {
+          if (!isSquareAttacked(chess::E8, White, board_) &&
+              !isSquareAttacked(chess::F8, White, board_))
           {
-            if (!isSquareAttacked(chess::E1, Black, board_) &&
-                !isSquareAttacked(chess::D1, Black, board_))
-            {
-              addMove(moves, chess::E1, chess::C1, WhiteKing, NoPiece, 0,0,0,1);
-            }
+            addMove(moves, chess::E8, chess::G8, BlackKing, NoPiece, 0,0,0,1);
           }
-       }
-       break;
-     }
+        }
+      }
 
-     case Black:
-     {
-       if (state.castling_rights & toul(CastlingRights::BlackKingSide))
-       {
-         if (!is_set(chess::F8, board_[All]) &&
-             !is_set(chess::G8, board_[All]))
-         {
-           if (!isSquareAttacked(chess::E8, White, board_) &&
-               !isSquareAttacked(chess::F8, White, board_))
-           {
-             addMove(moves, chess::E8, chess::G8, BlackKing, NoPiece, 0,0,0,1);
-           }
-         }
-       }
+      if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
+      {
+        if (!is_set(chess::D8, board_[All]) &&
+            !is_set(chess::C8, board_[All]) &&
+            !is_set(chess::B8, board_[All]))
+        {
+          if (!isSquareAttacked(chess::E8, White, board_) &&
+              !isSquareAttacked(chess::D8, White, board_))
+          {
+            addMove(moves, chess::E8, chess::C8, BlackKing, NoPiece, 0,0,0,1);
+          }
+        }
+      }
 
-       if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
-       {
-         if (!is_set(chess::D8, board_[All]) &&
-             !is_set(chess::C8, board_[All]) &&
-             !is_set(chess::B8, board_[All]))
-         {
-           if (!isSquareAttacked(chess::E8, White, board_) &&
-               !isSquareAttacked(chess::D8, White, board_))
-           {
-             addMove(moves, chess::E8, chess::C8, BlackKing, NoPiece, 0,0,0,1);
-           }
-         }
-       }
-
-       break;
-     }
-   }
+      break;
+    }
+  }
 }
 
 /*******************************************************************************
@@ -811,73 +807,4 @@ void MoveGenerator::generateKingMoves(const Board& board_,
     clear_bit(source_square, board);
   }
 }
-
-/*******************************************************************************
- *
- * Method: testAttackLookup()
- *
- *******************************************************************************/
-void MoveGenerator::testAttackLookup()
-{
-  std::random_device rd;
-  std::mt19937 gen(rd());
-
-  for (auto i = 0; i < 100'000'000; i ++) {
-    std::uniform_int_distribution<uint64_t> dis(
-      std::numeric_limits<std::uint64_t>::min(),
-      std::numeric_limits<std::uint64_t>::max());
-
-    Bitboard occ = {dis(gen)};
-    uint8_t r_square = (rand() % 64);
-
-    Bitboard bishop_actual = getBishopAttacks(r_square, occ);
-    Bitboard bishop_calculated = calcBishopAttacks(r_square, occ);
-
-    Bitboard rook_actual = getRookAttacks(r_square, occ);
-    Bitboard rook_calculated = calcRookAttacks(r_square, occ);
-
-    Bitboard queen_actual = getQueenAttacks(r_square, occ);
-    Bitboard queen_calculated =
-      (calcRookAttacks(r_square, occ)) | calcBishopAttacks(r_square, occ);
-
-    if (bishop_actual != bishop_calculated) {
-      std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
-      print_board(occ);
-      std::cout << "expected:\n";
-      print_board(bishop_calculated);
-
-      std::cout << "actual:\n";
-      print_board(bishop_actual);
-      std::cout << "mask: \n";
-      print_board(bishop_masks[r_square]);
-
-      assert(false);
-    }
-
-    if (rook_actual != rook_calculated) {
-      std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
-      print_board(occ);
-      std::cout << "expected:\n";
-      print_board(rook_calculated);
-      std::cout << "actual:\n";
-      print_board(rook_actual);
-      std::cout << "mask: \n";
-      print_board(rook_masks[r_square]);
-      assert(false);
-    }
-
-    if (queen_actual != queen_calculated) {
-      std::cout << "attack fetch falied for occ on square: " << r_square <<"\n";
-      print_board(occ);
-      std::cout << "expected:\n";
-      print_board(queen_calculated);
-      std::cout << "actual:\n";
-      print_board(queen_actual);
-      std::cout << "mask: \n";
-      print_board(rook_masks[r_square] | bishop_masks[r_square]);
-      assert(false);
-    }
-  }
-}
-
 } // namespace chess

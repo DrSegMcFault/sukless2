@@ -6,7 +6,6 @@
 #include <tuple>
 #include <ranges>
 #include <array>
-#include <iostream>
 
 namespace chess {
   using Bitboard = uint64_t;

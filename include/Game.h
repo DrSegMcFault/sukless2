@@ -2,8 +2,8 @@
 
 #include <QObject>
 #include <QUrl>
-#include <memory>
 #include <QtQml>
+#include <memory>
 
 #include "util.hxx"
 #include "MoveGenerator.hxx"

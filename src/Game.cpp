@@ -89,7 +89,7 @@ void Game::handleMove(int from, int to, int promoted_piece)
     return;
   }
 
-  chess::Piece promoted;
+  chess::Piece promoted = chess::Piece::NoPiece;
   if (promoted_piece > 0) {
     promoted = static_cast<chess::Piece>(promoted_piece);
   }
@@ -193,7 +193,7 @@ void Game::afterMove(chess::MoveResult result, chess::HashedMove move_made)
      _current_move_index = _move_model.dataCount() - 1;
     _move_model.setSelected(_current_move_index);
   }
-  _board_model.setBoard(std::move(_board_manager->toArray()));
+  _board_model.setBoard(_board_manager->toArray());
 
   if (move_made.capture) {
 
@@ -243,7 +243,7 @@ void Game::showPrevious() {
       auto opt = _board_manager->makeBoardFromFen(*fen);
       auto&& [board, state] = *opt;
 
-      _board_model.setBoard(std::move(chess::to_array(board)));
+      _board_model.setBoard(chess::to_array(board));
     }
   }
 }
@@ -268,6 +268,6 @@ void Game::showNext() {
     auto opt = _board_manager->makeBoardFromFen(*fen);
     auto&& [board, state] = *opt;
 
-    _board_model.setBoard(std::move(chess::to_array(board)));
+    _board_model.setBoard(chess::to_array(board));
   }
 }

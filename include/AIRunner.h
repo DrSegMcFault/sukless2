@@ -12,8 +12,8 @@ class AIRunner : public QObject
   Q_OBJECT
 
 private:
-  chess::BoardManager _manager;
   chess::MoveGenerator _generator;
+  chess::BoardManager _manager;
   chess::AI _ai;
   std::thread _thread;
 
