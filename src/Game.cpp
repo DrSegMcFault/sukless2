@@ -43,6 +43,7 @@ void Game::reset()
 {
   _board_manager->reset();
   _board_model.setBoard(_board_manager->toArray());
+  _board_model.updateEvals(0, 0);
   _move_model.clear();
   _current_move_index = 1;
   _current_history_index = 0;

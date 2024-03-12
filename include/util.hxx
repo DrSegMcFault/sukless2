@@ -122,11 +122,17 @@ namespace chess {
 
   // convert a HashedMove into an algebraic move string
   // *Hashed moves are not aware of game states
-  // like Checkmate, StaleMate, or Draws
+  // like Checkmate, Stalemate, or Draws
   std::string to_string(const HashedMove& m);
 
-  // convert the board to a string
+  // convert the Bitboard to a string
   std::string to_string(const Bitboard& m);
+
+  // convert the Color to a string
+  std::string to_string(Color c);
+
+  // convert the MoveResult to a string
+  std::string to_string(MoveResult r);
 
   static constexpr uint8_t A1 = 0;  static constexpr uint8_t B1 = 1;
   static constexpr uint8_t C1 = 2;  static constexpr uint8_t D1 = 3;

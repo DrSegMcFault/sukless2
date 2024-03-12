@@ -93,7 +93,7 @@ int AI::calcPositionalScore(const BoardManager& b, Color side_to_move)
  * Method: AI::evaluate(const BoardManager&, Color c)
  *
  *****************************************************************************/
-int AI::evaluate(MoveResult last_move, const BoardManager& b)
+int AI::evaluate(MoveResult last_move, const BoardManager& b, int depth)
 {
   int evaluation = 0;
   int material_score = 0;
@@ -110,24 +110,29 @@ int AI::evaluate(MoveResult last_move, const BoardManager& b)
       material_score = black_mat - white_mat;
       break;
   }
-   if (last_move == MoveResult::Checkmate) {
-     return 100'000;
-   } else if (last_move == MoveResult::Stalemate) {
-     return -1000;
-   }
+
+  if (last_move == MoveResult::Checkmate) {
+    return color() == side_to_move ? -100'000 * depth : 100'000 * depth;
+
+  } else if (last_move == MoveResult::Stalemate) {
+    return -10000;
+  }
 
   return material_score + calcPositionalScore(b, side_to_move);
 }
 
 /******************************************************************************
  *
- * Method: AI::alphaBeta(BoardManager m, HashedMove, depth )
+ * Method: AI::miniMax(BoardManager m, HashedMove, depth )
  *
  *****************************************************************************/
-int AI::alphaBeta(MoveResult last, BoardManager& m, int alpha, int beta, int cur_depth, bool is_max)
+int AI::miniMax(MoveResult last, BoardManager& m, int alpha, int beta, int cur_depth, bool is_max)
 {
-  if (cur_depth == 0) {
-    return evaluate(last, m);
+  if (cur_depth == 0 ||
+      last == MoveResult::Checkmate ||
+      last == MoveResult::Stalemate)
+  {
+    return evaluate(last, m, cur_depth);
   }
 
   auto legal_moves = getLegalMoves(m);
@@ -142,7 +147,7 @@ int AI::alphaBeta(MoveResult last, BoardManager& m, int alpha, int beta, int cur
 
       auto&& [result, u] = temp.tryMove(move.toMove());
 
-      maxEval = std::max(maxEval, alphaBeta(result, temp, alpha, beta, cur_depth - 1, false));
+      maxEval = std::max(maxEval, miniMax(result, temp, alpha, beta, cur_depth - 1, false));
       alpha = std::max(alpha, maxEval);
 
       if (beta <= alpha) {
@@ -160,7 +165,7 @@ int AI::alphaBeta(MoveResult last, BoardManager& m, int alpha, int beta, int cur
 
       auto&& [result, u] = temp.tryMove(move.toMove());
 
-      minEval = std::min(minEval, alphaBeta(result, temp, alpha, beta, cur_depth - 1, true));
+      minEval = std::min(minEval, miniMax(result, temp, alpha, beta, cur_depth - 1, true));
       beta = std::min(beta, minEval);
 
       if (beta <= alpha) {
@@ -211,26 +216,32 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
   std::vector<std::pair<HashedMove, int>> move_scores = {};
 
   if (legal_moves.size()) {
-    constexpr size_t numThreads = 3;
+    constexpr size_t numThreads = 10;
     const size_t itemsPerThread = legal_moves.size() / numThreads;
 
-    auto process = [&] (int threadNum, std::vector<HashedMove>::iterator begin,
+    auto process = [&] (int threadNum,
+                        std::vector<HashedMove>::iterator begin,
                         std::vector<HashedMove>::iterator end)
     {
-      auto startTime = std::chrono::high_resolution_clock::now();
       std::vector<std::pair<HashedMove, int>> ret;
+      auto roots_evaluated = 0;
 
-      for (auto it = begin; it != end; ++it){
+      auto startTime = std::chrono::high_resolution_clock::now();
+      for (auto it = begin; it != end; ++it) {
         BoardManager initial_board (_generator, cpy._board, cpy._state, legal_moves);
         auto&& [result, move_made] = initial_board.tryMove(it->toMove());
         ret.push_back({*it,
-                       alphaBeta(result, initial_board, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 5, false)});
+                       miniMax(result, initial_board,
+                               std::numeric_limits<int>::min(),
+                               std::numeric_limits<int>::max(), 5, false)});
+        roots_evaluated++;
       }
 
       auto endTime = std::chrono::high_resolution_clock::now();
-      auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-      qDebug() << "Thread " << threadNum << " executed in " << duration.count() << " second(s).\n";
+      // qDebug() << "Thread " << threadNum << " executed in " << duration.count() << " msec(s).\n";
+      // qDebug() << "\t evaluated "  << roots_evaluated << " roots\n";
       return ret;
     };
 
@@ -249,21 +260,18 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
       move_scores.insert(move_scores.end(), vec.begin(), vec.end());
     }
 
-    // for (const auto& move : legal_moves) {
-    //   BoardManager initial_board (_generator, cpy._board, cpy._state, legal_moves);
-    //   initial_board.tryMove(move.toMove());
-
-    //   move_scores.push_back({move,
-    //                          alphaBeta(initial_board, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 5, false)});
-    // }
-
     std::ranges::sort(move_scores, [&](const auto& a, const auto& b) {
       return a.second > b.second;
     });
+
     auto endTime = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
 
     qDebug() << "findBestMove executed in " << duration.count() << " second(s).\n";
+
+    for (auto [m, score] : move_scores) {
+      qDebug() << to_string(m) << " " << score;
+    }
 
     return move_scores.front().first;
   }

@@ -49,9 +49,9 @@ private:
 
   int calcPositionalScore(const BoardManager& b, Color c);
 
-  int evaluate(MoveResult last_move, const BoardManager& b);
+  int evaluate(MoveResult last_move, const BoardManager& b, int depth);
 
-  int alphaBeta(MoveResult last, BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
+  int miniMax(MoveResult last, BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
 
   // get the legal moves from a board
   std::vector<HashedMove> getLegalMoves(const BoardManager&);

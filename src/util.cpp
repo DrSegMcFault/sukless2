@@ -60,6 +60,7 @@ std::string to_string(const Bitboard& b) {
   ret.append("\n    a b c d e f g h\n\n");
   return ret;
 }
+
 /*******************************************************************************
  *
  * Function: chess::to_string(const HashedMove& m)
@@ -111,6 +112,38 @@ std::string to_string(const HashedMove& m) {
     }
   }
   return str;
+}
+
+/*******************************************************************************
+ *
+ * Function: chess::to_string(const HashedMove& m)
+ *
+ *******************************************************************************/
+std::string to_string(Color c) {
+  return c == White ? "white" : "black";
+}
+
+/*******************************************************************************
+ *
+ * Function: chess::to_string(MoveResult m)
+ *
+ *******************************************************************************/
+std::string to_string(MoveResult m)
+{
+  switch (m) {
+    case MoveResult::Illegal:
+      return "Illegal";
+    case MoveResult::Valid:
+      return "Valid";
+    case MoveResult::Check:
+      return "Check";
+    case MoveResult::Checkmate:
+      return "Checkmate";
+    case MoveResult::Stalemate:
+      return "Stalemate";
+    case MoveResult::Draw:
+      return "Draw";
+  }
 }
 
 /*******************************************************************************
