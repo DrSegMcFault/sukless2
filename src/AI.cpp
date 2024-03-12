@@ -216,10 +216,10 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
   std::vector<std::pair<HashedMove, int>> move_scores = {};
 
   if (legal_moves.size()) {
-    constexpr size_t numThreads = 10;
-    const size_t itemsPerThread = legal_moves.size() / numThreads;
+    constexpr size_t num_threads = 10;
+    const size_t items_per_thread = legal_moves.size() / num_threads;
 
-    auto process = [&] (int threadNum,
+    auto process = [&] (int thread_num,
                         std::vector<HashedMove>::iterator begin,
                         std::vector<HashedMove>::iterator end)
     {
@@ -227,6 +227,7 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
       auto roots_evaluated = 0;
 
       auto startTime = std::chrono::high_resolution_clock::now();
+
       for (auto it = begin; it != end; ++it) {
         BoardManager initial_board (_generator, cpy._board, cpy._state, legal_moves);
         auto&& [result, move_made] = initial_board.tryMove(it->toMove());
@@ -240,16 +241,16 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
       auto endTime = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-      // qDebug() << "Thread " << threadNum << " executed in " << duration.count() << " msec(s).\n";
-      // qDebug() << "\t evaluated "  << roots_evaluated << " roots\n";
+      qDebug() << "Thread " << thread_num << " executed in " << duration.count() << " msec(s).\n";
+      qDebug() << "\t evaluated "  << roots_evaluated << " roots\n";
       return ret;
     };
 
     std::vector<std::future<std::vector<std::pair<HashedMove,int>>>> futures;
-    for (auto i : util::range(numThreads)) {
+    for (auto i : util::range(num_threads)) {
 
-      auto begin = std::begin(legal_moves) + i * itemsPerThread;
-      auto end = (i == numThreads - 1) ? std::end(legal_moves) : begin + itemsPerThread;
+      auto begin = std::begin(legal_moves) + i * items_per_thread;
+      auto end = (i == num_threads - 1) ? std::end(legal_moves) : begin + items_per_thread;
 
       futures.emplace_back(std::async(std::launch::async, process, i, begin, end));
     }

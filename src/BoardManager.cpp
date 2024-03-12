@@ -175,7 +175,7 @@ std::optional<std::pair<Board,State>>
   // full move count
   state.full_move_count = std::stoul(fen_move_cnt);
 
-  return std::make_tuple(board, state);
+  return std::make_pair(board, state);
 }
 
 /*******************************************************************************
