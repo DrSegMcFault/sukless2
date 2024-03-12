@@ -195,7 +195,7 @@ void Game::afterMove(chess::MoveResult result, chess::HashedMove move_made)
   }
   _board_model.setBoard(_board_manager->toArray());
 
-  if (move_made.capture) {
+  if (move_made.m.capture) {
 
     float white_mat = 0.0f;
     float black_mat = 0.0f;

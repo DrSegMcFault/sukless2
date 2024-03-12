@@ -51,26 +51,26 @@ namespace chess {
       uint32_t enpassant : 1;
       uint32_t castling : 1;
       uint32_t : 6;
-    };
+    } m;
 
-    uint32_t move;
+    uint32_t hashed;
 
     bool operator==(const HashedMove& other) const {
-      return move == other.move;
+      return hashed == other.hashed;
     }
 
     auto explode() const {
       return
-          std::make_tuple(static_cast<uint8_t>(source), static_cast<uint8_t>(target),
-                          static_cast<Piece>(piece), static_cast<Piece>(promoted),
-                          static_cast<bool>(capture), static_cast<bool>(double_push),
-                          static_cast<bool>(enpassant), static_cast<bool>(castling));
+          std::make_tuple(static_cast<uint8_t>(m.source), static_cast<uint8_t>(m.target),
+                          static_cast<Piece>(m.piece), static_cast<Piece>(m.promoted),
+                          static_cast<bool>(m.capture), static_cast<bool>(m.double_push),
+                          static_cast<bool>(m.enpassant), static_cast<bool>(m.castling));
     }
 
     chess::Move toMove() const {
-      return { static_cast<uint8_t>(source),
-               static_cast<uint8_t>(target),
-               static_cast<chess::Piece>(promoted) };
+      return { static_cast<uint8_t>(m.source),
+               static_cast<uint8_t>(m.target),
+               static_cast<chess::Piece>(m.promoted) };
     }
   };
 

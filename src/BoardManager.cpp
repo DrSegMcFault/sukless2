@@ -188,8 +188,8 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
   std::vector<uint8_t> ret;
   ret.reserve(55);
   for (const auto& move : _move_list) {
-    if (move.source == square) {
-      ret.push_back(move.target);
+    if (move.m.source == square) {
+      ret.push_back(move.m.target);
     }
   }
 
@@ -484,9 +484,9 @@ std::optional<HashedMove> BoardManager::findMove(uint8_t source,
                                                  uint32_t promoted_to) const
 {
   for (const auto& move : _move_list) {
-    if (move.source == source &&
-        move.target == target &&
-        move.promoted == promoted_to)
+    if (move.m.source == source &&
+        move.m.target == target &&
+        move.m.promoted == promoted_to)
     {
       return move;
     }

@@ -95,7 +95,6 @@ int AI::calcPositionalScore(const BoardManager& b, Color side_to_move)
  *****************************************************************************/
 int AI::evaluate(MoveResult last_move, const BoardManager& b, int depth)
 {
-  int evaluation = 0;
   int material_score = 0;
 
   auto side_to_move = b.getSideToMove();
@@ -197,7 +196,7 @@ std::vector<HashedMove> AI::getLegalMoves(const BoardManager& cpy)
   }
 
   std::ranges::sort(legal_moves, [](auto& a, auto& b) {
-    return static_cast<bool>(a.capture);
+    return static_cast<bool>(a.m.capture);
   });
 
   return legal_moves;

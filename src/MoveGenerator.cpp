@@ -29,14 +29,17 @@ inline void MoveGenerator::addMove(std::vector<HashedMove>& moves,
                                    uint32_t capture, uint32_t double_push,
                                    uint32_t enpassant, uint32_t castling) const
 {
-  moves.push_back({.source = source,
-                   .target = target,
-                   .piece = piece,
-                   .promoted = promotion,
-                   .capture = capture,
-                   .double_push = double_push,
-                   .enpassant = enpassant,
-                   .castling = castling});
+  HashedMove move;
+  move.m.source = source;
+  move.m.target = target;
+  move.m.piece = piece;
+  move.m.promoted = promotion;
+  move.m.capture = capture;
+  move.m.double_push = double_push;
+  move.m.enpassant = enpassant;
+  move.m.castling = castling;
+
+  moves.push_back(move);
 }
 
 /*******************************************************************************
