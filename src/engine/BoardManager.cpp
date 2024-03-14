@@ -1,4 +1,4 @@
-#include "BoardManager.hxx"
+#include "engine/BoardManager.hxx"
 #include <string>
 
 namespace chess {
@@ -127,7 +127,7 @@ std::optional<std::pair<Board,BoardState>>
       rank--;
       file = 0;
     }
-    else if (auto piece = util::fen::char_to_piece(c)) {
+    else if (auto piece = fen::char_to_piece(c)) {
       uint8_t square = rank * 8 + file;
       set_bit(square, board[*piece]);
       file++;
@@ -165,7 +165,7 @@ std::optional<std::pair<Board,BoardState>>
   if (fen_en_passant == "-") {
     state.en_passant_target = chess::NoSquare;
   }
-  else if (auto index = util::fen::algebraic_to_index(fen_en_passant))
+  else if (auto index = fen::algebraic_to_index(fen_en_passant))
   {
     state.en_passant_target = index.value();
   }
@@ -205,7 +205,7 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
 bool BoardManager::isCheck(const Board& board_, const BoardState& state_) const
 {
   return
-    _generator->isSquareAttacked(util::bits::get_lsb_index(state_.side_to_move == White ? board_[WhiteKing] : board_[BlackKing]),
+    _generator->isSquareAttacked(bits::get_lsb_index(state_.side_to_move == White ? board_[WhiteKing] : board_[BlackKing]),
                                  (state_.side_to_move == White) ? Black : White,
                                  board_);
 }

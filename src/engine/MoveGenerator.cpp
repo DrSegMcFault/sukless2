@@ -1,4 +1,4 @@
-#include "MoveGenerator.hxx"
+#include "engine/MoveGenerator.hxx"
 
 namespace chess {
 
@@ -83,11 +83,11 @@ void MoveGenerator::generateMoves(const Board& b,
  * Method: initPawnAttacks()
  *
  *******************************************************************************/
-std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
+std::vector<std::vector<Bitboard>> MoveGenerator::initPawnAttacks()
 {
-  std::array<std::array<Bitboard, 64>, 2> result;
+  std::vector<std::vector<Bitboard>> result(2, std::vector<Bitboard>(64));
 
-    constexpr auto get_mask = []<Color C>(uint8_t square) {
+  constexpr auto get_mask = []<Color C>(uint8_t square) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
@@ -100,13 +100,14 @@ std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
       if ((b << 9) & not_a_file)
         attacks |= (b << 9);
 
-    } else {
+    }
+    else {
       if ((b >> 7) & not_a_file)
         attacks |= (b >> 7);
 
       if ((b >> 9) & not_h_file)
         attacks |= (b >> 9);
-      }
+    }
 
     return attacks;
   };
@@ -124,9 +125,9 @@ std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
  * Method: initKnightAttacks()
  *
  *******************************************************************************/
-std::array<Bitboard, 64> MoveGenerator::initKnightAttacks()
+std::vector<Bitboard> MoveGenerator::initKnightAttacks()
 {
-  std::array<Bitboard, 64> result;
+  std::vector<Bitboard> result(64);
 
   for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
@@ -153,7 +154,6 @@ std::array<Bitboard, 64> MoveGenerator::initKnightAttacks()
 
     result[square] = attacks;
   }
-
   return result;
 }
 
@@ -162,9 +162,9 @@ std::array<Bitboard, 64> MoveGenerator::initKnightAttacks()
  * Method: initKingAttacks()
  *
  *******************************************************************************/
-std::array<Bitboard, 64> MoveGenerator::initKingAttacks()
+std::vector<Bitboard> MoveGenerator::initKingAttacks()
 {
-  std::array<Bitboard, 64> result;
+  std::vector<Bitboard> result(64);
 
   for (const auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
@@ -201,9 +201,9 @@ std::array<Bitboard, 64> MoveGenerator::initKingAttacks()
  * Method: initBishopMasks()
  *
  *******************************************************************************/
-std::array<Bitboard, 64> MoveGenerator::initBishopMasks()
+std::vector<Bitboard> MoveGenerator::initBishopMasks()
 {
-  std::array<Bitboard, 64> result;
+  std::vector<Bitboard> result(64);
 
   for (const auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
@@ -228,6 +228,7 @@ std::array<Bitboard, 64> MoveGenerator::initBishopMasks()
 
     result[square] = attacks;
   }
+
   return result;
 }
 
@@ -236,9 +237,9 @@ std::array<Bitboard, 64> MoveGenerator::initBishopMasks()
  * Method: initRookMasks()
  *
  *******************************************************************************/
-std::array<Bitboard, 64> MoveGenerator::initRookMasks()
+std::vector<Bitboard> MoveGenerator::initRookMasks()
 {
-  std::array<Bitboard, 64> result;
+  std::vector<Bitboard> result(64);
 
   for (auto square : util::range(NoSquare)) {
     Bitboard attacks {0ULL};
@@ -423,7 +424,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
 
     // this is a white pawn push of 1 square
     target_square = source_square + 8;
@@ -453,7 +454,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
     auto attacks = pawn_attacks[White][source_square] & board_[BlackAll];
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       // capturing promotion
       if (source_square >= chess::A7 && source_square <= chess::H7) {
@@ -472,7 +473,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
     if (state.en_passant_target != chess::NoSquare) {
       auto en_passant_attacks = pawn_attacks[White][source_square] & (1ULL << state.en_passant_target);
       if (en_passant_attacks) {
-        auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
+        auto attack_square = bits::get_lsb_index(en_passant_attacks);
           addMove(moves, source_square, attack_square, WhitePawn, NoPiece, 1,0,1,0);
       }
     }
@@ -495,7 +496,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     // this is a black pawn push of 1 square
     target_square = source_square - 8;
 
@@ -524,7 +525,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
     auto attacks = pawn_attacks[Black][source_square] & board_[WhiteAll];
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       // promotion
       if (source_square >= chess::A2 && source_square <= chess::H2) {
@@ -541,7 +542,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
     if (state.en_passant_target != chess::NoSquare) {
       auto en_passant_attacks = pawn_attacks[Black][source_square] & (1ULL << state.en_passant_target);
       if (en_passant_attacks) {
-        auto attack_square = util::bits::get_lsb_index(en_passant_attacks);
+        auto attack_square = bits::get_lsb_index(en_passant_attacks);
         addMove(moves, source_square, attack_square, BlackPawn, NoPiece, 1,0,1,0);
       }
     }
@@ -560,6 +561,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
                                           std::vector<HashedMove>& moves) const
 {
   using namespace util;
+
   if constexpr (c == White) {
     if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
     {
@@ -640,11 +642,11 @@ void MoveGenerator::generateKnightMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     attacks = knight_attacks[source_square] & ~(board_[all_color]);
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
@@ -681,11 +683,11 @@ void MoveGenerator::generateBishopMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     attacks = getBishopAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
@@ -722,11 +724,11 @@ void MoveGenerator::generateRookMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     attacks = getRookAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
@@ -763,11 +765,11 @@ void MoveGenerator::generateQueenMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     attacks = getQueenAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
@@ -804,11 +806,11 @@ void MoveGenerator::generateKingMoves(const Board& board_,
   uint8_t target_square = 0;
 
   while (board) {
-    source_square = util::bits::get_lsb_index(board);
+    source_square = bits::get_lsb_index(board);
     attacks = king_attacks[source_square] & ~(board_[all_color]);
 
     while (attacks) {
-      target_square = util::bits::get_lsb_index(attacks);
+      target_square = bits::get_lsb_index(attacks);
 
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));

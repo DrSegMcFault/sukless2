@@ -4,7 +4,7 @@
 
 #include "MoveGenerator.hxx"
 #include "BoardManager.hxx"
-#include "util.hxx"
+#include "ChessUtil.hxx"
 
 namespace chess {
 

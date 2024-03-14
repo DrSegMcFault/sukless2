@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "util.hxx"
+#include "ChessUtil.hxx"
+#include "Util.hxx"
 
 namespace chess {
 
@@ -23,23 +24,24 @@ public:
 private:
 
   // pre-calculated attack Bitboards
-  const std::array<std::array<Bitboard, 64>, 2> pawn_attacks;
-  const std::array<Bitboard, 64> knight_attacks;
-  const std::array<Bitboard, 64> king_attacks;
+  const std::vector<std::vector<Bitboard>> pawn_attacks;
+  const std::vector<Bitboard> knight_attacks;
+  const std::vector<Bitboard> king_attacks;
 
   // attack masks per square
-  const std::array<Bitboard, 64> bishop_masks;
-  const std::array<Bitboard, 64> rook_masks;
+  const std::vector<Bitboard> bishop_masks;
+  const std::vector<Bitboard> rook_masks;
 
-  const std::array<std::array<Bitboard, 512>, 64> bishop_attacks;
-  const std::array<std::array<Bitboard, 4096>, 64> rook_attacks;
+  const std::vector<std::vector<Bitboard>> bishop_attacks;
+  const std::vector<std::vector<Bitboard>> rook_attacks;
 
   // initialization functions
-  std::array<std::array<Bitboard, 64>, 2> initPawnAttacks();
-  std::array<Bitboard, 64> initKnightAttacks();
-  std::array<Bitboard, 64> initKingAttacks();
-  std::array<Bitboard, 64> initBishopMasks();
-  std::array<Bitboard, 64> initRookMasks();
+  std::vector<std::vector<Bitboard>> initPawnAttacks();
+
+  std::vector<Bitboard> initKnightAttacks();
+  std::vector<Bitboard> initKingAttacks();
+  std::vector<Bitboard> initBishopMasks();
+  std::vector<Bitboard> initRookMasks();
 
   Bitboard calcBishopAttacks(uint8_t square, Bitboard occ) const;
   Bitboard calcRookAttacks(uint8_t square, Bitboard occ) const;
@@ -91,8 +93,6 @@ private:
   template<Color side>
   void generateQueenMoves(const Board& b,
                           std::vector<HashedMove>& moves) const;
-
-  void testAttackLookup();
 
   static constexpr std::array<Bitboard, 64> bishop_magics = {
     0x40040844404084ULL,  0x2004208a004208ULL,
@@ -189,11 +189,11 @@ private:
   // used to initialize a big array of attacks
   // currently for rook and bishop attack tables
   template <size_t N, bool is_bishop>
-  auto initSliderAttacks(const std::array<Bitboard, 64> masks,
+  auto initSliderAttacks(const std::vector<Bitboard> masks,
                          const std::array<Bitboard, 64> magics,
                          const std::array<uint8_t, 64> bits)
   {
-    std::array<std::array<Bitboard, N>, 64> result = {};
+    std::vector<std::vector<Bitboard>> result(64, std::vector<Bitboard>(N));
 
     // generates the ith permutation of the attack mask
     auto ith_permutation =
@@ -203,7 +203,7 @@ private:
 
       for (const auto count : util::range(bits_in_mask))
       {
-        uint8_t square = util::bits::get_lsb_index(attack_mask);
+        uint8_t square = bits::get_lsb_index(attack_mask);
         clear_bit(square, attack_mask);
 
         if (is_set(count, index)) {
@@ -234,7 +234,6 @@ private:
         }
       }
     }
-
     return result;
   }
 };

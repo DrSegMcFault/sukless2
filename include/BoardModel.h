@@ -7,10 +7,9 @@
 #include <optional>
 #include <unordered_map>
 #include <QUrl>
-
 #include <QColor>
 
-#include "util.hxx"
+#include "engine/ChessTypes.hxx"
 
 class BoardModel : public QAbstractListModel
 {
@@ -32,9 +31,9 @@ public:
 
     switch (_visual_rotation) {
       case Rotation::ViewFromWhite:
-        return  (7 - row) * 8 + column;
+        return (7 - row) * 8 + column;
       case Rotation::ViewFromBlack:
-        return  row * 8 + (7 - column);
+        return row * 8 + (7 - column);
     }
     return 0;
   }
@@ -47,7 +46,7 @@ public:
     RoleFileLabel
   };
 
-  enum  Rotation {
+  enum Rotation {
     ViewFromWhite,
     ViewFromBlack
   };

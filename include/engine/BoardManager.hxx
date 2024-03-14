@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "util.hxx"
+#include "ChessUtil.hxx"
 #include "MoveGenerator.hxx"
 
 namespace chess {
@@ -79,12 +79,12 @@ public:
 
   // generate the fen representation of the current board
   std::string generateFen() const {
-    return util::fen::generate(_board, _state);
+    return fen::generate(_board, _state);
   }
 
   // get the current number of the provided piece on the board
   auto pieceCount(Piece piece = Piece::All) const {
-    return util::bits::count(_board[piece]);
+    return bits::count(_board[piece]);
   }
 
   // print a string representation of the specified piece's bitboard

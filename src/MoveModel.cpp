@@ -1,5 +1,8 @@
 #include "MoveModel.h"
 
+#include "engine/ChessUtil.hxx"
+#include "engine/Util.hxx"
+
 /******************************************************************************
  *
  * Method: MoveModel()
@@ -109,7 +112,7 @@ void MoveModel::addEntry(const MoveModelDataEntry& entry) {
     _data.back().second = str;
   }
 
-  for (auto i : chess::util::range(_data.size())) {
+  for (auto i : util::range(_data.size())) {
     _data[i].selected = false;
   }
 

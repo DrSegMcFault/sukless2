@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 #include <QString>
-#include "util.hxx"
+#include "engine/ChessTypes.hxx"
 
 class MoveModel : public QAbstractListModel
 {

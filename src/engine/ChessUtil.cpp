@@ -1,6 +1,9 @@
-#include "util.hxx"
+#include "engine/ChessUtil.hxx"
+
 #include <iostream>
 #include <string>
+
+#include "engine/Util.hxx"
 
 namespace chess {
 
@@ -86,19 +89,19 @@ std::string to_string(const HashedMove& m) {
     }
   }
   else {
-    auto str_target = *chess::util::fen::index_to_algebraic(target_square);
+    auto str_target = *chess::fen::index_to_algebraic(target_square);
 
     if (!(piece == chess::WhitePawn || piece == chess::BlackPawn))
     {
-      str += std::toupper(chess::util::fen::piece_to_char(piece));
+      str += std::toupper(chess::fen::piece_to_char(piece));
     }
 
-    if (auto alg = chess::util::fen::index_to_algebraic(source_square))
+    if (auto alg = chess::fen::index_to_algebraic(source_square))
     {
       // only name the file if its a pawn capture
       if ((piece == chess::WhitePawn || piece == chess::BlackPawn) && capture)
       {
-        str += chess::util::fen::index_to_algebraic(source_square).value().at(0);
+        str += chess::fen::index_to_algebraic(source_square).value().at(0);
       }
     }
 
@@ -108,9 +111,9 @@ std::string to_string(const HashedMove& m) {
 
     str.append(str_target);
 
-    if (chess::util::toul(promoted_to) != 0) {
+    if (util::toul(promoted_to) != 0) {
       str.append("=");
-      str += chess::util::fen::piece_to_char(promoted_to);
+      str += chess::fen::piece_to_char(promoted_to);
     }
   }
   return str;
@@ -118,7 +121,7 @@ std::string to_string(const HashedMove& m) {
 
 /*******************************************************************************
  *
- * Function: chess::to_string(const HashedMove& m)
+ * Function: chess::to_string(Color c)
  *
  *******************************************************************************/
 std::string to_string(Color c) {
@@ -164,11 +167,11 @@ std::array<std::optional<Piece>, 64> to_array(const Board& b)
 
 } // namespace chess
 
-namespace chess::util::fen {
+namespace chess::fen {
 
 /*******************************************************************************
  *
- * Function: util::fen::algebraic_to_index(const std::string& alg)
+ * Function: fen::algebraic_to_index(const std::string& alg)
  *
  *******************************************************************************/
 std::optional<uint8_t> algebraic_to_index(const std::string& alg)
@@ -193,7 +196,7 @@ std::optional<uint8_t> algebraic_to_index(const std::string& alg)
 
 /*******************************************************************************
  *
- * Function: util::fen::algebraic_to_index(const std::string& alg)
+ * Function: fen::index_to_algebraic(uint8_t index)
  * converts algebraic notation to the associated index
  *******************************************************************************/
 std::optional<std::string> index_to_algebraic(uint8_t index)
@@ -211,7 +214,7 @@ std::optional<std::string> index_to_algebraic(uint8_t index)
 
 /*******************************************************************************
  *
- * Function: util::fen::piece_from_char(const std::string& alg)
+ * Function: fen::piece_from_char(const std::string& alg)
  *
  *******************************************************************************/
 std::optional<Piece> char_to_piece(char c) {
@@ -235,7 +238,7 @@ std::optional<Piece> char_to_piece(char c) {
 
 /*******************************************************************************
  *
- * Function: util::fen::char_from_piece(Piece p)
+ * Function: fen::char_from_piece(Piece p)
  *
  *******************************************************************************/
 char piece_to_char(Piece p)
@@ -264,7 +267,7 @@ char piece_to_char(Piece p)
 
 /*******************************************************************************
  *
- * Function: util::fen::generate(const Board& b, uint8_t square)
+ * Function: fen::generate(const Board& b, uint8_t square)
  *
  *******************************************************************************/
 std::string generate(const Board& b, const BoardState& state) {
@@ -347,4 +350,4 @@ std::string generate(const Board& b, const BoardState& state) {
 
   return fen;
 }
-} // namespace chess::util::fen
+} // namespace chess::fen

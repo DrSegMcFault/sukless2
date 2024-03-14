@@ -85,7 +85,7 @@ void Game::handleMove(int from, int to, int promoted_piece)
   if (promoted_piece == 0 &&
       will_promote())
   {
-    emit promotionSelect(from, to, chess::util::toul(color_moved));
+    emit promotionSelect(from, to, util::toul(color_moved));
     return;
   }
 

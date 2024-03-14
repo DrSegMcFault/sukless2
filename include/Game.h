@@ -5,9 +5,11 @@
 #include <QtQml>
 #include <memory>
 
-#include "util.hxx"
-#include "MoveGenerator.hxx"
-#include "BoardManager.hxx"
+#include "engine/Util.hxx"
+#include "engine/ChessTypes.hxx"
+#include "engine/MoveGenerator.hxx"
+#include "engine/BoardManager.hxx"
+
 #include "MoveModel.h"
 #include "BoardModel.h"
 
@@ -23,15 +25,15 @@ class Game : public QObject
 public:
 
   enum D {
-    EASY = chess::util::toul(chess::AIDifficulty::Easy),
-    MEDIUM = chess::util::toul(chess::AIDifficulty::Medium),
-    HARD = chess::util::toul(chess::AIDifficulty::Hard)
+    EASY = util::toul(chess::AIDifficulty::Easy),
+    MEDIUM = util::toul(chess::AIDifficulty::Medium),
+    HARD = util::toul(chess::AIDifficulty::Hard)
   };
   Q_ENUM(D)
 
   enum C {
-    WHITE = chess::util::toul(chess::Color::White),
-    BLACK = chess::util::toul(chess::Color::Black)
+    WHITE = util::toul(chess::Color::White),
+    BLACK = util::toul(chess::Color::Black)
   };
   Q_ENUM(C)
 
@@ -80,19 +82,19 @@ private:
   };
 
   const std::unordered_map<int, float> piece_values = {
-    { chess::util::toul(chess::Piece::WhitePawn),   1.0 },
-    { chess::util::toul(chess::Piece::WhiteKnight), 3.0 },
-    { chess::util::toul(chess::Piece::WhiteBishop), 3.0 },
-    { chess::util::toul(chess::Piece::WhiteRook),   5.0 },
-    { chess::util::toul(chess::Piece::WhiteQueen),  9.0 },
-    { chess::util::toul(chess::Piece::WhiteKing),   0.0 },
+    { util::toul(chess::Piece::WhitePawn),   1.0 },
+    { util::toul(chess::Piece::WhiteKnight), 3.0 },
+    { util::toul(chess::Piece::WhiteBishop), 3.0 },
+    { util::toul(chess::Piece::WhiteRook),   5.0 },
+    { util::toul(chess::Piece::WhiteQueen),  9.0 },
+    { util::toul(chess::Piece::WhiteKing),   0.0 },
 
-    { chess::util::toul(chess::Piece::BlackPawn),   1.0 },
-    { chess::util::toul(chess::Piece::BlackKnight), 3.0 },
-    { chess::util::toul(chess::Piece::BlackBishop), 3.0 },
-    { chess::util::toul(chess::Piece::BlackRook),   5.0 },
-    { chess::util::toul(chess::Piece::BlackQueen),  9.0 },
-    { chess::util::toul(chess::Piece::BlackKing),   0.0 }
+    { util::toul(chess::Piece::BlackPawn),   1.0 },
+    { util::toul(chess::Piece::BlackKnight), 3.0 },
+    { util::toul(chess::Piece::BlackBishop), 3.0 },
+    { util::toul(chess::Piece::BlackRook),   5.0 },
+    { util::toul(chess::Piece::BlackQueen),  9.0 },
+    { util::toul(chess::Piece::BlackKing),   0.0 }
   };
 
   void afterMove(chess::MoveResult, chess::HashedMove);

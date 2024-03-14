@@ -2,10 +2,10 @@
 
 #include <QObject>
 #include <thread>
-#include "util.hxx"
-#include "BoardManager.hxx"
-#include "MoveGenerator.hxx"
-#include "AI.hxx"
+#include "engine/ChessTypes.hxx"
+#include "engine/BoardManager.hxx"
+#include "engine/MoveGenerator.hxx"
+#include "engine/AI.hxx"
 
 class AIRunner : public QObject
 {
@@ -34,5 +34,4 @@ signals:
 public:
   explicit AIRunner(QObject* parent = nullptr);
   ~AIRunner();
-
 };
