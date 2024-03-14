@@ -267,7 +267,7 @@ char piece_to_char(Piece p)
  * Function: util::fen::generate(const Board& b, uint8_t square)
  *
  *******************************************************************************/
-std::string generate(const Board& b, const State& state) {
+std::string generate(const Board& b, const BoardState& state) {
   std::string fen;
   fen.reserve(40);
 

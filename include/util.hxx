@@ -74,7 +74,6 @@ namespace chess {
     }
   };
 
-
   enum class CastlingRights : uint8_t {
     WhiteKingSide = 1,
     WhiteQueenSide = 2,
@@ -86,8 +85,7 @@ namespace chess {
 
   static constexpr uint8_t NoSquare = 64;
 
-  // Board State
-  struct State {
+  struct BoardState {
     uint8_t castling_rights = 15; //0b1111;
     uint8_t half_move_clock = 0;
     uint8_t full_move_count = 1;
@@ -235,7 +233,7 @@ namespace chess::util {
 namespace chess::util::fen {
 
   // generates the FEN representation of the provided board and state
-  std::string generate(const Board& b, const State& s);
+  std::string generate(const Board& b, const BoardState& s);
 
   // convert an algebraic notation of a square to an index
   std::optional<uint8_t> algebraic_to_index(const std::string& alg);

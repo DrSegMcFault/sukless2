@@ -22,7 +22,7 @@ public:
 private:
   BoardManager(const MoveGenerator* g,
                const Board&,
-               const State&,
+               const BoardState&,
                const std::vector<HashedMove>&);
 
 public:
@@ -37,8 +37,8 @@ public:
                                      uint8_t target,
                                      uint32_t promoted_to) const;
 
-  // generates Board and State from FEN string
-  std::optional<std::pair<Board, State>> makeBoardFromFen(const std::string& fen) const;
+  // generates Board and BoardState from FEN string
+  std::optional<std::pair<Board, BoardState>> makeBoardFromFen(const std::string& fen) const;
 
   // get an array represenation of the current board
   std::array<std::optional<Piece>, 64> toArray() const {
@@ -97,7 +97,7 @@ private:
   Board _board;
 
   // flags for the game state
-  State _state;
+  BoardState _state;
 
   // move generator
   const MoveGenerator* _generator;
@@ -119,7 +119,7 @@ private:
   void initFromFen(const std::string& fen);
 
   // is the board in check
-  bool isCheck(const Board&, const State&) const;
+  bool isCheck(const Board&, const BoardState&) const;
 
   // update the occupancy bitboards
   inline void updateOccupancies(Board& b) const {

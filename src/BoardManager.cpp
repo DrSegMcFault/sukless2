@@ -31,10 +31,10 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
 
 /*******************************************************************************
  *
- * Method: BoardManager(const Board&, const State&, const vec<Move>)
+ * Method: BoardManager(const Board&, const BoardState&, const vec<Move>)
  * private
  *******************************************************************************/
-BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const State& s,
+BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const BoardState& s,
                            const std::vector<HashedMove>& v)
   : _board(b)
   , _state(s)
@@ -84,11 +84,11 @@ void BoardManager::initFromFen(const std::string &fen)
  * Method: makeBoardFromFen(const std::string& fen)
  *
  *******************************************************************************/
-std::optional<std::pair<Board,State>>
+std::optional<std::pair<Board,BoardState>>
     BoardManager::makeBoardFromFen(const std::string& fen) const
 {
   Board board;
-  State state;
+  BoardState state;
 
   // populate board occupancies and game state
   // using a FEN string
@@ -199,10 +199,10 @@ std::vector<uint8_t> BoardManager::getPseudoLegalMoves(uint8_t square) const
 
 /*******************************************************************************
  *
- * Method: isCheck(const Board&, const State&)
+ * Method: isCheck(const Board&, const BoardState&)
  *
  *******************************************************************************/
-bool BoardManager::isCheck(const Board& board_, const State& state_) const
+bool BoardManager::isCheck(const Board& board_, const BoardState& state_) const
 {
   return
     _generator->isSquareAttacked(util::bits::get_lsb_index(state_.side_to_move == White ? board_[WhiteKing] : board_[BlackKing]),
@@ -269,7 +269,7 @@ MoveResult BoardManager::makeMove(
 
   // copy the board and state in case of illegal move
   Board board_copy = _board;
-  State state_copy = _state;
+  BoardState state_copy = _state;
 
   // parse the move
   const auto&& [ source_square, target_square,

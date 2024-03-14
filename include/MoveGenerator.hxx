@@ -18,7 +18,7 @@ public:
                         const Board& board) const;
 
   void generateMoves(const Board& board,
-                     const State& state,
+                     const BoardState& state,
                      std::vector<HashedMove>& moves) const;
 private:
 
@@ -60,35 +60,36 @@ private:
                       uint32_t enpassant, uint32_t castling) const;
 
   void generateWhitePawnMoves(const Board& board,
-                              const State& state,
+                              const BoardState& state,
                               std::vector<HashedMove>& moves) const;
 
   void generateBlackPawnMoves(const Board& board,
-                              const State& state,
+                              const BoardState& state,
                               std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateCastlingMoves(const Board& board,
-                             const State& state,
+                             const BoardState& state,
                              std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateKingMoves(const Board& b,
-                         Color side_to_move,
                          std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateKnightMoves(const Board& b,
-                           Color side_to_move,
                            std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateBishopMoves(const Board& b,
-                           Color side_to_move,
                            std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateRookMoves(const Board& b,
-                         Color side_to_move,
                          std::vector<HashedMove>& moves) const;
 
+  template<Color side>
   void generateQueenMoves(const Board& b,
-                          Color side_to_move,
                           std::vector<HashedMove>& moves) const;
 
   void testAttackLookup();

@@ -44,27 +44,38 @@ inline void MoveGenerator::addMove(std::vector<HashedMove>& moves,
 
 /*******************************************************************************
  *
- * Method: generateMoves(Board&, State&, HashedMove& moves)
+ * Method: generateMoves(Board&, BoardState&, HashedMove& moves)
  *
  *******************************************************************************/
 void MoveGenerator::generateMoves(const Board& b,
-                                  const State& s,
+                                  const BoardState& s,
                                   std::vector<HashedMove>& moves) const
 {
   switch (s.side_to_move) {
     case White:
+    {
       generateWhitePawnMoves(b, s, moves);
+      generateCastlingMoves<White>(b, s, moves);
+      generateKnightMoves<White>(b, moves);
+      generateBishopMoves<White>(b, moves);
+      generateRookMoves<White>(b, moves);
+      generateQueenMoves<White>(b, moves);
+      generateKingMoves<White>(b, moves);
       break;
+    }
     case Black:
+    {
       generateBlackPawnMoves(b, s, moves);
+      generateCastlingMoves<Black>(b, s, moves);
+      generateKnightMoves<Black>(b, moves);
+      generateBishopMoves<Black>(b, moves);
+      generateRookMoves<Black>(b, moves);
+      generateQueenMoves<Black>(b, moves);
+      generateKingMoves<Black>(b, moves);
       break;
+    }
   }
-  generateCastlingMoves(b, s, moves);
-  generateKnightMoves(b, s.side_to_move, moves);
-  generateBishopMoves(b, s.side_to_move, moves);
-  generateRookMoves(b, s.side_to_move, moves);
-  generateQueenMoves(b, s.side_to_move, moves);
-  generateKingMoves(b, s.side_to_move, moves);
+
 }
 
 /*******************************************************************************
@@ -76,13 +87,13 @@ std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
 {
   std::array<std::array<Bitboard, 64>, 2> result;
 
-  constexpr auto get_mask = [](Color side, uint8_t square) {
+    constexpr auto get_mask = []<Color C>(uint8_t square) {
     Bitboard attacks {0ULL};
     Bitboard b {0ULL};
 
     set_bit(square, b);
 
-    if (side == White) {
+    if constexpr (C == White) {
       if ((b << 7) & not_h_file)
         attacks |= (b << 7);
 
@@ -101,8 +112,8 @@ std::array<std::array<Bitboard, 64>, 2> MoveGenerator::initPawnAttacks()
   };
 
   for (const auto i : util::range(NoSquare)) {
-    result[White][i] = get_mask(White, i);
-    result[Black][i] = get_mask(Black, i);
+    result[White][i] = get_mask.template operator()<White>(i);
+    result[Black][i] = get_mask.template operator()<Black>(i);
   }
 
   return result;
@@ -272,7 +283,6 @@ Bitboard MoveGenerator::calcBishopAttacks(uint8_t square, Bitboard occ) const
     set_bit(r * 8 + f, attacks);
     if (is_set(r * 8 + f, occ)) break;
   }
-
   for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
     set_bit(r * 8 + f, attacks);
     if (is_set(r * 8 + f, occ)) break;
@@ -405,7 +415,7 @@ bool MoveGenerator::isSquareAttacked(uint8_t square,
  *
  *******************************************************************************/
 void MoveGenerator::generateWhitePawnMoves(const Board& board_,
-                                           const State& state,
+                                           const BoardState& state,
                                            std::vector<HashedMove>& moves) const
 {
   Bitboard board = board_[WhitePawn];
@@ -477,7 +487,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
  *
  *******************************************************************************/
 void MoveGenerator::generateBlackPawnMoves(const Board& board_,
-                                           const State& state,
+                                           const BoardState& state,
                                            std::vector<HashedMove>& moves) const
 {
   Bitboard board = board_[BlackPawn];
@@ -544,75 +554,69 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
  * Method: generateCastlingMoves()
  *
  *******************************************************************************/
+template<Color c>
 void MoveGenerator::generateCastlingMoves(const Board& board_,
-                                          const State& state,
+                                          const BoardState& state,
                                           std::vector<HashedMove>& moves) const
 {
   using namespace util;
-
-  switch (state.side_to_move) {
-    case White:
+  if constexpr (c == White) {
+    if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
     {
-      if (state.castling_rights & toul(CastlingRights::WhiteKingSide))
+      if (!is_set(chess::F1, board_[All]) &&
+          !is_set(chess::G1, board_[All]))
       {
-        if (!is_set(chess::F1, board_[All]) &&
-            !is_set(chess::G1, board_[All]))
+        if (!isSquareAttacked(chess::E1, Black, board_) &&
+            !isSquareAttacked(chess::F1, Black, board_))
         {
-          if (!isSquareAttacked(chess::E1, Black, board_) &&
-              !isSquareAttacked(chess::F1, Black, board_))
-          {
-            addMove(moves, chess::E1, chess::G1, WhiteKing, NoPiece, 0,0,0,1);
-          }
+          addMove(moves, chess::E1, chess::G1, WhiteKing, NoPiece, 0,0,0,1);
         }
       }
-
-      if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
-      {
-        if (!(is_set(chess::D1, board_[All])) &&
-            !(is_set(chess::C1, board_[All])) &&
-            !(is_set(chess::B1, board_[All])))
-         {
-           if (!isSquareAttacked(chess::E1, Black, board_) &&
-               !isSquareAttacked(chess::D1, Black, board_))
-           {
-             addMove(moves, chess::E1, chess::C1, WhiteKing, NoPiece, 0,0,0,1);
-           }
-         }
-      }
-      break;
     }
 
-    case Black:
+    if (state.castling_rights & toul(CastlingRights::WhiteQueenSide))
     {
-      if (state.castling_rights & toul(CastlingRights::BlackKingSide))
+      if (!(is_set(chess::D1, board_[All])) &&
+          !(is_set(chess::C1, board_[All])) &&
+          !(is_set(chess::B1, board_[All])))
       {
-        if (!is_set(chess::F8, board_[All]) &&
-            !is_set(chess::G8, board_[All]))
+        if (!isSquareAttacked(chess::E1, Black, board_) &&
+            !isSquareAttacked(chess::D1, Black, board_))
         {
-          if (!isSquareAttacked(chess::E8, White, board_) &&
-              !isSquareAttacked(chess::F8, White, board_))
-          {
-            addMove(moves, chess::E8, chess::G8, BlackKing, NoPiece, 0,0,0,1);
-          }
+          addMove(moves, chess::E1, chess::C1, WhiteKing, NoPiece, 0,0,0,1);
         }
       }
-
-      if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
-      {
-        if (!is_set(chess::D8, board_[All]) &&
-            !is_set(chess::C8, board_[All]) &&
-            !is_set(chess::B8, board_[All]))
-        {
-          if (!isSquareAttacked(chess::E8, White, board_) &&
-              !isSquareAttacked(chess::D8, White, board_))
-          {
-            addMove(moves, chess::E8, chess::C8, BlackKing, NoPiece, 0,0,0,1);
-          }
-        }
-      }
-
-      break;
     }
+  }
+
+  else {
+    if (state.castling_rights & toul(CastlingRights::BlackKingSide))
+    {
+      if (!is_set(chess::F8, board_[All]) &&
+          !is_set(chess::G8, board_[All]))
+      {
+        if (!isSquareAttacked(chess::E8, White, board_) &&
+            !isSquareAttacked(chess::F8, White, board_))
+        {
+          addMove(moves, chess::E8, chess::G8, BlackKing, NoPiece, 0,0,0,1);
+        }
+      }
+    }
+
+    if (state.castling_rights & toul(CastlingRights::BlackQueenSide))
+    {
+      if (!is_set(chess::D8, board_[All]) &&
+          !is_set(chess::C8, board_[All]) &&
+          !is_set(chess::B8, board_[All]))
+      {
+        if (!isSquareAttacked(chess::E8, White, board_) &&
+            !isSquareAttacked(chess::D8, White, board_))
+        {
+          addMove(moves, chess::E8, chess::C8, BlackKing, NoPiece, 0,0,0,1);
+        }
+      }
+    }
+
   }
 }
 
@@ -621,11 +625,13 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
  * Method: generateKnightMoves(Color side_to_move)
  *
  *******************************************************************************/
+template<Color side>
 void MoveGenerator::generateKnightMoves(const Board& board_,
-                                        Color side_to_move,
                                         std::vector<HashedMove>& moves) const
 {
-  auto piece_t = (side_to_move == White) ? WhiteKnight : BlackKnight;
+  constexpr Piece piece_t = (side == White) ? WhiteKnight : BlackKnight;
+  constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
+  constexpr Piece opp_color = (side == White) ? BlackAll : WhiteAll;
 
   Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
@@ -635,13 +641,13 @@ void MoveGenerator::generateKnightMoves(const Board& board_,
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
-    attacks = knight_attacks[source_square] & ~(board_[(side_to_move == White) ? WhiteAll : BlackAll]);
+    attacks = knight_attacks[source_square] & ~(board_[all_color]);
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
       auto is_capture =
-          static_cast<bool>(is_set(target_square, board_[side_to_move == White ? BlackAll : WhiteAll]));
+          static_cast<bool>(is_set(target_square, board_[opp_color]));
 
       addMove(moves,
               source_square,
@@ -660,11 +666,13 @@ void MoveGenerator::generateKnightMoves(const Board& board_,
  * Method: generateBishopMoves(Color side_to_move)
  *
  *******************************************************************************/
+template<Color side>
 void MoveGenerator::generateBishopMoves(const Board& board_,
-                                        Color side_to_move,
                                         std::vector<HashedMove>& moves) const
 {
-  auto piece_t = (side_to_move == White) ? WhiteBishop : BlackBishop;
+  constexpr Piece piece_t = (side == White) ? WhiteBishop : BlackBishop;
+  constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
+  constexpr Piece opp_color = (side == White) ? BlackAll : WhiteAll;
 
   Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
@@ -674,13 +682,13 @@ void MoveGenerator::generateBishopMoves(const Board& board_,
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
-    attacks = getBishopAttacks(source_square, board_[All]) & ~(board_[(side_to_move == White) ? WhiteAll : BlackAll]);
+    attacks = getBishopAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
       auto is_capture =
-          static_cast<bool>(is_set(target_square, board_[side_to_move == White ? BlackAll : WhiteAll]));
+          static_cast<bool>(is_set(target_square, board_[opp_color]));
 
       addMove(moves,
               source_square,
@@ -699,11 +707,13 @@ void MoveGenerator::generateBishopMoves(const Board& board_,
  * Method: generateRookMoves(Color side_to_move)
  *
  *******************************************************************************/
+template<Color side>
 void MoveGenerator::generateRookMoves(const Board& board_,
-                                      Color side_to_move,
                                       std::vector<HashedMove>& moves) const
 {
-  auto piece_t = (side_to_move == White) ? WhiteRook : BlackRook;
+  constexpr Piece piece_t = (side == White) ? WhiteRook : BlackRook;
+  constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
+  constexpr Piece opp_color = (side == White) ? BlackAll : WhiteAll;
 
   Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
@@ -713,13 +723,13 @@ void MoveGenerator::generateRookMoves(const Board& board_,
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
-    attacks = getRookAttacks(source_square, board_[All]) & ~(board_[(side_to_move == White) ? WhiteAll : BlackAll]);
+    attacks = getRookAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
       auto is_capture =
-          static_cast<bool>(is_set(target_square, board_[side_to_move == White ? BlackAll : WhiteAll]));
+          static_cast<bool>(is_set(target_square, board_[opp_color]));
 
       addMove(moves,
               source_square,
@@ -738,11 +748,13 @@ void MoveGenerator::generateRookMoves(const Board& board_,
  * Method: generateQueenMoves(Color side_to_move)
  *
  *******************************************************************************/
+template<Color side>
 void MoveGenerator::generateQueenMoves(const Board& board_,
-                                       Color side_to_move,
                                        std::vector<HashedMove>& moves) const
 {
-  auto piece_t = (side_to_move == White) ? WhiteQueen : BlackQueen;
+  constexpr Piece piece_t = (side == White) ? WhiteQueen : BlackQueen;
+  constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
+  constexpr Piece opp_color = (side == White) ? BlackAll : WhiteAll;
 
   Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
@@ -752,13 +764,13 @@ void MoveGenerator::generateQueenMoves(const Board& board_,
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
-    attacks = getQueenAttacks(source_square, board_[All]) & ~(board_[(side_to_move == White) ? WhiteAll : BlackAll]);
+    attacks = getQueenAttacks(source_square, board_[All]) & ~(board_[all_color]);
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
       auto is_capture =
-          static_cast<bool>(is_set(target_square, board_[side_to_move == White ? BlackAll : WhiteAll]));
+          static_cast<bool>(is_set(target_square, board_[opp_color]));
 
       addMove(moves,
               source_square,
@@ -774,14 +786,16 @@ void MoveGenerator::generateQueenMoves(const Board& board_,
 
 /*******************************************************************************
  *
- * Method: generateKingMoves(Color side_to_move)
+ * Method: generateKingMoves(const Board&, std::vector& moves)
  *
  *******************************************************************************/
+template<Color side>
 void MoveGenerator::generateKingMoves(const Board& board_,
-                                      Color side_to_move,
                                       std::vector<HashedMove>& moves) const
 {
-  auto piece_t = (side_to_move == White) ? WhiteKing : BlackKing;
+  constexpr Piece piece_t = (side == White) ? WhiteKing : BlackKing;
+  constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
+  constexpr Piece opp_color = (side == White ) ? BlackAll : WhiteAll;
 
   Bitboard board = board_[piece_t];
   Bitboard attacks = 0ULL;
@@ -791,13 +805,13 @@ void MoveGenerator::generateKingMoves(const Board& board_,
 
   while (board) {
     source_square = util::bits::get_lsb_index(board);
-    attacks = king_attacks[source_square] & (side_to_move == White ? ~(board_[WhiteAll]) : ~(board_[BlackAll]));
+    attacks = king_attacks[source_square] & ~(board_[all_color]);
 
     while (attacks) {
       target_square = util::bits::get_lsb_index(attacks);
 
       auto is_capture =
-          static_cast<bool>(is_set(target_square, board_[side_to_move == White ? BlackAll : WhiteAll]));
+          static_cast<bool>(is_set(target_square, board_[opp_color]));
 
       addMove(moves,
               source_square,

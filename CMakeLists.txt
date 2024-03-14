@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 include(GNUInstallDirs)
 
-find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Multimedia Qml Widgets Positioning)
+find_package(Qt6 6.6 REQUIRED COMPONENTS Core Quick Multimedia Qml Widgets Positioning)
 
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 set(QML_IMPORT_PATH "${QT_QML_OUTPUT_DIRECTORY}" CACHE STRING "" FORCE)
@@ -50,8 +50,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+if (MSVC)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
+endif()
+
 target_link_libraries(chess
-  PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Positioning Qt6::Qml Qt6::Widgets
+  PRIVATE Qt6::Core Qt6::Quick Qt6::Multimedia Qt6::Positioning Qt6::Qml Qt6::Widgets
 )
 
 install(TARGETS ${PROJECT_NAME}
