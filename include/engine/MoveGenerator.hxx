@@ -3,6 +3,7 @@
 #include <vector>
 #include "ChessUtil.hxx"
 #include "Util.hxx"
+#include "MoveList.hxx"
 
 namespace chess {
 
@@ -20,7 +21,7 @@ public:
 
   void generateMoves(const Board& board,
                      const BoardState& state,
-                     std::vector<HashedMove>& moves) const;
+                     MoveList& moves) const;
 private:
 
   // pre-calculated attack Bitboards
@@ -54,45 +55,38 @@ private:
     return (getBishopAttacks(square, occ) | getRookAttacks(square, occ));
   }
 
-  // move generation
-  inline void addMove(std::vector<HashedMove>& moves,
-                      uint32_t source, uint32_t target,
-                      uint32_t piece, uint32_t promotion,
-                      uint32_t capture, uint32_t double_push,
-                      uint32_t enpassant, uint32_t castling) const;
-
   void generateWhitePawnMoves(const Board& board,
                               const BoardState& state,
-                              std::vector<HashedMove>& moves) const;
+                              MoveList& moves) const;
 
   void generateBlackPawnMoves(const Board& board,
                               const BoardState& state,
-                              std::vector<HashedMove>& moves) const;
+                              MoveList& moves) const;
 
   template<Color side>
   void generateCastlingMoves(const Board& board,
                              const BoardState& state,
-                             std::vector<HashedMove>& moves) const;
+                             MoveList& moves) const;
 
   template<Color side>
   void generateKingMoves(const Board& b,
-                         std::vector<HashedMove>& moves) const;
+                         MoveList& moves) const;
 
   template<Color side>
   void generateKnightMoves(const Board& b,
-                           std::vector<HashedMove>& moves) const;
+                           MoveList& moves) const;
 
   template<Color side>
   void generateBishopMoves(const Board& b,
-                           std::vector<HashedMove>& moves) const;
+                           MoveList& moves) const;
 
   template<Color side>
   void generateRookMoves(const Board& b,
-                         std::vector<HashedMove>& moves) const;
+                         MoveList& moves) const;
 
   template<Color side>
   void generateQueenMoves(const Board& b,
-                          std::vector<HashedMove>& moves) const;
+                          MoveList& moves) const;
 
   static constexpr std::array<Bitboard, 64> bishop_magics = {
     0x40040844404084ULL,  0x2004208a004208ULL,

@@ -76,8 +76,7 @@ QVariant MoveModel::data(const QModelIndex &index, int role) const
  *****************************************************************************/
 void MoveModel::onMoveConfirmed(chess::HashedMove m, chess::Color c, chess::MoveResult b)
 {
-  MoveModelDataEntry e {m, c, b};
-  addEntry(e);
+  addEntry({m, c, b});
 }
 
 /******************************************************************************

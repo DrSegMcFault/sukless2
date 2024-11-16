@@ -11,7 +11,6 @@ namespace chess {
 BoardManager::BoardManager(const MoveGenerator* g)
   : _generator(g)
 {
-  _move_list.reserve(256);
   _history.reserve(150);
   initFromFen(chess::starting_position);
 }
@@ -24,7 +23,6 @@ BoardManager::BoardManager(const MoveGenerator* g)
 BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
   : _generator(g)
 {
-  _move_list.reserve(256);
   _history.reserve(150);
   initFromFen(fen);
 }
@@ -35,7 +33,7 @@ BoardManager::BoardManager(const MoveGenerator* g, const std::string& fen)
  * private
  *******************************************************************************/
 BoardManager::BoardManager(const MoveGenerator* g, const Board&b, const BoardState& s,
-                           const std::vector<HashedMove>& v)
+                           const MoveList& v)
   : _board(b)
   , _state(s)
   , _generator(g)

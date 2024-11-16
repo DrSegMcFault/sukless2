@@ -20,36 +20,12 @@ MoveGenerator::MoveGenerator()
 
 /*******************************************************************************
  *
- * Method: addMove()
- *
- *******************************************************************************/
-inline void MoveGenerator::addMove(std::vector<HashedMove>& moves,
-                                   uint32_t source, uint32_t target,
-                                   uint32_t piece, uint32_t promotion,
-                                   uint32_t capture, uint32_t double_push,
-                                   uint32_t enpassant, uint32_t castling) const
-{
-  HashedMove move;
-  move.m.source = source;
-  move.m.target = target;
-  move.m.piece = piece;
-  move.m.promoted = promotion;
-  move.m.capture = capture;
-  move.m.double_push = double_push;
-  move.m.enpassant = enpassant;
-  move.m.castling = castling;
-
-  moves.push_back(move);
-}
-
-/*******************************************************************************
- *
  * Method: generateMoves(Board&, BoardState&, HashedMove& moves)
  *
  *******************************************************************************/
 void MoveGenerator::generateMoves(const Board& b,
                                   const BoardState& s,
-                                  std::vector<HashedMove>& moves) const
+                                  MoveList& moves) const
 {
   switch (s.side_to_move) {
     case White:
@@ -417,7 +393,7 @@ bool MoveGenerator::isSquareAttacked(uint8_t square,
  *******************************************************************************/
 void MoveGenerator::generateWhitePawnMoves(const Board& board_,
                                            const BoardState& state,
-                                           std::vector<HashedMove>& moves) const
+                                           MoveList& moves) const
 {
   Bitboard board = board_[WhitePawn];
   uint8_t source_square = 0;
@@ -434,19 +410,19 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
       // promotion
       if (source_square >= chess::A7 && source_square <= chess::H7) {
 
-        addMove(moves, source_square, target_square, WhitePawn, WhiteQueen, 0,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteRook,  0,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteBishop,0,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteKnight,0,0,0,0);
+        moves.add(source_square, target_square, WhitePawn, WhiteQueen);
+        moves.add(source_square, target_square, WhitePawn, WhiteRook);
+        moves.add(source_square, target_square, WhitePawn, WhiteBishop);
+        moves.add(source_square, target_square, WhitePawn, WhiteKnight);
 
       } else { // one move forward, no promotion
-          addMove(moves, source_square, target_square, WhitePawn, NoPiece, 0,0,0,0);
+        moves.add(source_square, target_square, WhitePawn);
 
         if ((source_square >= chess::A2 && source_square <= chess::H2) &&
             !is_set(target_square + 8, board_[All]))
         {
           // two square push
-          addMove(moves, source_square, target_square + 8, WhitePawn, NoPiece, 0,1,0,0);
+          moves.add(source_square, target_square + 8, WhitePawn, NoPiece, 0, 1);
         }
       }
     }
@@ -458,13 +434,13 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
 
       // capturing promotion
       if (source_square >= chess::A7 && source_square <= chess::H7) {
-        addMove(moves, source_square, target_square, WhitePawn, WhiteQueen, 1,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteRook,  1,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteBishop,1,0,0,0);
-        addMove(moves, source_square, target_square, WhitePawn, WhiteKnight,1,0,0,0);
+        moves.add(source_square, target_square, WhitePawn, WhiteQueen, 1);
+        moves.add(source_square, target_square, WhitePawn, WhiteRook, 1);
+        moves.add(source_square, target_square, WhitePawn, WhiteBishop, 1);
+        moves.add(source_square, target_square, WhitePawn, WhiteKnight, 1);
 
       } else { // capture, no promotion
-          addMove(moves, source_square, target_square, WhitePawn, NoPiece, 1,0,0,0);
+        moves.add(source_square, target_square, WhitePawn, NoPiece, 1);
       }
 
       clear_bit(target_square, attacks);
@@ -474,7 +450,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
       auto en_passant_attacks = pawn_attacks[White][source_square] & (1ULL << state.en_passant_target);
       if (en_passant_attacks) {
         auto attack_square = bits::get_lsb_index(en_passant_attacks);
-          addMove(moves, source_square, attack_square, WhitePawn, NoPiece, 1,0,1,0);
+        moves.add(source_square, attack_square, WhitePawn, NoPiece, 1, 0, 1);
       }
     }
 
@@ -489,7 +465,7 @@ void MoveGenerator::generateWhitePawnMoves(const Board& board_,
  *******************************************************************************/
 void MoveGenerator::generateBlackPawnMoves(const Board& board_,
                                            const BoardState& state,
-                                           std::vector<HashedMove>& moves) const
+                                           MoveList& moves) const
 {
   Bitboard board = board_[BlackPawn];
   uint8_t source_square = 0;
@@ -505,19 +481,19 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
       // promotion
       if (source_square >= chess::A2 && source_square <= chess::H2)
       {
-        addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 0,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackRook,  0,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackBishop,0,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackKnight,0,0,0,0);
+        moves.add(source_square, target_square, BlackPawn, BlackQueen);
+        moves.add(source_square, target_square, BlackPawn, BlackRook);
+        moves.add(source_square, target_square, BlackPawn, BlackBishop);
+        moves.add(source_square, target_square, BlackPawn, BlackKnight);
 
       } else { // one move forward, no promotion
-        addMove(moves, source_square, target_square, BlackPawn, NoPiece, 0,0,0,0);
+        moves.add(source_square, target_square, BlackPawn);
 
         if (source_square >= chess::A7 && source_square <= chess::H7 &&
             !is_set(target_square - 8, board_[All]))
         {
           // two square push
-          addMove(moves, source_square, target_square - 8, BlackPawn, NoPiece, 0,1,0,0);
+          moves.add(source_square, target_square - 8, BlackPawn, NoPiece, 0, 1);
         }
       }
     }
@@ -529,12 +505,12 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
 
       // promotion
       if (source_square >= chess::A2 && source_square <= chess::H2) {
-        addMove(moves, source_square, target_square, BlackPawn, BlackQueen, 1,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackRook,  1,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackBishop,1,0,0,0);
-        addMove(moves, source_square, target_square, BlackPawn, BlackKnight,1,0,0,0);
+        moves.add(source_square, target_square, BlackPawn, BlackQueen, 1);
+        moves.add(source_square, target_square, BlackPawn, BlackRook, 1);
+        moves.add(source_square, target_square, BlackPawn, BlackBishop, 1);
+        moves.add(source_square, target_square, BlackPawn, BlackKnight, 1);
       } else { // capture, no promotion
-        addMove(moves, source_square, target_square, BlackPawn, NoPiece, 1,0,0,0);
+        moves.add(source_square, target_square, BlackPawn, NoPiece, 1);
       }
       clear_bit(target_square, attacks);
     }
@@ -543,7 +519,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
       auto en_passant_attacks = pawn_attacks[Black][source_square] & (1ULL << state.en_passant_target);
       if (en_passant_attacks) {
         auto attack_square = bits::get_lsb_index(en_passant_attacks);
-        addMove(moves, source_square, attack_square, BlackPawn, NoPiece, 1,0,1,0);
+        moves.add(source_square, attack_square, BlackPawn, NoPiece, 1, 0, 1);
       }
     }
     clear_bit(source_square, board);
@@ -558,7 +534,7 @@ void MoveGenerator::generateBlackPawnMoves(const Board& board_,
 template<Color c>
 void MoveGenerator::generateCastlingMoves(const Board& board_,
                                           const BoardState& state,
-                                          std::vector<HashedMove>& moves) const
+                                          MoveList& moves) const
 {
   using namespace util;
 
@@ -571,7 +547,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
         if (!isSquareAttacked(chess::E1, Black, board_) &&
             !isSquareAttacked(chess::F1, Black, board_))
         {
-          addMove(moves, chess::E1, chess::G1, WhiteKing, NoPiece, 0,0,0,1);
+          moves.add(chess::E1, chess::G1, WhiteKing, NoPiece, 0, 0, 0, 1);
         }
       }
     }
@@ -585,7 +561,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
         if (!isSquareAttacked(chess::E1, Black, board_) &&
             !isSquareAttacked(chess::D1, Black, board_))
         {
-          addMove(moves, chess::E1, chess::C1, WhiteKing, NoPiece, 0,0,0,1);
+          moves.add(chess::E1, chess::C1, WhiteKing, NoPiece, 0, 0, 0, 1);
         }
       }
     }
@@ -600,7 +576,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
         if (!isSquareAttacked(chess::E8, White, board_) &&
             !isSquareAttacked(chess::F8, White, board_))
         {
-          addMove(moves, chess::E8, chess::G8, BlackKing, NoPiece, 0,0,0,1);
+          moves.add(chess::E8, chess::G8, BlackKing, NoPiece, 0, 0, 0, 1);
         }
       }
     }
@@ -614,7 +590,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
         if (!isSquareAttacked(chess::E8, White, board_) &&
             !isSquareAttacked(chess::D8, White, board_))
         {
-          addMove(moves, chess::E8, chess::C8, BlackKing, NoPiece, 0,0,0,1);
+          moves.add(chess::E8, chess::C8, BlackKing, NoPiece, 0, 0, 0, 1);
         }
       }
     }
@@ -629,7 +605,7 @@ void MoveGenerator::generateCastlingMoves(const Board& board_,
  *******************************************************************************/
 template<Color side>
 void MoveGenerator::generateKnightMoves(const Board& board_,
-                                        std::vector<HashedMove>& moves) const
+                                        MoveList& moves) const
 {
   constexpr Piece piece_t = (side == White) ? WhiteKnight : BlackKnight;
   constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
@@ -651,10 +627,7 @@ void MoveGenerator::generateKnightMoves(const Board& board_,
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
 
-      addMove(moves,
-              source_square,
-              target_square,
-              piece_t, NoPiece, is_capture, 0, 0, 0);
+      moves.add(source_square, target_square, piece_t, NoPiece, is_capture);
 
       clear_bit(target_square, attacks);
     }
@@ -670,7 +643,7 @@ void MoveGenerator::generateKnightMoves(const Board& board_,
  *******************************************************************************/
 template<Color side>
 void MoveGenerator::generateBishopMoves(const Board& board_,
-                                        std::vector<HashedMove>& moves) const
+                                        MoveList& moves) const
 {
   constexpr Piece piece_t = (side == White) ? WhiteBishop : BlackBishop;
   constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
@@ -692,10 +665,7 @@ void MoveGenerator::generateBishopMoves(const Board& board_,
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
 
-      addMove(moves,
-              source_square,
-              target_square,
-              piece_t, NoPiece, is_capture, 0, 0, 0);
+      moves.add(source_square, target_square, piece_t, NoPiece, is_capture);
 
       clear_bit(target_square, attacks);
     }
@@ -711,7 +681,7 @@ void MoveGenerator::generateBishopMoves(const Board& board_,
  *******************************************************************************/
 template<Color side>
 void MoveGenerator::generateRookMoves(const Board& board_,
-                                      std::vector<HashedMove>& moves) const
+                                      MoveList& moves) const
 {
   constexpr Piece piece_t = (side == White) ? WhiteRook : BlackRook;
   constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
@@ -733,10 +703,7 @@ void MoveGenerator::generateRookMoves(const Board& board_,
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
 
-      addMove(moves,
-              source_square,
-              target_square,
-              piece_t, NoPiece, is_capture, 0, 0, 0);
+      moves.add(source_square, target_square, piece_t, NoPiece, is_capture);
 
       clear_bit(target_square, attacks);
     }
@@ -752,7 +719,7 @@ void MoveGenerator::generateRookMoves(const Board& board_,
  *******************************************************************************/
 template<Color side>
 void MoveGenerator::generateQueenMoves(const Board& board_,
-                                       std::vector<HashedMove>& moves) const
+                                       MoveList& moves) const
 {
   constexpr Piece piece_t = (side == White) ? WhiteQueen : BlackQueen;
   constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
@@ -774,10 +741,7 @@ void MoveGenerator::generateQueenMoves(const Board& board_,
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
 
-      addMove(moves,
-              source_square,
-              target_square,
-              piece_t, NoPiece, is_capture, 0, 0, 0);
+      moves.add(source_square, target_square, piece_t, NoPiece, is_capture);
 
       clear_bit(target_square, attacks);
     }
@@ -793,7 +757,7 @@ void MoveGenerator::generateQueenMoves(const Board& board_,
  *******************************************************************************/
 template<Color side>
 void MoveGenerator::generateKingMoves(const Board& board_,
-                                      std::vector<HashedMove>& moves) const
+                                      MoveList& moves) const
 {
   constexpr Piece piece_t = (side == White) ? WhiteKing : BlackKing;
   constexpr Piece all_color = (side == White) ? WhiteAll : BlackAll;
@@ -815,10 +779,7 @@ void MoveGenerator::generateKingMoves(const Board& board_,
       auto is_capture =
           static_cast<bool>(is_set(target_square, board_[opp_color]));
 
-      addMove(moves,
-              source_square,
-              target_square,
-              piece_t, NoPiece, is_capture, 0, 0, 0);
+      moves.add(source_square, target_square, piece_t, NoPiece, is_capture);
 
       clear_bit(target_square, attacks);
     }

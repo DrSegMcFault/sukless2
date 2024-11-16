@@ -7,6 +7,7 @@
 
 #include "ChessUtil.hxx"
 #include "MoveGenerator.hxx"
+#include "MoveList.hxx"
 
 namespace chess {
 
@@ -23,7 +24,7 @@ private:
   BoardManager(const MoveGenerator* g,
                const Board&,
                const BoardState&,
-               const std::vector<HashedMove>&);
+               const MoveList&);
 
 public:
   // attempts to perfrom the provided move on the board
@@ -103,7 +104,7 @@ private:
   const MoveGenerator* _generator;
 
   // current list of pseudo legal moves
-  std::vector<HashedMove> _move_list;
+  MoveList _move_list;
 
   // FEN history of the current game being played
   std::vector<std::string> _history;

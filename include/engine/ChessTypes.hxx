@@ -53,6 +53,21 @@ namespace chess {
 
     uint32_t hashed;
 
+    HashedMove() {}
+
+    HashedMove(uint32_t hashed_) : hashed(hashed_) {}
+
+    // this while not visually appealing, is technically faster 
+    // than setting bitfield members individually
+    HashedMove(
+      uint32_t s, uint32_t t,
+      uint32_t p, uint32_t pr,
+      uint32_t cap, uint32_t dbl,
+      uint32_t ep, uint32_t c)
+       : hashed(s | (t << 6) | (p << 12) | (pr << 17) | (cap << 22) | (dbl << 23) | (ep << 24) | (c << 25))
+     {}
+
+
     bool operator==(const HashedMove& other) const {
       return hashed == other.hashed;
     }
@@ -70,6 +85,8 @@ namespace chess {
                static_cast<uint8_t>(m.target),
                static_cast<chess::Piece>(m.promoted) };
     }
+
+    ~HashedMove() {}
   };
 
   enum class CastlingRights : uint8_t {

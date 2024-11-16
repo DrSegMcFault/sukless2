@@ -181,9 +181,9 @@ int AI::miniMax(MoveResult last, BoardManager& m, int alpha, int beta, int cur_d
  * Method: AI::getLegalMoves(const BoardManager& cpy)
  *
  *****************************************************************************/
-std::vector<HashedMove> AI::getLegalMoves(const BoardManager& cpy)
+MoveList AI::getLegalMoves(const BoardManager& cpy)
 {
-  std::vector<HashedMove> legal_moves = {};
+  MoveList legal_moves = {};
 
   for (const auto m : cpy._move_list) {
 
@@ -192,11 +192,11 @@ std::vector<HashedMove> AI::getLegalMoves(const BoardManager& cpy)
     if (auto&& [result, move] = temp.tryMove(m.toMove());
         result != MoveResult::Illegal)
     {
-      legal_moves.push_back(m);
+      legal_moves.add(move);
     }
   }
 
-  std::ranges::sort(legal_moves, [](auto& a, auto& b) {
+  legal_moves.sort([](auto& a, auto& b) {
     return static_cast<bool>(a.m.capture);
   });
 
@@ -221,8 +221,8 @@ std::optional<HashedMove> AI::getBestMove(const BoardManager& cpy)
     const size_t items_per_thread = legal_moves.size() / num_threads;
 
     auto process = [&] (int thread_num,
-                        std::vector<HashedMove>::iterator begin,
-                        std::vector<HashedMove>::iterator end) -> void
+                        auto begin,
+                        auto end) -> void
     {
       std::vector<std::pair<HashedMove, int>> ret;
 

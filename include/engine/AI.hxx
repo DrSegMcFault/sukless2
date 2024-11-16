@@ -5,6 +5,7 @@
 #include "MoveGenerator.hxx"
 #include "BoardManager.hxx"
 #include "ChessUtil.hxx"
+#include "MoveList.hxx"
 
 namespace chess {
 
@@ -54,7 +55,7 @@ private:
   int miniMax(MoveResult last, BoardManager& mgr, int alpha, int beta, int cur_depth, bool is_max);
 
   // get the legal moves from a board
-  std::vector<HashedMove> getLegalMoves(const BoardManager&);
+  MoveList getLegalMoves(const BoardManager&);
 
   const std::unordered_map<int, int> piece_values = {
     { util::toul(Piece::WhitePawn),    100    },
